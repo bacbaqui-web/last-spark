@@ -179,3 +179,7 @@ Kenney Sci-fi Sounds 1.0(CC0)의 선택 음원12개를 public/audio/kenney에 �
 
 ### Free Firearm Sound Library 적용
 기존Tabasco 총성4개를 Free Firearm Sound Library(CC0) 단발8개로 교체합니다. 기본기관총AK-47/AR-15, 미니건PPSh/AK-47, 샷건Mossberg/Nova, 저격Mosin Nagant/Arisaka. 매 발2종 랜덤선택과 소폭 피치변화를 사용합니다. 발사전 무음 제거/피크 레벨 조정/끝 페이드/모노OGG, 연사 샘플 .22초로 제한. 광자포/폭발Kenney 유지. 출처/저작자/수정내용은 public/audio/firearms/LICENSE.txt. 8개 디코딩/길이/채널 검사, 피해숫자/카운트다운/저격회귀 및 빌드 통과. 실제 청감은 사용자 플레이로 비교합니다.
+
+### 광자포42 속도·공간 음향
+광자포 속도28→42(1.5배), 충돌 반경은 렌더 구체 반경+1.1로 확대합니다. Web Audio PannerNode HRTF/역거리 감쇠(ref4m, rolloff1.25)와 거리 저역통과를 적용합니다. 플레이어 총구/적 총구/헬멧 저격선/미사일 발사/폭발 지점에서 소리를 재생하며 청취자 위치와 시선 방향은 매 프레임 플레이어를 따릅니다. UI 효과음은 중앙 유지. 뒤쪽 HRTF 구분은 헤드폰과 개인 청감에 따라 차이가 있습니다. 소리 노드는 종료 시 정리합니다.
+검증:42속도/확대충돌, HRTF발생위치/시점방향/거리감쇠/원거리 고음감쇠/노드정리, 근접통과 광자포 및 빌드 통과.
