@@ -1,0 +1,8 @@
+Copyright (c) 2009 Vincent Sevedge
+
+Audio and Visual content is covered under the Creative Commons Attribution 3.0 Unported License
+http://creativecommons.org/licenses/by/3.0/
+
+Source: https://opengameart.org/content/gunshot-sounds
+Gunshot Sounds by Tabasco / Vincent Sevedge. Game samples trimmed to individual shots, faded and converted to mono OGG.
+The listing says CC0; we preserve and follow the stricter CC BY 3.0 attribution included in the archive.
