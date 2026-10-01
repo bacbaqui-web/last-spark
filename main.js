@@ -232,4 +232,4 @@ if(import.meta.env.DEV&&new URLSearchParams(location.search).has('bossCheck')){r
 
 if(import.meta.env.DEV&&new URLSearchParams(location.search).has('upgradeCheck')){reset();active=true;player.hp=70;damageGrace=999;enemies.find(e=>e.boss).hp=0;update(.016);}
 
-if(import.meta.env.DEV&&new URLSearchParams(location.search).has('adsCheck')){reset(false);const type=new URLSearchParams(location.search).get('adsCheck');weapon=weapons[type]?type:'pistol';ammo=weapons[weapon].ammo||Infinity;player.pos.set(0,4,14);rightDrag=true;adsBlend=1;damageGrace=999;update(.001);active=false;$('overlay').style.display='none';}
+if(import.meta.env.DEV&&new URLSearchParams(location.search).has('adsCheck')){reset(false);const type=new URLSearchParams(location.search).get('adsCheck');weapon=weapons[type]?type:'pistol';ammo=weapons[weapon].ammo||Infinity;player.pos.set(0,4,14);rightDrag=!new URLSearchParams(location.search).has('hip');adsBlend=rightDrag?1:0;damageGrace=999;update(.001);active=false;$('overlay').style.display='none';}
