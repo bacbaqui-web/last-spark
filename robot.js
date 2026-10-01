@@ -67,7 +67,7 @@ export function animateRobot(r,dt,{speed=0,aim=0,elevation=0,hit=0,velocityX,vel
 }
 function oneShot(r,name){const a=r.actions[name];a.reset().setLoop(THREE.LoopOnce,1).setEffectiveWeight(1).play();a.clampWhenFinished=false;}
 export function robotFired(r){oneShot(r,'Pistol_Shoot');r.recoil=.3;r.flashTime=.09;}
-export function animateDeath(r,progress){if(r.spider){r.motion.rotation.z=Math.min(1,progress/.5)*Math.PI;r.motion.position.y=-progress*.1;return;}if(!r.deathStarted){r.deathStarted=true;r.mixer.stopAllAction();const a=r.actions.Death01;a.reset().setLoop(THREE.LoopOnce,1).play();a.clampWhenFinished=true;}r.mixer.setTime(progress*2);r.muzzleFlash.visible=false;}
+export function animateDeath(r,progress){if(r.bossKind==='drone'){r.droneBody.rotation.z=progress*3;r.droneBody.position.y=-progress*3;return;}if(r.spider){r.motion.rotation.z=Math.min(1,progress/.5)*Math.PI;r.motion.position.y=-progress*.1;return;}if(!r.deathStarted){r.deathStarted=true;r.mixer.stopAllAction();const a=r.actions.Death01;a.reset().setLoop(THREE.LoopOnce,1).play();a.clampWhenFinished=true;}r.mixer.setTime(progress*2);r.muzzleFlash.visible=false;}
 export function disposeRobot(r){if(r.spider)return;r.mixer.stopAllAction();r.mixer.uncacheRoot(r.motion);r.skeleton.dispose();r.muzzleFlash.geometry.dispose();r.muzzleFlash.material.dispose();}
 
 export function swordFired(r,combo=1,duration=.5){r.swordAction=combo===2?'Sword_Attack_Reverse':'Sword_Attack';const old=r.lastSwordAction;if(old)r.actions[old].stop();oneShot(r,r.swordAction);r.actions[r.swordAction].setEffectiveTimeScale(r.actions[r.swordAction].getClip().duration/duration);r.lastSwordAction=r.swordAction;}
