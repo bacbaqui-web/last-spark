@@ -12,3 +12,5 @@
 #gunView{position:fixed;inset:0;pointer-events:none;z-index:1}#hud{z-index:5}#overlay{z-index:10}
 
 #notice.countdown{top:38%;font:800 100px "Barlow Condensed",sans-serif;color:#eaffef;text-shadow:0 0 35px #b9f56b;}
+
+.damageNumber{position:fixed;pointer-events:none;z-index:7;color:#f4fbff;font:800 24px "Barlow Condensed",sans-serif;text-shadow:0 2px 3px #000,0 0 5px #000;will-change:transform,opacity}.damageNumber.headshot{color:#ffe43c;font-size:31px;}
