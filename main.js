@@ -1,3 +1,4 @@
+import {moveBladeBoss,tryBladeLeap} from './boss-navigation.js';
 import {createProgression,randomUpgradePair,applyUpgrade,buildSummary} from './progression.js';
 import {panelTexture,decorateArena} from './model-detail.js';
 import {createBoss,animateBoss} from './boss-models.js';
@@ -62,7 +63,7 @@ function beginWave(){wave++;wavePending=false;waveWait=0;bossCount=wave;const co
 function updateWaves(dt){if(enemies.length)return;if(!wavePending){wavePending=true;waveWait=3;player.hp=Math.min(maxPlayerHP(),player.hp+20);notify(`WAVE ${wave} 클리어 · 3초 후 다음 웨이브`);}else{waveWait-=dt;if(waveWait<=0)beginWave();}}
 function fireEnemyRifle(e){const pos=e.robot.muzzle.getWorldPosition(new THREE.Vector3());robotFired(e.robot);const m=new THREE.Mesh(new THREE.SphereGeometry(.15,8,8),new THREE.MeshBasicMaterial({color:0xff714c}));m.position.copy(pos);m.userData.effect=true;scene.add(m);projectiles.push({m,v:player.pos.clone().sub(pos).normalize().multiplyScalar(22),life:5,damage:4});playSound('firearms/rifle',.23,1,pos);}
 function updateSpecialBoss(e,dt){
- const p=e.group.position,to=player.pos.clone().sub(p),flat=to.clone().setY(0),distance=flat.length();e.stateTime=(e.stateTime||0)+dt;e.group.rotation.y=Math.atan2(flat.x,flat.z);e.group.updateMatrixWorld(true);
+ const p=e.group.position,to=player.pos.clone().sub(p),flat=to.clone().setY(0),distance=flat.length();e.stateTime=(e.stateTime||0)+dt;if(e.type==='drone'||e.bladeSwing>0)e.group.rotation.y=Math.atan2(flat.x,flat.z);e.group.updateMatrixWorld(true);
  if(e.type==='drone'){
   const angle=e.stateTime*.32,goal=player.pos.clone().add(new THREE.Vector3(Math.sin(angle)*15,0,Math.cos(angle)*15));p.x=THREE.MathUtils.damp(p.x,THREE.MathUtils.clamp(goal.x,-36,36),.7*progression.enemy.speed,dt);p.z=THREE.MathUtils.damp(p.z,THREE.MathUtils.clamp(goal.z,-36,36),.7*progression.enemy.speed,dt);p.y=THREE.MathUtils.damp(p.y,Math.max(8,player.pos.y+5)+Math.sin(e.stateTime*1.4)*.6,2,dt);e.group.updateMatrixWorld(true);
   const start=e.robot.muzzle.getWorldPosition(new THREE.Vector3()),sight=player.pos.clone().sub(start);ray.set(start,sight.clone().normalize());ray.far=sight.length();const seen=!ray.intersectObjects(worldObstacles,false).length;
@@ -70,13 +71,14 @@ function updateSpecialBoss(e,dt){
   if(e.attack<=0&&seen){fireEnemyRifle(e);e.attack=.55;}
   animateBoss(e.robot,dt,e.stateTime,0);e.state=seen?'fire':'orbit';
  }else{
-  e.navTimer=(e.navTimer||0)-dt;if(e.navTimer<=0){e.travelPlan=coverRoute(p,{x:player.pos.x,z:player.pos.z},groundPlatforms);e.navTimer=1.2;}const route=e.travelPlan?.route;while(route?.length&&Math.hypot(route[0].x-p.x,route[0].z-p.z)<.8)route.shift();const direction=route?.length?new THREE.Vector3(route[0].x-p.x,0,route[0].z-p.z).normalize():flat.normalize();
-  e.bladeSwing=Math.max(0,(e.bladeSwing||0)-dt);const speed=e.bladeSwing?2.8:e.speed;if(distance>2.3){const next=p.clone().addScaledVector(direction,speed*dt);const blocked=groundPlatforms.some(o=>next.y<o.h&&Math.abs(next.x-o.x)<o.w/2+.65&&Math.abs(next.z-o.z)<o.d/2+.65);if(!blocked){p.x=THREE.MathUtils.clamp(next.x,-40,40);p.z=THREE.MathUtils.clamp(next.z,-40,40);}}
-  // Jump onto the player's floor so elevated cover cannot disable pursuit.
-  const floor=platforms.filter(o=>Math.abs(p.x-o.x)<o.w/2+.5&&Math.abs(p.z-o.z)<o.d/2+.5).reduce((h,o)=>Math.max(h,o.h),0);if(distance<10&&player.pos.y>p.y+3&&!e.bladeLeap){e.bladeLeap={start:p.clone(),end:player.pos.clone().add(new THREE.Vector3(0,-1.7,0)),t:0};}if(e.bladeLeap){const leap=e.bladeLeap;leap.t+=dt;const t=Math.min(1,leap.t/.8);p.lerpVectors(leap.start,leap.end,t);p.y+=Math.sin(t*Math.PI)*4;if(t===1)e.bladeLeap=null;}else p.y=Math.max(floor,p.y-12*dt);
-  if(distance<4.2&&Math.abs(player.pos.y-(p.y+1.7))<3&&e.attack<=0){e.attack=1.25;e.bladeSwing=.65;e.bladeHit=false;playSound('laserSmall_000',.25,.55,p);}
+  e.bladeSwing=Math.max(0,(e.bladeSwing||0)-dt);const speed=e.bladeSwing?2.8:e.speed;let actualSpeed=0;
+  if(!e.bladeLeap)actualSpeed=moveBladeBoss(e,player.pos,platforms,dt,speed);
+  tryBladeLeap(e,player.pos,platforms,dt);
+  const floor=platforms.filter(o=>Math.abs(p.x-o.x)<o.w/2&&Math.abs(p.z-o.z)<o.d/2&&o.h<=p.y+.2).reduce((h,o)=>Math.max(h,o.h),0);if(e.bladeLeap){const leap=e.bladeLeap;leap.t+=dt;const t=Math.min(1,leap.t/.8);p.lerpVectors(leap.start,leap.end,t);p.y+=Math.sin(t*Math.PI)*4;if(t===1)e.bladeLeap=null;}else p.y=Math.max(floor,p.y-12*dt);
+  const meleeOffset=player.pos.clone().sub(p.clone().add(new THREE.Vector3(0,1.7,0)));ray.set(p.clone().add(new THREE.Vector3(0,1.7,0)),meleeOffset.clone().normalize());ray.far=meleeOffset.length();const meleeVisible=!ray.intersectObjects(worldObstacles,false).length;
+  if(distance<4.2&&meleeVisible&&Math.abs(player.pos.y-(p.y+1.7))<3&&e.attack<=0){e.attack=1.25;e.bladeSwing=.65;e.bladeHit=false;playSound('laserSmall_000',.25,.55,p);}
   if(e.bladeSwing>0&&e.bladeSwing<.38&&!e.bladeHit){e.bladeHit=true;const center=p.clone().add(new THREE.Vector3(0,1.7,0)),offset=player.pos.clone().sub(center);ray.set(center,offset.clone().normalize());ray.far=offset.length();if(offset.length()<4.8&&!ray.intersectObjects(worldObstacles,false).length)damage(32);const arc=new THREE.Mesh(new THREE.TorusGeometry(2.6,.08,5,24,Math.PI*1.3),new THREE.MeshBasicMaterial({color:0xff67e8,transparent:true,opacity:.9,side:THREE.DoubleSide}));arc.rotation.x=Math.PI/2;arc.position.copy(center);arc.userData.effect=true;scene.add(arc);shots.push({m:arc,life:.18});}
-  animateRobot(e.robot,dt,{speed:distance>2.3?speed:0,aim:0});animateBoss(e.robot,dt,e.stateTime,e.bladeSwing);e.state=e.bladeSwing?'slash':'pursuit';
+  animateRobot(e.robot,dt,{speed:actualSpeed,aim:0});animateBoss(e.robot,dt,e.stateTime,e.bladeSwing);e.state=e.bladeSwing?'slash':'pursuit';
  }
  e.group.updateMatrixWorld(true);
 }
