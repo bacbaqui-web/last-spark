@@ -10,7 +10,7 @@ export function createBoss(kind){
  if(kind==='drone'){
   r.motion.visible=false;const body=new THREE.Group();r.root.add(body);r.droneBody=body;part(body,cyan,[1.9,1.1,1.5],[0,2,0]);r.head=part(body,light,[.7,.35,.25],[0,2.05,.82]);r.head.userData.weakPoint=true;detailBatch(body,[[[1.35,.13,1.1],[0,2.6,0],dark],[[.9,.25,.08],[0,1.7,.79],dark],[[.08,.14,.08],[-.58,2.04,.81],light],[[.08,.14,.08],[.58,2.04,.81],light],[[.24,.35,.5],[0,1.3,-.25],dark]]);for(const side of[-1,1]){const rear=new THREE.Mesh(new THREE.CylinderGeometry(.24,.3,.38,12),dark);rear.rotation.x=Math.PI/2;rear.position.set(side*.6,2,-.9);body.add(rear);const exhaust=new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.02,12),light);exhaust.rotation.x=Math.PI/2;exhaust.position.set(side*.6,2,-1.1);body.add(exhaust);}
   for(const side of[-1,1]){part(body,dark,[1,.2,.28],[side*1.05,2,0]);const fan=new THREE.Mesh(ring,cyan);fan.rotation.x=Math.PI/2;fan.position.set(side*1.65,2,0);body.add(fan);detailBatch(body,[[[.1,.18,1.1],[side*1.65,2,0],dark],[[1.1,.18,.1],[side*1.65,2,0],dark]]);const rotor=new THREE.Group();rotor.position.copy(fan.position);body.add(rotor);part(rotor,dark,[1.12,.06,.15],[0,0,0]);part(rotor,dark,[.15,.06,1.12],[0,0,0]);r.rotors.push(rotor);const pod=new THREE.Group();pod.position.set(side*.6,1.35,.15);body.add(pod);part(pod,cyan,[.4,.75,.45],[0,0,0]);const socket=new THREE.Group();socket.position.set(0,-.25,.3);pod.add(socket);dronePorts.push(socket);}
-  r.root.scale.setScalar(1);r.muzzle=new THREE.Group();r.muzzle.position.set(0,1.5,.85);body.add(r.muzzle);r.aimEmitter=r.muzzle;r.missileMuzzles=dronePorts;r.hitMeshes=[];body.traverse(o=>{if(o.isMesh){o.userData.enemyPart=true;r.hitMeshes.push(o);}});
+  r.root.scale.setScalar(1);r.muzzle=new THREE.Group();r.muzzle.position.set(0,1.5,.85);body.add(r.muzzle);r.aimEmitter=r.muzzle;r.muzzle.add(r.muzzleFlash);r.muzzleFlash.position.set(0,0,.1);r.missileMuzzles=dronePorts;r.hitMeshes=[];body.traverse(o=>{if(o.isMesh&&o!==r.muzzleFlash){o.userData.enemyPart=true;r.hitMeshes.push(o);}});
  }else if(kind==='blade'){
   r.root.scale.setScalar(2.2);r.blaster.visible=false;r.blaster.traverse(o=>{r.hitMeshes=r.hitMeshes.filter(m=>m!==o);});
   r.root.traverse(o=>{if(o.isMesh&&o.material?.color?.getHex()===0x94afb6)o.material=purple;});
@@ -19,6 +19,6 @@ export function createBoss(kind){
  return r;
 }
 export function animateBoss(r,dt,time,attack){
- if(r.bossKind==='drone'){for(const rotor of r.rotors)rotor.rotation.y+=dt*35;r.droneBody.rotation.z=Math.sin(time*2)*.08;r.droneBody.rotation.x=Math.sin(time*1.5)*.05;}
+ if(r.bossKind==='drone'){r.flashTime=Math.max(0,r.flashTime-dt);r.muzzleFlash.visible=r.flashTime>0;for(const rotor of r.rotors)rotor.rotation.y+=dt*35;r.droneBody.rotation.z=Math.sin(time*2)*.08;r.droneBody.rotation.x=Math.sin(time*1.5)*.05;}
  if(r.bossKind==='blade'){for(const [i,arm]of r.arms.entries()){const swing=attack?Math.sin(Math.min(1,attack/.65)*Math.PI):0;arm.shoulder.rotateX(-.35-swing*2.1);arm.shoulder.rotateZ((i?1:-1)*(.3+swing*.8));arm.elbow.rotateX(-.3);}}
 }
