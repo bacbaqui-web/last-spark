@@ -25,3 +25,5 @@
 #scope{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:0;display:grid;place-items:center} .scopeLens{width:82vmin;height:82vmin;border-radius:50%;border:3px solid #121a20;box-shadow:0 0 0 100vmax #03080bf2,inset 0 0 45px #0008;position:relative}.scopeLens:before,.scopeLens:after{content:"";position:absolute;background:#111b22;opacity:.9}.scopeLens:before{left:50%;top:0;width:1px;height:100%}.scopeLens:after{top:50%;left:0;height:1px;width:100%}.scopeLens i{position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:50%;background:#ff604b;transform:translate(-50%,-50%);z-index:1}.scopeLens b{position:absolute;bottom:12%;left:50%;transform:translateX(-50%);color:#d2e5ecaa;font:18px 'Barlow Condensed'}
 
 #speedBlur:after{content:"";position:absolute;inset:-10%;background:repeating-conic-gradient(from 7deg at 50% 50%,transparent 0deg 13deg,#c5e7f012 13.2deg 13.55deg,transparent 13.8deg 24deg);filter:blur(1.2px);}
+
+#rocketLock{position:absolute;left:50%;top:calc(50% + 135px);transform:translateX(-50%);color:#ffcd76;font:700 18px 'Barlow Condensed';letter-spacing:2px;text-shadow:0 2px 4px #000;opacity:0;white-space:nowrap}

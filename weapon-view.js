@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-export const ADS_POSES={sniper:{y:-.43},pistol:{y:-.34},rapid:{y:-.42},shotgun:{y:-.40},rail:{y:-.37}};
+export const ADS_POSES={rocket:{y:-.45},sniper:{y:-.43},pistol:{y:-.34},rapid:{y:-.42},shotgun:{y:-.40},rail:{y:-.37}};
 const corner=new THREE.Vector3(),matrix=new THREE.Matrix4();
 function modelBounds(model){if(model.userData.aimBounds)return model.userData.aimBounds;model.updateWorldMatrix(true,true);const inverse=model.matrixWorld.clone().invert(),bounds=new THREE.Box3();model.traverse(mesh=>{if(!mesh.isMesh)return;mesh.geometry.computeBoundingBox();const relative=new THREE.Matrix4().multiplyMatrices(inverse,mesh.matrixWorld);bounds.union(mesh.geometry.boundingBox.clone().applyMatrix4(relative));});model.userData.aimBounds=bounds;return bounds;}
 // Keep the whole weapon below the aim point, including animated recoil and charge sway.

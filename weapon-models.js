@@ -5,7 +5,7 @@ metal.map=panelTexture;
 metal.userData.sharedWeaponMaterial=dark.userData.sharedWeaponMaterial=true;
 const brass=new THREE.MeshStandardMaterial({color:0xb7954f,metalness:.85,roughness:.32});brass.userData.sharedWeaponMaterial=true;
 function accent(color){return new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.65,metalness:.3,roughness:.3});}
-export function createWeaponModel(type){const root=new THREE.Group();root.name='weapon-'+type;const color=accent({pistol:0xb9f56b,rapid:0x68e9ff,shotgun:0xffb65f,rail:0xbc66ff,sniper:0x86c6ff,sword:0x68e9ff}[type]);
+export function createWeaponModel(type){const root=new THREE.Group();root.name='weapon-'+type;const color=accent({pistol:0xb9f56b,rapid:0x68e9ff,shotgun:0xffb65f,rail:0xbc66ff,sniper:0x86c6ff,rocket:0xff744a,sword:0x68e9ff}[type]);
  const box=(size,pos,mat=dark)=>{const m=new THREE.Mesh(panelGeometry,mat);m.scale.set(...size);m.position.set(...pos);root.add(m);return m;};
  const barrel=(radius,length,pos,mat=metal)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,length,12),mat);m.rotation.x=Math.PI/2;m.position.set(...pos);root.add(m);return m;};
  if(type==='pistol'){
@@ -36,6 +36,11 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   barrel(.076,.5,[0,.28,-.15],dark);barrel(.104,.15,[0,.28,-.44],metal);barrel(.095,.13,[0,.28,.15],metal);barrel(.088,.012,[0,.28,-.52],color);
   barrel(.035,.09,[.13,.28,-.1],metal);box([.08,.06,.09],[.15,.29,-.09]);box([.11,.035,.07],[.17,.04,.08],metal);
   root.userData.muzzle=[0,.06,-1.67];
+ }
+ if(type==='rocket'){
+  barrel(.23,1.3,[0,.04,-.35],dark);barrel(.26,.13,[0,.04,-1.02],metal);barrel(.19,.014,[0,.04,-1.09],dark);barrel(.26,.12,[0,.04,.31],metal);
+  box([.15,.3,.2],[0,-.25,.14]);box([.2,.14,.35],[0,-.11,-.38]);box([.15,.15,.25],[.2,.16,-.05],metal);box([.025,.07,.15],[.285,.17,-.08],color);
+  for(const z of[-.8,-.5,-.2])box([.46,.035,.06],[0,.2,z],metal);root.userData.muzzle=[0,.04,-1.12];
  }
  if(type==='sword'){box([.13,.38,.13],[0,0,0]);box([.6,.1,.2],[0,.24,0],metal);box([.28,2.5,.085],[0,1.54,0],metal);box([.035,2.43,.10],[.155,1.53,0],color);box([.2,.12,.2],[0,-.25,0],color);const tip=new THREE.Mesh(new THREE.ConeGeometry(.16,.3,4),metal);tip.position.set(0,2.94,0);root.add(tip);root.userData.grip=[0,0,0];}
 
