@@ -8,3 +8,5 @@
 #minimap{position:fixed;right:24px;top:78px;width:180px;height:180px;border:1px solid #5c8794;border-radius:8px;pointer-events:none;z-index:4}.stats{margin-right:200px}@media(max-width:650px){#minimap{right:12px;top:72px;width:125px;height:125px}.stats{margin-right:135px}}
 
 #hurt{pointer-events:none;z-index:6;box-shadow:inset 0 0 100px 40px rgba(255,20,30,.9);mix-blend-mode:screen;}
+
+#gunView{position:fixed;inset:0;pointer-events:none;z-index:1}#hud{z-index:5}#overlay{z-index:10}
