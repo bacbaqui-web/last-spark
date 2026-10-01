@@ -10,3 +10,5 @@
 #hurt{pointer-events:none;z-index:6;box-shadow:inset 0 0 100px 40px rgba(255,20,30,.9);mix-blend-mode:screen;}
 
 #gunView{position:fixed;inset:0;pointer-events:none;z-index:1}#hud{z-index:5}#overlay{z-index:10}
+
+#notice.countdown{top:38%;font:800 100px "Barlow Condensed",sans-serif;color:#eaffef;text-shadow:0 0 35px #b9f56b;}
