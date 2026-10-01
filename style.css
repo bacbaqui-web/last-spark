@@ -5,7 +5,7 @@
 
 #muzzleGlow{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 70% 75%,#ffe6a1 0%,transparent 70%);opacity:0;z-index:3;mix-blend-mode:screen;}
 
-#minimap{position:fixed;right:24px;top:78px;width:180px;height:180px;border:1px solid #5c8794;border-radius:8px;pointer-events:none;z-index:4}.stats{margin-right:200px}@media(max-width:650px){#minimap{right:12px;top:72px;width:125px;height:125px}.stats{margin-right:135px}}
+#minimap{position:fixed;right:24px;top:78px;width:180px;height:180px;border:0;border-radius:50%;background:radial-gradient(circle,#091c2440 65%,transparent 66%);filter:drop-shadow(0 2px 6px #0008);pointer-events:none;z-index:4}.stats{margin-right:200px}@media(max-width:650px){#minimap{right:12px;top:72px;width:125px;height:125px}.stats{margin-right:135px}}
 
 #hurt{pointer-events:none;z-index:6;box-shadow:inset 0 0 100px 40px rgba(255,20,30,.9);mix-blend-mode:screen;}
 
