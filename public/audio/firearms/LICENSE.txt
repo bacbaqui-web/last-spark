@@ -1,8 +1,6 @@
-Copyright (c) 2009 Vincent Sevedge
-
-Audio and Visual content is covered under the Creative Commons Attribution 3.0 Unported License
-http://creativecommons.org/licenses/by/3.0/
-
-Source: https://opengameart.org/content/gunshot-sounds
-Gunshot Sounds by Tabasco / Vincent Sevedge. Game samples trimmed to individual shots, faded and converted to mono OGG.
-The listing says CC0; we preserve and follow the stricter CC BY 3.0 attribution included in the archive.
+The Free Firearm Sound Library
+CC0 1.0: https://creativecommons.org/publicdomain/zero/1.0/
+Source: https://opengameart.org/node/21826
+Recordings by Ben Jaszczak, Brian Nelson, Kevin Heras, Matthew Nanney.
+Modified: single-shot extraction, level adjustment, tail fade, mono OGG conversion.
+Mapping: rifle AK-47/AR-15; minigun PPSh/AK-47; shotgun Mossberg/Nova; sniper Mosin Nagant/Arisaka.
