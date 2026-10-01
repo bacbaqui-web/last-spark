@@ -1,0 +1,7 @@
+import * as THREE from 'three';
+export const ADS_POSES={pistol:{y:-.34},rapid:{y:-.42},shotgun:{y:-.40},rail:{y:-.37}};
+const corner=new THREE.Vector3(),matrix=new THREE.Matrix4();
+function modelBounds(model){if(model.userData.aimBounds)return model.userData.aimBounds;model.updateWorldMatrix(true,true);const inverse=model.matrixWorld.clone().invert(),bounds=new THREE.Box3();model.traverse(mesh=>{if(!mesh.isMesh)return;mesh.geometry.computeBoundingBox();const relative=new THREE.Matrix4().multiplyMatrices(inverse,mesh.matrixWorld);bounds.union(mesh.geometry.boundingBox.clone().applyMatrix4(relative));});model.userData.aimBounds=bounds;return bounds;}
+// Keep the whole weapon below the aim point, including animated recoil and charge sway.
+// Bounds are computed once; each frame only transforms eight corners.
+export function keepAimClear(gun,model,adsBlend,fov,viewportHeight){if(adsBlend<.05||!model)return;const bounds=modelBounds(model);gun.updateMatrix();model.updateMatrix();matrix.multiplyMatrices(gun.matrix,model.matrix);const margin=Math.tan(THREE.MathUtils.degToRad(fov)/2)*Math.max(.035,36/viewportHeight);let lower=0;for(const x of[bounds.min.x,bounds.max.x])for(const y of[bounds.min.y,bounds.max.y])for(const z of[bounds.min.z,bounds.max.z]){corner.set(x,y,z).applyMatrix4(matrix);lower=Math.max(lower,corner.y+Math.max(.08,-corner.z)*margin);}if(lower>0)gun.position.y-=lower;}
