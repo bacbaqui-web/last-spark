@@ -1,0 +1,6 @@
+export const FPS=30;
+export const frameTime=frame=>(frame-1)/FPS;
+export const frameAt=(time,total)=>Math.max(1,Math.min(total,Math.round(time*FPS)+1));
+export function totalFrames(clip,fallback=1){return clip?.totalFrames||Math.max(3,Math.min(900,Math.round((clip?.duration||fallback)*FPS)));}
+export function normalizeFrameClip(clip){const total=totalFrames(clip),map=new Map();for(const f of clip.frames){const frame=frameAt(f.t,total);map.set(frame,{...f,t:frameTime(frame)});}const frames=[...map.values()].sort((a,b)=>a.t-b.t);if(frames[0].t!==0)frames.unshift({...structuredClone(frames[0]),t:0});if(frames.at(-1).t!==frameTime(total))frames.push({...structuredClone(frames.at(-1)),t:frameTime(total)});return {...clip,fps:FPS,totalFrames:total,duration:total/FPS,frames};}
+export function resizeFrameClip(clip,total){if(!Number.isInteger(total)||total<3||total>900)throw Error('동작 길이는 3~900프레임입니다.');const old=totalFrames(clip),map=new Map();for(const f of clip.frames){const frame=Math.max(1,Math.min(total,Math.round((frameAt(f.t,old)-1)/(old-1)*(total-1))+1));map.set(frame,{...f,t:frameTime(frame)});}return normalizeFrameClip({...clip,totalFrames:total,duration:total/FPS,frames:[...map.values()]});}

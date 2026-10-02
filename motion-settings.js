@@ -12,8 +12,9 @@ export function validateProject(input){
   const [w,a]=key.split(':');if(!weapons[w]||!actionList(w).includes(a))continue;
   if(!Number.isFinite(c.duration)||c.duration<.1||c.duration>30||!Array.isArray(c.frames)||c.frames.length<2||c.frames.length>120)throw Error('동작 시간 또는 프레임 수가 올바르지 않습니다.');
   let last=-1;const frames=c.frames.map(f=>{if(!Number.isFinite(f.t)||f.t<0||f.t>c.duration||f.t<=last)throw Error('프레임 시간은 순서대로 지정해주세요.');last=f.t;const pose={};for(const [name,v]of Object.entries(f.pose||{})){if(!/^(\$weapon|[a-zA-Z0-9_]+)$/.test(name)||!v||!['p','q','s'].every(k=>Array.isArray(v[k])&&v[k].length===(k==='q'?4:3)&&v[k].every(x=>Number.isFinite(x)&&Math.abs(x)<1000))||v.q.reduce((n,x)=>n+x*x,0)<.0001||v.s.some(x=>x<.01||x>10))throw Error('관절 값이 올바르지 않습니다.');pose[name]=structuredClone(v);}if(!Object.keys(pose).length)throw Error('빈 자세는 저장할 수 없습니다.');return {t:f.t,easing:['linear','smooth','hold'].includes(f.easing)?f.easing:'smooth',pose};});
-  if(frames[0].t!==0||Math.abs(frames.at(-1).t-c.duration)>.00001)throw Error('첫 프레임은 0초, 마지막 프레임은 전체 시간이어야 합니다.');
-  clips[key]={duration:c.duration,loop:!!c.loop,enabled:c.enabled!==false,followAim:c.followAim!==false,...(c.footLock!==undefined?{footLock:!!c.footLock}:{}),frames};
+  const lattice=c.fps===30;if(lattice&&(!Number.isInteger(c.totalFrames)||c.totalFrames<3||c.totalFrames>900||Math.abs(c.duration-c.totalFrames/30)>.00001||frames.some(f=>Math.abs(f.t*30-Math.round(f.t*30))>.00001)))throw Error('30fps 프레임 값이 올바르지 않습니다.');
+  if(frames[0].t!==0||Math.abs(frames.at(-1).t-(lattice?(c.totalFrames-1)/30:c.duration))>.00001)throw Error('첫 프레임은 0초, 마지막 프레임은 전체 시간이어야 합니다.');
+  clips[key]={...(lattice?{fps:30,totalFrames:c.totalFrames}:{}),duration:c.duration,loop:!!c.loop,enabled:c.enabled!==false,followAim:c.followAim!==false,...(c.footLock!==undefined?{footLock:!!c.footLock}:{}),frames};
  }return {version:1,clips};
 }
 export function readProject(){try{return validateProject(JSON.parse(globalThis.localStorage?.getItem(STORAGE_KEY)||'{"version":1,"clips":{}}'));}catch{return {version:1,clips:{}};}}

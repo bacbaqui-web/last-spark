@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {frameTime,frameAt,normalizeFrameClip,resizeFrameClip} from '../motion-frame-timeline.js';
+import {validateProject,samplePose} from '../motion-settings.js';
+const pose={pelvis:{p:[0,0,0],q:[0,0,0,1],s:[1,1,1]}};
+const c=normalizeFrameClip({duration:1,frames:[{t:0,pose,easing:'linear'},{t:.5,pose,easing:'smooth'},{t:1,pose,easing:'smooth'}]});
+assert.equal(c.totalFrames,30);assert.equal(c.duration,1);assert.deepEqual(c.frames.map(f=>frameAt(f.t,30)),[1,16,30]);assert.equal(frameTime(15),14/30);
+const resized=resizeFrameClip(c,60);assert.equal(resized.frames.length,3);assert.equal(resized.duration,2);assert.equal(resized.frames.at(-1).t,59/30);
+validateProject({version:1,clips:{'knife:knife':resized}});assert.deepEqual(samplePose(c,.999),pose);
+assert.throws(()=>validateProject({version:1,clips:{'knife:knife':{...c,totalFrames:31}}}));
+assert.throws(()=>resizeFrameClip(c,2));assert.throws(()=>resizeFrameClip(c,30.5));
+console.log('PASS: 30fps fixed frame lattice, independent total/key counts, legacy conversion, resize, endpoint hold, validation');
