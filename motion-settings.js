@@ -1,3 +1,4 @@
+import {plantFeet} from './motion-pose-tools.js';
 import * as THREE from 'three';
 export const STORAGE_KEY='last-spark-motion-settings-v1';
 export const weapons={pistol:'기관총',knife:'칼',bow:'활',chainsaw:'전기톱',flame:'화염방사기',laser:'레이저',shotgun:'산탄총',sniper:'저격총',rapid:'미니건',rail:'광자포',rocket:'미사일'};
@@ -12,7 +13,7 @@ export function validateProject(input){
   if(!Number.isFinite(c.duration)||c.duration<.1||c.duration>30||!Array.isArray(c.frames)||c.frames.length<2||c.frames.length>120)throw Error('동작 시간 또는 프레임 수가 올바르지 않습니다.');
   let last=-1;const frames=c.frames.map(f=>{if(!Number.isFinite(f.t)||f.t<0||f.t>c.duration||f.t<=last)throw Error('프레임 시간은 순서대로 지정해주세요.');last=f.t;const pose={};for(const [name,v]of Object.entries(f.pose||{})){if(!/^(\$weapon|[a-zA-Z0-9_]+)$/.test(name)||!v||!['p','q','s'].every(k=>Array.isArray(v[k])&&v[k].length===(k==='q'?4:3)&&v[k].every(x=>Number.isFinite(x)&&Math.abs(x)<1000))||v.q.reduce((n,x)=>n+x*x,0)<.0001||v.s.some(x=>x<.01||x>10))throw Error('관절 값이 올바르지 않습니다.');pose[name]=structuredClone(v);}if(!Object.keys(pose).length)throw Error('빈 자세는 저장할 수 없습니다.');return {t:f.t,easing:['linear','smooth','hold'].includes(f.easing)?f.easing:'smooth',pose};});
   if(frames[0].t!==0||Math.abs(frames.at(-1).t-c.duration)>.00001)throw Error('첫 프레임은 0초, 마지막 프레임은 전체 시간이어야 합니다.');
-  clips[key]={duration:c.duration,loop:!!c.loop,enabled:c.enabled!==false,followAim:c.followAim!==false,frames};
+  clips[key]={duration:c.duration,loop:!!c.loop,enabled:c.enabled!==false,followAim:c.followAim!==false,...(c.footLock!==undefined?{footLock:!!c.footLock}:{}),frames};
  }return {version:1,clips};
 }
 export function readProject(){try{return validateProject(JSON.parse(globalThis.localStorage?.getItem(STORAGE_KEY)||'{"version":1,"clips":{}}'));}catch{return {version:1,clips:{}};}}
@@ -25,5 +26,5 @@ export function createCustomMotion(avatar,models){let age=0,last='';let basePose
  // Restore the previous unedited pose before the mixer; constant mixer tracks
  // can skip writes, so custom transforms must never leak into the base pose.
  if(state===null){if(hadCustom)applyPose(avatar,null,basePose);hadCustom=false;return;}
- delete avatar.root.userData.customMotion;if(state.disableCustomMotion)return false;const [action,phase]=identifyAction(state),key=state.weapon+':'+action;if(last!==key){age=0;last=key;}age+=state.dt||0;const clip=saved.clips[key];if(!clip?.enabled)return false;basePose=capturePose(avatar);hadCustom=true;const time=phase===null?age:(phase*clip.duration);applyPose(avatar,models[state.weapon],samplePose(clip,time));if(clip.followAim&&state.pitch&&action!=='roll'){for(const [n,k]of [['spine_02',.3],['spine_03',.35],['neck_01',.2]])avatar.bones.find(b=>b.name===n)?.rotateX(THREE.MathUtils.clamp(state.pitch,-1.1,1.1)*k);avatar.root.updateMatrixWorld(true);}avatar.root.userData.customMotion=key;return true;
+ delete avatar.root.userData.customMotion;if(state.disableCustomMotion)return false;const [action,phase]=identifyAction(state),key=state.weapon+':'+action;if(last!==key){age=0;last=key;}age+=state.dt||0;const clip=saved.clips[key];if(!clip?.enabled)return false;basePose=capturePose(avatar);hadCustom=true;const time=phase===null?age:(phase*clip.duration);applyPose(avatar,models[state.weapon],samplePose(clip,time));if(clip.followAim&&state.pitch&&action!=='roll'){for(const [n,k]of [['spine_02',.3],['spine_03',.35],['neck_01',.2]])avatar.bones.find(b=>b.name===n)?.rotateX(THREE.MathUtils.clamp(state.pitch,-1.1,1.1)*k);avatar.root.updateMatrixWorld(true);}if(clip.footLock&&state.grounded!==false&&action!=='roll'&&avatar.arms)plantFeet(avatar);avatar.root.userData.customMotion=key;return true;
  };}
