@@ -6,17 +6,18 @@ const clips=Object.fromEntries(Object.entries(data).map(([name,clip])=>[name,{du
 // Gameplay owns translation. These layers preserve source torso/shoulder/hip rotations,
 // while weapon grips and aim receive small final corrections in third-person.js.
 export function createThirdPersonMotion(avatar){
- const bones=Object.fromEntries(avatar.bones.map(b=>[b.name,b])),previous=new Map();let clock=0,wasGrounded=true,airAge=0,landAge=1,lastWeapon='',shotKick=0,lastFlash=false;
+ const bones=Object.fromEntries(avatar.bones.map(b=>[b.name,b])),previous=new Map();let clock=0,strideClock=0,wasGrounded=true,airAge=0,landAge=1,lastWeapon='',shotKick=0,lastFlash=false;
  function apply(name,phase,mask=()=>true,weight=1){const clip=clips[name];if(!clip)return;for(const t of clip.tracks){const b=bones[t.bone];if(!b||!mask(t.bone))continue;const a=t.sample.evaluate(THREE.MathUtils.clamp(phase,0,1)*clip.duration);if(t.property==='quaternion')b.quaternion.slerp(new THREE.Quaternion().fromArray(a),weight);else b.position.lerp(new THREE.Vector3().fromArray(a),weight);}}
  function update(dt,state){
   clock+=dt;const {weapon,speed=0,velocity,yaw,pitch=0,grounded=true,knifePhase=-1,rollPhase=-1,meleePhase=-1,throwPhase=-1,bowMotionClip='BowIdle',bowMotionPhase=0,bowDrawing=false,bowCharge=0,flash=false}=state;
+  strideClock+=dt*Math.min(1.3,Math.max(.35,speed/9.8));
   if(grounded&&!wasGrounded)landAge=0;if(!grounded&&wasGrounded)airAge=0;wasGrounded=grounded;airAge+=dt;landAge+=dt;
   if(lastWeapon!==weapon){lastWeapon=weapon;shotKick=0;}if(flash&&!lastFlash)shotKick=1;lastFlash=flash;shotKick=THREE.MathUtils.damp(shotKick,0,18,dt);
   let bodyClip=weapon==='knife'?'Sword_Idle':weapon==='bow'?(bowDrawing?(bowCharge>=2.2?'BowHold':'BowLoad'):bowMotionClip==='BowRelease'?'BowRelease':'BowIdle'):['rapid','rocket','rail','chainsaw','flame'].includes(weapon)?'Idle_Rail_Loop':'Pistol_Aim_Neutral';
   const phase=bodyClip==='BowLoad'?Math.min(1,bowCharge/2.2):bodyClip==='BowRelease'?bowMotionPhase:(clock%(clips[bodyClip]?.duration||1))/(clips[bodyClip]?.duration||1);
   apply(bodyClip,phase,n=>upper.test(n)||speed<.2&&lower.test(n));
   // Eight directional source strides avoid running backward or sideways with forward feet.
-  if(speed>.2&&grounded){const local=velocity.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-yaw),angle=Math.atan2(local.x,-local.z),directions=['Forward','ForwardRight','Right','BackwardRight','Backward','BackwardLeft','Left','ForwardLeft'],index=(Math.round(angle/(Math.PI/4))+8)%8,clip='Strafe'+directions[index];apply(clip,(clock*Math.min(1.3,Math.max(.35,speed/9.8))/clips[clip].duration)%1,n=>lower.test(n));bodyClip+=' + '+clip;}
+  if(speed>.2&&grounded){const local=velocity.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-yaw),angle=Math.atan2(local.x,-local.z),directions=['Forward','ForwardRight','Right','BackwardRight','Backward','BackwardLeft','Left','ForwardLeft'],index=(Math.round(angle/(Math.PI/4))+8)%8,clip='Strafe'+directions[index];apply(clip,(strideClock/clips[clip].duration)%1,n=>lower.test(n));bodyClip+=' + '+clip;}
   if(!grounded){const clip=airAge<.15?'Jump_Start':'Jump_Loop';apply(clip,airAge<.15?airAge/.15:(clock%clips.Jump_Loop.duration)/clips.Jump_Loop.duration,n=>lower.test(n));bodyClip+=' + '+clip;}
   else if(landAge<.16){apply('Jump_Land',landAge/.16,n=>lower.test(n),1-landAge/.16);bodyClip+=' + Jump_Land';}
   if(knifePhase>=0){const p=knifePhase<.12?knifePhase/.12*.07:knifePhase<.55?.07+(knifePhase-.12)/.43*.19:.26+(knifePhase-.55)/.45*.74;apply('Sword_Dash',p);bodyClip='Sword_Dash';}
