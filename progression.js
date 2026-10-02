@@ -4,7 +4,7 @@ export const upgradeOptions=[
  {id:'vitality',name:'생명력 확장',symbol:'♡',description:'최대 체력 +20% · 현재 체력 유지',enemyDescription:'모든 적 최대 체력 +20% · 남은 체력 비율 유지',stat:'maxHealth',factor:1.2},
  {id:'armor',name:'장갑 강화',symbol:'⬡',description:'받는 피해 10% 감소',enemyDescription:'모든 적이 받는 피해 10% 감소',stat:'damageTaken',factor:.9},
  {id:'haste',name:'공격 가속',symbol:'»',description:'총기 연사 속도 +12% · 수류탄 쿨타임 감소',enemyDescription:'사격·폭격·근접 공격 간격 감소',stat:'attackRate',factor:1.12},
- {id:'projectile',name:'투사체 가속',symbol:'↗',description:'광자탄·수류탄 속도 +15%',enemyDescription:'탄환·미사일 속도 +15% · 히트스캔 제외',stat:'projectileSpeed',factor:1.15},
+ {id:'projectile',name:'투사체 가속',symbol:'↗',description:'광자탄·화살·수류탄 속도 +15%',enemyDescription:'탄환·미사일 속도 +15% · 히트스캔 제외',stat:'projectileSpeed',factor:1.15},
  {id:'blast',name:'폭발 확장',symbol:'◎',description:'광자탄·수류탄 폭발 반경 +15%',enemyDescription:'미사일·거미 폭발 반경 +15%',stat:'blast',factor:1.15},
 ];
 export function createProgression(){const build=()=>({damage:1,speed:1,maxHealth:1,damageTaken:1,attackRate:1,projectileSpeed:1,blast:1,regen:0});return {player:build(),enemy:build(),history:[]};}

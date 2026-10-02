@@ -5,7 +5,7 @@ metal.map=panelTexture;
 metal.userData.sharedWeaponMaterial=dark.userData.sharedWeaponMaterial=true;
 const brass=new THREE.MeshStandardMaterial({color:0xb7954f,metalness:.85,roughness:.32});brass.userData.sharedWeaponMaterial=true;
 function accent(color){return new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.65,metalness:.3,roughness:.3});}
-export function createWeaponModel(type){const root=new THREE.Group();root.name='weapon-'+type;const color=accent({pistol:0xb9f56b,rapid:0x68e9ff,shotgun:0xffb65f,rail:0xbc66ff,sniper:0x86c6ff,rocket:0xff744a,sword:0x68e9ff}[type]);
+export function createWeaponModel(type){const root=new THREE.Group();root.name='weapon-'+type;const color=accent({pistol:0xb9f56b,rapid:0x68e9ff,shotgun:0xffb65f,rail:0xbc66ff,sniper:0x86c6ff,rocket:0xff744a,flame:0xff792b,bow:0xffdc76,laser:0xff426b,knife:0xc6eeff,chainsaw:0xffca52,sword:0x68e9ff}[type]);
  const box=(size,pos,mat=dark)=>{const m=new THREE.Mesh(panelGeometry,mat);m.scale.set(...size);m.position.set(...pos);root.add(m);return m;};
  const barrel=(radius,length,pos,mat=metal)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,length,12),mat);m.rotation.x=Math.PI/2;m.position.set(...pos);root.add(m);return m;};
  if(type==='pistol'){
@@ -36,9 +36,14 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   box([.15,.3,.2],[0,-.25,.14]);box([.2,.14,.35],[0,-.11,-.38]);box([.15,.15,.25],[.2,.16,-.05],metal);box([.025,.07,.15],[.285,.17,-.08],color);
   for(const z of[-.8,-.5,-.2])box([.46,.035,.06],[0,.2,z],metal);root.userData.muzzle=[0,.04,-1.12];
  }
+ if(type==='flame'){box([.25,.25,.6],[0,0,-.2]);barrel(.075,.65,[0,.02,-.75]);barrel(.11,.13,[0,.02,-1.1],color);for(const x of[-.2,.2])barrel(.11,.5,[x,-.06,.15],color);box([.12,.25,.15],[0,-.23,.1]);root.userData.muzzle=[0,.02,-1.18];}
+ if(type==='laser'){box([.26,.24,.7],[0,0,-.25]);for(const x of[-.16,.16])box([.05,.06,.75],[x,.04,-.4],color);barrel(.09,.18,[0,0,-.72],color);box([.12,.25,.15],[0,-.22,.04]);root.userData.muzzle=[0,0,-.83];}
+ if(type==='bow'){const points=[];for(let i=0;i<=24;i++){const a=-Math.PI/2+i*Math.PI/24;points.push(new THREE.Vector3(0,Math.sin(a)*.7,-.18-Math.cos(a)*.3));}const limb=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),24,.035,8,false),metal);root.add(limb);const string=new THREE.Line(new THREE.BufferGeometry().setFromPoints([points[0],new THREE.Vector3(0,0,.12),points.at(-1)]),new THREE.LineBasicMaterial({color:0xffdc76}));root.add(string);box([.085,.2,.1],[0,0,-.46],color);barrel(.013,.8,[0,0,-.37],brass);root.userData.muzzle=[0,0,-.8];}
+ if(type==='knife'){box([.09,.12,.32],[0,-.08,.04]);box([.26,.045,.08],[0,-.02,-.16],metal);box([.11,.035,.55],[0,-.02,-.46],metal);const tip=new THREE.Mesh(new THREE.ConeGeometry(.075,.2,3),metal);tip.rotation.x=-Math.PI/2;tip.position.set(0,-.02,-.83);root.add(tip);root.userData.muzzle=[0,-.02,-.94];}
+ if(type==='chainsaw'){box([.33,.29,.44],[0,-.04,.03],color);box([.15,.12,.9],[0,.02,-.62],metal);for(let i=0;i<13;i++)for(const x of[-.1,.1])box([.065,.07,.035],[x,.02,-.2-i*.065],dark);for(const x of[-.22,.22])box([.055,.28,.055],[x,.08,.05]);box([.49,.055,.055],[0,.22,.05],metal);root.userData.muzzle=[0,.02,-1.1];}
  if(type==='sword'){box([.13,.38,.13],[0,0,0]);box([.6,.1,.2],[0,.24,0],metal);box([.28,2.5,.085],[0,1.54,0],metal);box([.035,2.43,.10],[.155,1.53,0],color);box([.2,.12,.2],[0,-.25,0],color);const tip=new THREE.Mesh(new THREE.ConeGeometry(.16,.3,4),metal);tip.position.set(0,2.94,0);root.add(tip);root.userData.grip=[0,0,0];}
 
- if(type!=='sword'){
+ if(['pistol','rapid','shotgun','rail','sniper','rocket'].includes(type)){
   const wide=type==='rapid'?.42:type==='rail'?.32:.22;
   const parts=[[[wide,.055,.28],[0,.17,.02],metal],[[.035,.07,.025],[-wide/2,.07,.16],type==='pistol'?dark:color],[[.035,.07,.025],[wide/2,.07,.16],type==='pistol'?dark:color],[[.1,.045,.12],[0,-.31,.15],metal]];
   if(type==='pistol'){
