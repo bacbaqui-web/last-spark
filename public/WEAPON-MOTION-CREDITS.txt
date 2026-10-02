@@ -1,22 +1,30 @@
 LAST SPARK weapon animation credits
 
-Sword_Dash: Quaternius Universal Animation Library 2 [Standard].
+Sword_Dash, Idle_Rail_Loop, Melee_Hook and OverhandThrow: Quaternius Universal Animation Library 2 [Standard].
 Source: https://quaternius.itch.io/universal-animation-library-2
 License: CC0 1.0 Universal Public Domain Dedication.
 https://creativecommons.org/publicdomain/zero/1.0/
 
-BowIdle01 and BowShot01 Load / Hold / Release (masculine):
+Sword_Idle, Roll, Jump_Start / Loop / Land and pistol aim/shoot poses:
+Quaternius Universal Animation Library [Standard], CC0.
+Source: https://quaternius.com/packs/universalanimationlibrary.html
+
+BowIdle01, BowShot01 Load / Hold / Release and directional Run01 / StrafeRun01 (masculine):
 Human Archer Animations FREE by Kevin Iglesias.
 Source: https://kevdev.itch.io/human-archer-animations-free
 License: Standard Unity Asset Store EULA, as stated by the author at
 https://www.keviniglesias.com/#license
 https://unity.com/legal/as-terms
 Copyright Kevin Iglesias. These animations are not CC0 or covered by
-any general source-code license. The game uses adapted six-joint arm
-samples as an embedded component; no original FBX, model, or complete
+any general source-code license. The game uses adapted first-person arm samples and selected full-body tracks
+retargeted to the game robot as an embedded component; no original FBX, model, or complete
 animation library is included. Do not redistribute the samples as an
 animation asset/library. Obtain the original assets from the author.
 
 Adaptation: head-relative upper-arm, elbow and wrist positions, wrist
 rotations, camera-facing coordinate conversion, first-person robot arms,
 weapon attachment, and gameplay-controlled animation timing.
+
+Third-person adaptation: full-body skeletal tracks, eight directional lower-body
+strides, upper-body weapon layers, root-relative bow retargeting, gameplay-owned
+horizontal translation, action timing, torso aim and physical weapon grip IK.
