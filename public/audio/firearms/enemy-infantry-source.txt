@@ -1,0 +1,4 @@
+User-supplied audio: u_f09vejvoga-gun-shot-350315.mp3
+Applied to infantry gunshots only.
+One shot extracted from 0.132s for 0.9s; high-pass, edge fades, peak limiting and mono OGG for spatial playback.
+This supplied asset is separate from the Free Firearm library license.
