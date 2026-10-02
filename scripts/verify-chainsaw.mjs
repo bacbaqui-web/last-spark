@@ -1,3 +1,4 @@
+import * as MOTION from '../weapon-motion.js';
 import * as VIEW from '../weapon-view.js';
 import * as NAV from '../boss-navigation.js';
 import * as PROGRESS from '../progression.js';
@@ -9,8 +10,9 @@ import * as REAL from '../node_modules/three/build/three.module.js';
 import * as ROBOT from '../robot.js';import * as AI from '../enemy-ai.js';
 import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
 const elements=new Map(),events=new Map();const element=()=>({style:{},textContent:'',innerHTML:'',querySelector:()=>({style:{}}),addEventListener(){},requestPointerLock:async()=>{}});
-const context={VIEW,NAV,PROGRESS,DETAIL,BOSSES,REAL,ROBOT,AI,WM,poseSword,console,Math,performance,innerWidth:1200,innerHeight:800,devicePixelRatio:1,window:{addEventListener(){}},document:{body:{appendChild(){}},createElement:()=>({style:{},remove(){},getContext:()=>null}),getElementById(id){if(!elements.has(id))elements.set(id,element());return elements.get(id)},addEventListener(name,fn){events.set(name,fn)},exitPointerLock(){}},requestAnimationFrame(){}};
+const context={MOTION,VIEW,NAV,PROGRESS,DETAIL,BOSSES,REAL,ROBOT,AI,WM,poseSword,console,Math,performance,innerWidth:1200,innerHeight:800,devicePixelRatio:1,window:{addEventListener(){}},document:{body:{appendChild(){}},createElement:()=>({style:{},remove(){},getContext:()=>null}),getElementById(id){if(!elements.has(id))elements.set(id,element());return elements.get(id)},addEventListener(name,fn){events.set(name,fn)},exitPointerLock(){}},requestAnimationFrame(){}};
 vm.createContext(context);let source=fs.readFileSync('main.js','utf8').replace("import * as THREE from 'three';",`const THREE={...REAL,WebGLRenderer:class{constructor(){this.shadowMap={}}setPixelRatio(){}setSize(){}render(){}}};`);
+source=source.replace("import {createWeaponMotion} from './weapon-motion.js';",'const {createWeaponMotion}=MOTION;');
 source=source.replace("import {poseSword} from './sword-combat.js';",'');
 source=source.replace("import {createWeaponModel} from './weapon-models.js';",'const {createWeaponModel}=WM;');
 source=source.replace("import {createRobot,animateRobot,robotFired,animateDeath,disposeRobot,swordFired,createSpider} from './robot.js';",'const {createRobot,animateRobot,robotFired,animateDeath,disposeRobot,swordFired,createSpider}=ROBOT;').replace("import {attachEnemyAI,updateEnemyAI,steerEnemy,chooseCover,coverRoute} from './enemy-ai.js';",'const {attachEnemyAI,updateEnemyAI,steerEnemy,chooseCover,coverRoute}=AI;');
