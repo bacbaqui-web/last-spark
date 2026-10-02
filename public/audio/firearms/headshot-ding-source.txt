@@ -1,0 +1,4 @@
+User-supplied audio: cartoon_music-battle-game-headshot-ding-489769.mp3
+Original MP3 plays once per headshot firing event; not used for missile lock-on.
+Original playback speed, priority feedback sound.
+This supplied asset is separate from the Free Firearm library license.
