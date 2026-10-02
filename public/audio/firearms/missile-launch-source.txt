@@ -1,0 +1,4 @@
+User-supplied audio: 미사일발사음.wav
+Entire recording used for player tracking missile launches, boss direct missile launches and aerial barrage launch events.
+Original speed, mono OGG conversion for spatial playback, metadata removed.
+This supplied asset is separate from the Free Firearm library license.
