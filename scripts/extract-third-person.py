@@ -17,6 +17,6 @@ def extract(folder,keep):
    tracks.append({'name':name+'.'+{'translation':'position','rotation':'quaternion'}[path],'type':'quaternion' if path=='rotation' else 'vector','times':times,'values':val})
   out[a['name']]={'duration':max(t['times'][-1] for t in tracks),'tracks':tracks}
 extract('animations',{'Sword_Idle','Roll','Jump_Start','Jump_Loop','Jump_Land','Punch_Jab','Punch_Cross','Pistol_Aim_Neutral','Pistol_Shoot','OverhandThrow'})
-extract('ual2',{'Sword_Dash','Melee_Hook','OverhandThrow','Idle_Rail_Loop','Walk_Carry_Loop'})
+extract('ual2',{'Sword_Dash','Sword_Regular_A','Melee_Hook','OverhandThrow','Idle_Rail_Loop','Walk_Carry_Loop'})
 pathlib.Path('third-person-motion-data.json').write_text(json.dumps(out,separators=(',',':')))
 print({k:v['duration'] for k,v in out.items()})

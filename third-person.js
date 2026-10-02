@@ -23,9 +23,11 @@ export function createThirdPersonView(avatar,types){
   model.position.set(0,0,0);model.quaternion.identity();
   if(weapon==='knife')model.quaternion.copy(knifeMount);
   else if(weapon==='bow'){
-   // The full-body archer pose provides both hands; attach the bow grip to the left.
+   // Keep both grip and nock on the aim line; retargeted wrist trajectories
+   // have different proportions and otherwise turn the displayed arrow sideways.
+   if(bowDrawing&&rollPhase<0){const grip=position.clone().add(v(-.13,-.24,-.63).applyQuaternion(heading));const leftPole=avatar.root.localToWorld(v(.5,1.45,.2));armIK(avatar.arms[0],grip,leftPole);avatar.root.updateMatrixWorld(true);const actualGrip=avatar.arms[0].hand.getWorldPosition(new THREE.Vector3()),draw=.2+.36*Math.min(1,bowCharge/2.2),nock=actualGrip.clone().add(v(0,0,draw).applyQuaternion(heading)),rightPole=position.clone().add(v(.48,-.18,.16).applyQuaternion(heading));armIK(avatar.arms[1],nock,rightPole);avatar.root.updateMatrixWorld(true);}
    const hand=avatar.arms[0].hand,desired=heading.clone();model.quaternion.copy(hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(desired));model.position.copy(v(0,0,.43*.8/1.17).applyQuaternion(model.quaternion));model.updateWorldMatrix(true,true);
-   const pull=bowDrawing?model.worldToLocal(avatar.arms[1].hand.getWorldPosition(new THREE.Vector3())):v(0,0,.14),pos=model.userData.string.geometry.attributes.position;pos.setXYZ(1,pull.x,pull.y,pull.z);pos.needsUpdate=true;model.userData.string.geometry.computeBoundingSphere();model.userData.nockedArrow.visible=bowDrawing;model.userData.nockedArrow.position.copy(pull).sub(v(0,0,.14));model.userData.nockedArrow.quaternion.setFromUnitVectors(v(0,0,-1),v(0,0,-.43).sub(pull).normalize());for(const limb of model.userData.limbs)limb.rotation.x=limb.userData.side*Math.min(1,bowCharge/2.2)*.08;
+   const pull=bowDrawing?model.worldToLocal(avatar.arms[1].hand.getWorldPosition(new THREE.Vector3())):v(0,0,.14),pos=model.userData.string.geometry.attributes.position;pull.x=0;pull.y=0;pos.setXYZ(1,pull.x,pull.y,pull.z);pos.needsUpdate=true;model.userData.string.geometry.computeBoundingSphere();model.userData.nockedArrow.visible=bowDrawing;model.userData.nockedArrow.position.copy(pull).sub(v(0,0,.14));model.userData.nockedArrow.quaternion.identity();for(const limb of model.userData.limbs)limb.rotation.x=limb.userData.side*Math.min(1,bowCharge/2.2)*.08;
   }else{
    const hand=avatar.arms[1].hand;
    if(!result.attack&&throwPhase<0){

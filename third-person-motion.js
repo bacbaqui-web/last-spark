@@ -20,7 +20,7 @@ export function createThirdPersonMotion(avatar){
   if(speed>.2&&grounded){const local=velocity.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-yaw),angle=Math.atan2(local.x,-local.z),directions=['Forward','ForwardRight','Right','BackwardRight','Backward','BackwardLeft','Left','ForwardLeft'],index=(Math.round(angle/(Math.PI/4))+8)%8,clip='Strafe'+directions[index];apply(clip,(strideClock/clips[clip].duration)%1,n=>lower.test(n));bodyClip+=' + '+clip;}
   if(!grounded){const clip=airAge<.15?'Jump_Start':'Jump_Loop';apply(clip,airAge<.15?airAge/.15:(clock%clips.Jump_Loop.duration)/clips.Jump_Loop.duration,n=>lower.test(n));bodyClip+=' + '+clip;}
   else if(landAge<.16){apply('Jump_Land',landAge/.16,n=>lower.test(n),1-landAge/.16);bodyClip+=' + Jump_Land';}
-  if(knifePhase>=0){const p=knifePhase<.12?knifePhase/.12*.07:knifePhase<.55?.07+(knifePhase-.12)/.43*.19:.26+(knifePhase-.55)/.45*.74;apply('Sword_Dash',p);bodyClip='Sword_Dash';}
+  if(knifePhase>=0){const p=knifePhase<.12?knifePhase/.12*.07:knifePhase<.55?.07+(knifePhase-.12)/.43*.19:.26+(knifePhase-.55)/.45*.74;apply('Sword_Dash',p);const swing=THREE.MathUtils.clamp((knifePhase-.12)/.42,0,1);const snap=swing*swing*(3-2*swing);apply('Sword_Regular_A',snap,n=>upper.test(n));bones.spine_01.rotateY(Math.sin(knifePhase*Math.PI)*(-.35+.95*snap));bones.spine_03.rotateZ(Math.sin(knifePhase*Math.PI)*.12);bodyClip='Sword_Dash';}
   else if(rollPhase>=0){apply('Roll',rollPhase);bodyClip='Roll';}
   else if(meleePhase>=0){apply('Melee_Hook',meleePhase);bodyClip='Melee_Hook';}
   else if(throwPhase>=0){apply('OverhandThrow',throwPhase,n=>upper.test(n));bodyClip='OverhandThrow';}

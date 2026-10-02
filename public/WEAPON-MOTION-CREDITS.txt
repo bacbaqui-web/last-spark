@@ -1,6 +1,6 @@
 LAST SPARK weapon animation credits
 
-Sword_Dash, Idle_Rail_Loop, Melee_Hook and OverhandThrow: Quaternius Universal Animation Library 2 [Standard].
+Sword_Dash, Sword_Regular_A, Idle_Rail_Loop, Melee_Hook and OverhandThrow: Quaternius Universal Animation Library 2 [Standard].
 Source: https://quaternius.itch.io/universal-animation-library-2
 License: CC0 1.0 Universal Public Domain Dedication.
 https://creativecommons.org/publicdomain/zero/1.0/
