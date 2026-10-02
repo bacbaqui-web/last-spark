@@ -1,0 +1,4 @@
+User-supplied audio: 미니건마지막.wav
+Complete recording plays once when minigun firing stops on left mouse release, weapon switch, ammo depletion or focus loss.
+Converted to mono OGG for spatial playback.
+This supplied asset is separate from the Free Firearm library license.
