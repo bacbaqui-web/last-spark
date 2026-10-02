@@ -1,0 +1,4 @@
+User-supplied audio: freesound_community-dropping-bag-of-bread-88421.mp3
+Original MP3 plays once per successful body-hit firing event.
+Headshots use separate headshot feedback; misses do not play this sound.
+This supplied asset is separate from the Free Firearm library license.
