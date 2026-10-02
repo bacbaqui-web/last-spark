@@ -1,4 +1,4 @@
 User-supplied audio: freesound_community-clean-machine-gun-burst-98224.mp3
-Applied only to the player basic assault rifle.
-Derived from final shot (1.345s), with 65Hz high-pass, short edge fades, peak limiting and mono OGG encoding.
+The complete recording plays once per basic assault rifle bullet, at original playback speed.
+Converted to mono OGG for spatial playback; no single-shot extraction.
 This supplied asset is separate from the Free Firearm library license.
