@@ -9,21 +9,15 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
  const box=(size,pos,mat=dark)=>{const m=new THREE.Mesh(panelGeometry,mat);m.scale.set(...size);m.position.set(...pos);root.add(m);return m;};
  const barrel=(radius,length,pos,mat=metal)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,length,12),mat);m.rotation.x=Math.PI/2;m.position.set(...pos);root.add(m);return m;};
  if(type==='pistol'){
-  // Belt-fed light machine gun: long receiver, vented shroud, stock and ammunition box.
-  box([.27,.26,.65],[0,.035,-.13],metal);
-  box([.23,.075,.57],[0,.19,-.17]);
-  box([.23,.19,.54],[0,.035,-.7]);
-  barrel(.05,.54,[0,.04,-1.12]);
-  barrel(.076,.16,[0,.04,-1.45]);barrel(.049,.014,[0,.04,-1.537],dark);
-  barrel(.027,.6,[0,-.055,-.92],dark);
-  const stock=box([.19,.22,.48],[0,-.015,.42]);stock.rotation.x=-.08;
-  box([.23,.3,.065],[0,-.025,.69]);
-  const grip=box([.12,.3,.15],[0,-.23,.13]);grip.rotation.x=-.2;
-  box([.38,.34,.37],[-.19,-.26,-.18]);box([.4,.065,.39],[-.19,-.075,-.18],metal);
-  box([.12,.035,.18],[0,.255,.11]);
-  for(const x of[-.065,.065])box([.025,.075,.15],[x,.225,.11]);
-  box([.022,.075,.025],[0,.195,-1.19],metal);
-  root.userData.muzzle=[0,.04,-1.55];
+  box([.20,.20,.53],[0,.025,-.1]);box([.18,.075,.48],[0,.16,-.13],metal);
+  box([.18,.18,.48],[0,.015,-.6]);barrel(.035,.42,[0,.025,-1.01]);barrel(.055,.105,[0,.025,-1.26]);barrel(.032,.012,[0,.025,-1.319],dark);
+  barrel(.065,.30,[0,.01,.30],metal);box([.15,.20,.27],[0,-.035,.47]);box([.18,.27,.055],[0,-.055,.61]);box([.13,.055,.22],[0,.08,.48]);
+  const grip=box([.10,.25,.14],[0,-.19,.12]);grip.rotation.x=-.25;
+  const magazine=box([.13,.31,.22],[0,-.24,-.18],metal);magazine.rotation.x=.17;box([.145,.045,.22],[0,-.4,-.205]);
+  box([.12,.027,.20],[0,-.14,.045],metal);box([.018,.10,.025],[.065,-.18,.15],metal);
+  for(const x of[-.047,.047])box([.018,.085,.09],[x,.21,.12]);box([.10,.02,.10],[0,.255,.12]);
+  box([.018,.12,.02],[0,.14,-.99]);box([.10,.026,.045],[0,.09,-.99]);
+  root.userData.muzzle=[0,.025,-1.33];
  }
  if(type==='rapid'){box([.43,.38,.58],[0,-.01,.03]);barrel(.26,.4,[0,0,-.3]);const rotor=new THREE.Group();rotor.position.set(0,0,-.48);root.add(rotor);for(let i=0;i<6;i++){const a=i/6*Math.PI*2,m=new THREE.Mesh(new THREE.CylinderGeometry(.042,.042,.85,10),metal);m.rotation.x=Math.PI/2;m.position.set(Math.cos(a)*.16,Math.sin(a)*.16,-.24);rotor.add(m);}for(const z of[.02,-.43,-.64]){const ring=new THREE.Mesh(new THREE.TorusGeometry(.21,.045,6,16),dark);ring.position.z=z;rotor.add(ring);}box([.3,.42,.4],[-.29,-.12,.1],metal);for(let i=0;i<5;i++)box([.07,.1,.07],[-.24+i*.055,.22,.2],color);box([.28,.09,.26],[0,.27,.02]);box([.09,.3,.09],[-.19,.16,.07]);box([.09,.3,.09],[.19,.16,.07]);root.userData.rotor=rotor;root.userData.muzzle=[0,0,-1.16];}
  if(type==='shotgun'){for(const x of[-.065,.065])barrel(.057,.92,[x,.04,-.36]);box([.24,.18,.32],[0,-.04,.19]);box([.21,.15,.33],[0,-.09,-.44],color);box([.13,.27,.14],[0,-.18,.23]);root.userData.muzzle=[0,.04,-.84];}
@@ -46,15 +40,13 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
 
  if(type!=='sword'){
   const wide=type==='rapid'?.42:type==='rail'?.32:.22;
-  const parts=[[[wide,.055,.28],[0,.17,.02],metal],[[.035,.07,.025],[-wide/2,.07,.16],color],[[.035,.07,.025],[wide/2,.07,.16],color],[[.1,.045,.12],[0,-.31,.15],metal]];
+  const parts=[[[wide,.055,.28],[0,.17,.02],metal],[[.035,.07,.025],[-wide/2,.07,.16],type==='pistol'?dark:color],[[.035,.07,.025],[wide/2,.07,.16],type==='pistol'?dark:color],[[.1,.045,.12],[0,-.31,.15],metal]];
   if(type==='pistol'){
-   for(let i=0;i<10;i++)parts.push([[.29,.025,.024],[0,.24,.1-i*.057],dark]);
-   for(let i=0;i<7;i++)for(const x of[-.117,.117])parts.push([[.008,.065,.043],[x,.06,-.5-i*.066],metal]);
-   parts.push([[.03,.035,.28],[.147,.1,-.13],dark],[[.065,.04,.11],[.15,.06,.055],metal],[[.17,.018,.23],[.02,-.15,.13],metal],[[.018,.13,.035],[.098,-.205,.25],metal]);
-   for(let i=0;i<6;i++){const x=-.17-i*.036,y=.12-i*.027;barrel(.018,.14,[x,y,-.07],brass);const tip=new THREE.Mesh(new THREE.ConeGeometry(.018,.04,8),brass);tip.rotation.x=-Math.PI/2;tip.position.set(x,y,-.16);root.add(tip);}
-   for(let i=0;i<3;i++)parts.push([[.011,.23,.023],[-.385,-.25,-.3+i*.1],metal]);
-   for(const x of[-1,1]){const leg=box([.026,.34,.027],[x*.105,-.24,-1.08],metal);leg.rotation.z=x*.38;parts.push([[.07,.025,.085],[x*.17,-.4,-1.08],dark]);}
-   for(const x of[-.09,.09])for(const z of[-.36,.08])parts.push([[.018,.025,.025],[x,.176,z],brass]);
+   for(let i=0;i<12;i++)parts.push([[.19,.024,.02],[0,.13,.04-i*.06],metal]);
+   for(const x of[-.094,.094])for(let i=0;i<5;i++)parts.push([[.009,.045,.049],[x,.02,-.44-i*.075],metal]);
+   parts.push([[.023,.045,.16],[.11,.07,-.07],metal],[[.035,.025,.11],[.13,.10,-.03],dark],[[.05,.055,.05],[.12,.055,.10],dark]);
+   for(const x of[-.068,.068])for(let i=0;i<3;i++)parts.push([[.008,.22,.012],[x,-.25,-.24+i*.055],dark]);
+   parts.push([[.10,.025,.04],[0,.18,.18],dark],[[.025,.05,.05],[-.115,-.03,.025],metal]);
   }
   if(type==='shotgun'){for(let i=0;i<6;i++)parts.push([[.24,.028,.025],[0,-.04,-.32-i*.045],dark]);parts.push([[.20,.13,.33],[0,.01,.37],metal],[[.18,.24,.045],[0,-.03,.55],dark],[[.028,.085,.035],[0,.12,-.72],color]);for(const x of[-.065,.065]){barrel(.066,.05,[x,.04,-.8],metal);barrel(.044,.012,[x,.04,-.83],dark);}}
   if(type==='rapid'){for(let i=0;i<8;i++)parts.push([[.07,.1,.065],[-.39,-.2+i*.055,.1],metal]);for(let i=0;i<4;i++)parts.push([[.20,.025,.05],[.08,-.04-i*.06,.33],metal]);parts.push([[.27,.08,.32],[0,.29,.05],metal],[[.12,.14,.24],[.31,-.02,.12],color]);}
