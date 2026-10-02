@@ -1,0 +1,4 @@
+User-supplied audio: flutie8211-gun-shot-and-echo-549910.mp3
+Applied to enemy sniper shots.
+First 2.4 seconds preserve the gunshot and echo; low-frequency cleanup, tail fade and peak limiting; mono OGG for spatial playback.
+This supplied asset is separate from the Free Firearm library license.
