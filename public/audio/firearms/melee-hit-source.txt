@@ -1,0 +1,4 @@
+User-supplied audio: universfield-punch-04-383965.mp3
+Complete recording plays once on a successful player melee hit, not on a miss or blocked strike.
+Original speed, mono OGG conversion for spatial playback, metadata removed.
+This supplied asset is separate from the Free Firearm library license.
