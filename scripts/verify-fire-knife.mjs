@@ -1,3 +1,4 @@
+import * as MOVE from '../player-movement.js';
 import * as THIRD from '../third-person.js';
 import * as MOTION from '../weapon-motion.js';
 import * as VIEW from '../weapon-view.js';
@@ -11,8 +12,9 @@ import * as REAL from '../node_modules/three/build/three.module.js';
 import * as ROBOT from '../robot.js';import * as AI from '../enemy-ai.js';
 import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
 const elements=new Map(),events=new Map();const element=()=>({style:{},textContent:'',innerHTML:'',querySelector:()=>({style:{}}),addEventListener(){},requestPointerLock:async()=>{}});
-const context={THIRD,MOTION,VIEW,NAV,PROGRESS,DETAIL,BOSSES,REAL,ROBOT,AI,WM,poseSword,console,Math,performance,innerWidth:1200,innerHeight:800,devicePixelRatio:1,window:{addEventListener(){}},document:{body:{appendChild(){}},createElement:()=>({style:{},remove(){},getContext:()=>null}),getElementById(id){if(!elements.has(id))elements.set(id,element());return elements.get(id)},addEventListener(name,fn){events.set(name,fn)},exitPointerLock(){}},requestAnimationFrame(){}};
+const context={MOVE,THIRD,MOTION,VIEW,NAV,PROGRESS,DETAIL,BOSSES,REAL,ROBOT,AI,WM,poseSword,console,Math,performance,innerWidth:1200,innerHeight:800,devicePixelRatio:1,window:{addEventListener(){}},document:{body:{appendChild(){}},createElement:()=>({style:{},remove(){},getContext:()=>null}),getElementById(id){if(!elements.has(id))elements.set(id,element());return elements.get(id)},addEventListener(name,fn){events.set(name,fn)},exitPointerLock(){}},requestAnimationFrame(){}};
 vm.createContext(context);let source=fs.readFileSync('main.js','utf8').replace("import * as THREE from 'three';",`const THREE={...REAL,WebGLRenderer:class{constructor(){this.shadowMap={}}setPixelRatio(){}setSize(){}render(){}}};`);
+source=source.replace("import {movePlayerWithSlide} from './player-movement.js';",'const {movePlayerWithSlide}=MOVE;');
 source=source.replace("import {createThirdPersonView} from './third-person.js';",'const {createThirdPersonView}=THIRD;');
 source=source.replace("import {createWeaponMotion} from './weapon-motion.js';",'const {createWeaponMotion}=MOTION;');
 source=source.replace("import {poseSword} from './sword-combat.js';",'');
@@ -35,5 +37,6 @@ clean();weapon='knife';ammo=10;player.pos.y=5;player.ground=false;player.vel.y=3
 clean();weapon='knife';ammo=10;shoot();assert(knifeAction.velocity.length()===0,'no target means stationary slash');step(60);assert(Math.abs(player.pos.z-30)<.01,'no uncontrolled dash without target');
 clean();weapon='knife';ammo=10;player.pos.set(13,1.7,11);camera.position.copy(player.pos);const behind=enemy(13,0);shoot();step(60);assert(player.pos.z>9,'wall blocks target dash');assert(behind.hp===10000,'slash cannot hit through wall');
 clean();selectedWeapons=['knife','flame'];equippedSlot=1;weapon='knife';ammo=1;slotAmmo=[1,0];shoot();assert(weapon==='knife'&&ammo===0,'last durability finishes attack');step(60);assert(weapon==='pistol'&&slotAmmo[0]===0,'fallback after swing');
-clean();weapon='knife';ammo=10;shoot();equipSlot(0);assert(!knifeAction&&dashTime===0,'switch cancels knife movement');weapon='flame';ammo=10;shoot();reset(false);assert(flamePackets.length===0&&firePatches.length===0&&enemyBurns.size===0&&!knifeAction,'reset cleanup');console.log('PASS: flame travel/contact/DOT/refresh/expiration/ground/wall; knife targeted dash/area/one hit/air velocity/wall/durability/cancel/reset/real motion');`;
+clean();weapon='knife';ammo=10;shoot();equipSlot(0);assert(!knifeAction&&dashTime===0,'switch cancels knife movement');weapon='flame';ammo=10;shoot();reset(false);assert(flamePackets.length===0&&firePatches.length===0&&enemyBurns.size===0&&!knifeAction,'reset cleanup');clean();player.pos.set(26,1.7,12);camera.position.copy(player.pos);keys.add('KeyD');keys.add('KeyW');evade();for(let i=0;i<16;i++){update(.016);assert(platforms.every(p=>!(player.pos.x>p.x-p.w/2-.35&&player.pos.x<p.x+p.w/2+.35&&player.pos.z>p.z-p.d/2-.35&&player.pos.z<p.z+p.d/2+.35&&player.pos.y>(p.base||0)-.2&&player.pos.y<p.h+1.7)),'actual dash never embeds');}assert(player.pos.x>32&&player.pos.z>10.35,'actual evade slides past the arena wall at pace');keys.clear();keys.add('KeyD');const away=player.pos.x;for(let i=0;i<10;i++)update(.016);assert(player.pos.x>away+1,'walking away works immediately after wall dash');
+console.log('PASS: flame travel/contact/DOT/refresh/expiration/ground/wall; knife targeted dash/area/one hit/air velocity/wall/durability/cancel/reset/real motion');`;
 context.assert=(ok,label)=>assert.ok(ok,label);vm.runInContext(source.replaceAll('import.meta.env.DEV','false'),context);
