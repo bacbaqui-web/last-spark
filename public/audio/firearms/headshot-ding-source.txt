@@ -1,4 +1,5 @@
-User-supplied audio: cartoon_music-battle-game-headshot-ding-489769.mp3
-Original MP3 plays once per headshot firing event; not used for missile lock-on.
-Original playback speed, priority feedback sound.
+User-supplied audio: cyberwave-orchestra-fantasy-game-sword-cut-sound-effect-get-more-on-my-patreon-339824.mp3
+Runtime file: headshot-cut-339824.mp3
+Entire original clip plays once per headshot firing event at original speed.
+Previous headshot-ding.mp3 is retained as an inactive source.
 This supplied asset is separate from the Free Firearm library license.
