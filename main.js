@@ -42,7 +42,7 @@ for(const [w,h,d,x,y,z,mat]of [[.25,.23,.27,0,0,-.09,gloveMat],[.25,.085,.07,0,.
 
 const weapons={rocket:{name:'타이탄 추적미사일',damage:1800,rate:1,pellets:1,spread:0,color:0xff744a,kick:.3,ammo:3},sniper:{name:'저격총 · 4×',damage:220,rate:1.05,pellets:1,spread:.001,color:0x86c6ff,kick:.18,ammo:12,range:140,headshotMultiplier:3},pistol:{name:'기관총',damage:16,rate:.1,pellets:1,spread:.004,color:0xb9f56b,kick:.035},rapid:{name:'미니건',damage:65,rate:.045,pellets:1,spread:.045,color:0x68e9ff,kick:.13,ammo:240},shotgun:{name:'산탄총',damage:30,rate:.62,pellets:9,spread:.13,color:0xffb65f,kick:.085},rail:{name:'광자포',damage:100,damageMin:100,damageMax:800,rate:.7,pellets:1,spread:0,color:0xbc66ff,kick:.075,ammo:16,projectile:true}};weapons.shotgun.ammo=24;
 Object.assign(weapons,{
- flame:{name:'화염방사기',damage:12,rate:.1,color:0xff792b,kick:.008,ammo:180,range:8},
+ flame:{name:'화염방사기',damage:220,rate:.1,color:0xff792b,kick:.008,ammo:180,range:8},
  bow:{name:'활',damage:480,rate:.45,color:0xffdc76,kick:.025,ammo:30,range:90},
  laser:{name:'레이저',damage:36,rate:1,color:0xff426b,kick:0,ammo:60,range:90},
  knife:{name:'칼',damage:90,rate:.4,color:0xc6eeff,kick:.06,ammo:60,range:3.2},
@@ -52,7 +52,7 @@ let player={pos:new THREE.Vector3(0,1.7,14),vel:new THREE.Vector3(),hp:100,jumps
 const specialTypes=['rapid','shotgun','sniper','rail','rocket','flame','bow','laser','knife','chainsaw'],slotColors=[0x56dfff,0xffac52],ammoPickupAmounts={rapid:80,shotgun:8,sniper:4,rail:5,rocket:1,flame:60,bow:10,laser:20,knife:20,chainsaw:20};let selectedWeapons=[],slotAmmo=[0,0],equippedSlot=0,loadoutConfirmed=false;const weaponImages={};
 const weaponInfo={rapid:{description:'압도적인 연사와 강한 반동. 탄약을 빠르게 소모합니다.',damage:'65 / 발'},shotgun:{description:'9발의 산탄을 동시에 발사. 가까울수록 강력합니다.',damage:'30 × 9 · 최대 270'},sniper:{description:'우클릭 4배율 스코프. 헤드샷 3배로 약점을 정확히 저격합니다.',damage:'220 · 헤드샷 660'},rail:{description:'버튼을 누르고 충전. 큰 보라색 탄환으로 광역 공격합니다.',damage:'188~800 · 충전 비례'},rocket:{description:'최대 3발 보관. 그냥 쏘면 직진, 우클릭 1초 락온 후 쏘면 확정 추적합니다.',damage:'1,800 · 반경 10m'}};
 Object.assign(weaponInfo,{
- flame:{description:'불꽃을 분사해 적을 3초간 태웁니다. 바닥·벽의 불은 4초간 남습니다.',damage:'연소 24 / 초'},
+ flame:{description:'불꽃을 분사해 적을 3초간 태웁니다. 바닥·벽의 불은 4초간 남습니다.',damage:'연소 220 / 초'},
  bow:{description:'누르고 시위를 당긴 뒤 놓아 발사. 2.2초 완충 시 빠르고 곧게 날아갑니다.',damage:'120~480 · 약점 2배'},
  laser:{description:'연속 광선 · 초당 탄약 1. 1초마다 원형 장치 점등, 3초 유지하면 최대 화력.',damage:'12 → 18 → 26 → 36 / 초'},
  knife:{description:'좌클릭/C 3타 돌진 베기 · Shift+공격 일섬 · 공중 공격 내려찍기. 주변 적도 함께 벱니다.',damage:'90 / 110 / 145 · 특수 140~160'},
@@ -167,7 +167,7 @@ function updateFire(dt){
   if(target||wall||p.life<=0||p.travel>=8){clearItem(p.m);flamePackets.splice(i,1);}
  }
  for(let i=firePatches.length-1;i>=0;i--){const p=firePatches[i];p.life-=dt;p.age+=dt;for(const [j,m]of p.m.children.entries())flickerFire(m,p.age+j,.7*Math.min(1,p.life*2));if(p.life<=0){clearItem(p.m);firePatches.splice(i,1);continue;}for(const e of enemies){if(e.hp<=0)continue;const center=spikeCenter(e),offset=center.clone().sub(p.pos),distance=offset.length();if(distance>2.2+(e.boss?.6:0))continue;ray.set(p.pos,offset.normalize());ray.far=Math.max(0,distance-.1);if(!ray.intersectObjects(worldObstacles,false).length)igniteEnemy(e);}}
- for(const [e,b]of enemyBurns){if(e.hp<=0||!enemies.includes(e)){clearItem(b.m);enemyBurns.delete(e);continue;}const elapsed=Math.min(dt,b.life);b.life-=dt;b.age+=dt;b.tick+=elapsed;b.m.position.copy(spikeCenter(e)).add(new THREE.Vector3(0,-.5,0));flickerFire(b.m,b.age,.9);while(b.tick>=.25){b.tick-=.25;dealEnemyDamage(e,6,spikeCenter(e));hitTime=.1;}if(b.life<=0){clearItem(b.m);enemyBurns.delete(e);}}
+ for(const [e,b]of enemyBurns){if(e.hp<=0||!enemies.includes(e)){clearItem(b.m);enemyBurns.delete(e);continue;}const elapsed=Math.min(dt,b.life);b.life-=dt;b.age+=dt;b.tick+=elapsed;b.m.position.copy(spikeCenter(e)).add(new THREE.Vector3(0,-.5,0));flickerFire(b.m,b.age,.9);while(b.tick>=.25-1e-8){b.tick=Math.max(0,b.tick-.25);dealEnemyDamage(e,weapons.flame.damage*.25*progression.player.attackRate,spikeCenter(e));hitTime=.1;}if(b.life<=1e-8){clearItem(b.m);enemyBurns.delete(e);}}
 }
 function clearFire(){for(const arr of [flamePackets,firePatches]){for(const p of arr)clearItem(p.m);arr.length=0;}for(const b of enemyBurns.values())clearItem(b.m);enemyBurns.clear();}
 
