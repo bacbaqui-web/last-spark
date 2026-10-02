@@ -28,3 +28,18 @@ weapon attachment, and gameplay-controlled animation timing.
 Third-person adaptation: full-body skeletal tracks, eight directional lower-body
 strides, upper-body weapon layers, root-relative bow retargeting, gameplay-owned
 horizontal translation, action timing, torso aim and physical weapon grip IK.
+
+TPSAimIdle / Walk / Up / Down / Shoot, TPSStart / Stop Walk / Run, TPSIdle / Walk / Run:
+ThirdPersonShooter-AnimationSets by ZenXChaos.
+Source: https://github.com/ZenXChaos/ThirdPersonShooter-AnimationSets
+License: Unlicense. Full notice: TPS-ANIMATION-LICENSE.txt.
+Selected legacy FBX animations converted with Godot FBX2glTF 0.13.1, then
+retargeted to the game skeleton. Horizontal root movement is gameplay-owned.
+
+M2MBowIdle / Load / Hold / Release and M2MSwordSlash:
+Mesh2Motion animation assets, CC0 1.0 Universal.
+Source: https://github.com/Mesh2Motion/mesh2motion-app
+License: https://github.com/Mesh2Motion/mesh2motion-app/blob/main/LICENSE-CC0.MD
+Bow clips: Bow, Bow Pull Back, Bow Pull Hold, Bow Release (human-addon-animations).
+Sword clip: Sword_Regular_C (human-base-animations; Quaternius animation content).
+Retargeted whole-body tracks; bow grip IK aligns hands, string and arrow to aim.

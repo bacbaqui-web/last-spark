@@ -592,3 +592,12 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### 활 조준선·칼 베기 강조 (2026-10-03)
 
 3인칭 활을 당길 때 양손을 조준선에 맞추고 시위와 화살의 측면 틀어짐을 제거했습니다. 좌우 회전·상하 조준·충전량별로 화면 속 화살의 방향과 조준 방향이 일치하는지 검사합니다. 칼은 Quaternius의 `Sword_Regular_A` 상체 베기를 돌진 전신 자세에 연결하고, 빠른 베기와 몸통 비틀기·기울기로 동작을 강조했습니다. 피해·돌진 거리와 1인칭 모션은 유지합니다.
+
+### 외부 TPS 조준·이동 및 활·칼 전신 모션 적용 (2026-10-03)
+
+- ZenXChaos ThirdPersonShooter-AnimationSets의 Unlicense 조준 대기·조준 보행·상하 조준과 달리기 시작/정지 모션을 로봇 골격으로 변환했습니다. 권총·산탄총·저격총·레이저에 적용하며 총 손잡이 보정이 원본 오른팔 자세를 전부 덮어쓰지 않도록 줄였습니다.
+- Mesh2Motion의 CC0 활 대기·당기기·유지·발사 모션으로 3인칭 활 전신 동작을 교체했습니다. 양손·시위·화살 조준선 보정은 유지합니다. 칼은 해당 배포본의 Quaternius `Sword_Regular_C` 전신 베기를 사용하며, 돌진 준비 뒤 빠른 횡베기로 이어집니다. 서로 다른 상·하체 공격 및 추가 몸통 비틀기를 섞던 부분을 제거했습니다.
+- 이동 방향 사이를 연속 보간하고 이동 시작/정지를 짧게 연결합니다. 나머지 방향 보행은 기존 8방향 클립, 구르기·점프·무거운 무기 자세는 기존 모션을 사용합니다. 1인칭 동작 및 공격력·탄약·돌진 거리·충돌 규칙은 유지합니다.
+- 검증: 전체 무기·시점·이동 회귀, 새 클립 연결·시작/정지 전환·방향 전환·활 조준/접지 검사, 슬롯·보급 검사와 프로덕션 빌드. 브라우저 전신 미리보기에서 조준 이동·활 완충·칼 베기를 확인했습니다.
+
+추가 모션 재생성: ZenXChaos 원본을 `work/tps-source/ThirdPersonShooter-AnimationSets-master`에 두고, Godot FBX2glTF 0.13.1의 `-b -i <FBX> -o work/tps-source/<이름>.glb`로 변환합니다. 대상 이름은 `scripts/retarget-tps-motion.py`의 `files` 목록을 참고합니다. Mesh2Motion `static/animations/human-addon-animations.glb`, `human-base-animations.glb`를 `work/mesh2motion`에 둔 뒤 프로젝트 루트에서 Blender `-b -t 2 --python scripts/retarget-tps-motion.py`를 실행합니다. 원본 라이브러리는 저장소에 포함하지 않으며 이용 조건은 `public/WEAPON-MOTION-CREDITS.txt`에 기록했습니다.

@@ -34,7 +34,7 @@ export function createThirdPersonView(avatar,types){
     // Grip correction is layered over the source chest/shoulder pose. Lowered heavy
     // weapons and raised shoulder weapons use different anchors.
     const heavy=['rapid','flame','chainsaw','rail'].includes(weapon),reach=weapon==='chainsaw'?chainsawBlend*.15:0;
-    const anchor=position.clone().add(v(.18,heavy?-.5:-.32,-.38-reach).applyQuaternion(heading));
+    const canonical=position.clone().add(v(.18,heavy?-.5:-.32,-.38-reach).applyQuaternion(heading)),anchor=heavy?canonical:hand.getWorldPosition(new THREE.Vector3()).lerp(canonical,.25);
     if(firing&&flash&&!['laser','chainsaw','flame'].includes(weapon))anchor.add(v(0,0,.025).applyQuaternion(heading));
     const pole=avatar.root.localToWorld(v(-.45,1.1,.05));armIK(avatar.arms[1],anchor,pole);
     hand.quaternion.copy(hand.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(heading));hand.updateWorldMatrix(false,true);
