@@ -1,0 +1,4 @@
+User-supplied audio: freesound_community-gun-shots-from-a-distance-5-96388.mp3
+Complete recording plays once per player sniper rifle shot at original speed.
+Converted to mono OGG for spatial playback; metadata removed.
+This supplied asset is separate from the Free Firearm library license.
