@@ -47,3 +47,5 @@
 .gameOverPanel{scrollbar-width:thin;scrollbar-color:#597074 transparent}.gameOverPanel::-webkit-scrollbar{width:5px}.gameOverPanel::-webkit-scrollbar-thumb{background:#597074;border-radius:8px}#saveRecord[hidden]{display:none}
 
 #sharedRanking[hidden]{display:none}#savedRecords li{grid-template-columns:1fr}
+
+.motionSettingsLink{display:block;margin-top:18px;color:#c7dfdc;font-size:14px;text-decoration:none}.motionSettingsLink:hover{text-decoration:underline}

@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+const store=new Map(),events=new EventTarget();globalThis.localStorage={getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)};globalThis.addEventListener=events.addEventListener.bind(events);globalThis.dispatchEvent=events.dispatchEvent.bind(events);
+const M=await import('../motion-settings.js');
+const bone=new THREE.Bone();bone.name='spine_03';const root=new THREE.Group();root.add(bone);const avatar={root,bones:[bone]},model=new THREE.Group();bone.add(model);const models={knife:model};
+const identity={p:[0,1,0],q:[0,0,0,1],s:[1,1,1]},turned={p:[1,2,0],q:new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI/2).toArray(),s:[2,1,1]};
+const clip={duration:.66,loop:false,enabled:true,followAim:false,frames:[{t:0,easing:'linear',pose:{spine_03:identity,$weapon:identity}},{t:.66,easing:'smooth',pose:{spine_03:turned,$weapon:turned}}]};
+const project={version:1,clips:{'knife:knife':clip}};M.saveProject(project);assert.deepEqual(M.readProject(),project);
+const sample=M.samplePose(clip,.33);assert.equal(sample.spine_03.p[0],.5);assert(Math.abs(new THREE.Quaternion().fromArray(sample.spine_03.q).angleTo(new THREE.Quaternion())-Math.PI/4)<1e-6);
+const hold=structuredClone(clip);hold.frames[0].easing='hold';assert.equal(M.samplePose(hold,.65).spine_03.p[0],0);assert.equal(M.samplePose(hold,.66).spine_03.p[0],1);
+const driver=M.createCustomMotion(avatar,models);assert(driver({weapon:'knife',knifePhase:.5,dt:1/60}));assert.equal(bone.position.x,.5);assert.equal(model.position.x,.5);assert.equal(avatar.root.userData.customMotion,'knife:knife');driver(null);assert.equal(bone.scale.x,1);
+assert.equal(driver({weapon:'knife',knifePhase:.5,disableCustomMotion:true}),false);
+const disabled=structuredClone(project);disabled.clips['knife:knife'].enabled=false;M.saveProject(disabled);assert.equal(driver({weapon:'knife',knifePhase:.5}),false);
+M.saveProject(project);assert(driver({weapon:'knife',knifePhase:.5}),'same-page update refreshes runtime cache');store.set(M.STORAGE_KEY,JSON.stringify(disabled));const event=new Event('storage');event.key=M.STORAGE_KEY;events.dispatchEvent(event);assert.equal(driver({weapon:'knife',knifePhase:.5}),false,'other-tab update refreshes runtime cache');
+for(const mutate of [c=>c.frames[1].t=0,c=>c.duration=NaN,c=>c.frames[0].pose.spine_03.q=[0,0,0,0],c=>c.frames[0].pose.spine_03.s=[0,1,1],c=>c.frames[1].t=.65]){const invalid=structuredClone(project);mutate(invalid.clips['knife:knife']);assert.throws(()=>M.validateProject(invalid));}
+store.set(M.STORAGE_KEY,'broken');assert.deepEqual(M.readProject(),{version:1,clips:{}});
+assert.equal(M.identifyAction({weapon:'bow',bowDrawing:true,bowCharge:1.1})[0],'draw');assert.equal(M.identifyAction({weapon:'bow',bowDrawing:true,bowCharge:2.2})[0],'hold');assert.equal(M.identifyAction({weapon:'knife',knifePhase:.3,rollPhase:.5})[0],'knife');
+console.log('PASS: editable pose interpolation/hold/quaternion, persistence/import validation, custom bone and weapon playback, scale reset, disable, same-page and cross-tab reload');
+const {createRobot}=await import('../robot.js'),{createThirdPersonView}=await import('../third-person.js');
+M.saveProject({version:1,clips:{}});const robot=createRobot(),view=createThirdPersonView(robot,['knife','bow','pistol']),base=M.actionState('knife','knife',.5);view.pose(base);const recorded=M.capturePose(robot,view.models.knife);recorded.spine_03.p[0]=.25;recorded.spine_03.s=[1.2,1.2,1.2];recorded.$weapon.p[0]=.15;
+const runtimeClip={...clip,frames:[{t:0,easing:'linear',pose:recorded},{t:.66,easing:'linear',pose:recorded}]};M.saveProject({version:1,clips:{'knife:knife':runtimeClip}});
+view.pose({...base,disableCustomMotion:false,motionPreview:undefined});assert.equal(robot.bones.find(b=>b.name==='spine_03').position.x,.25);assert.equal(view.models.knife.position.x,.15,'final gameplay grip does not overwrite edited weapon');
+M.saveProject({version:1,clips:{}});view.pose(base);assert(Math.abs(robot.bones.find(b=>b.name==='spine_03').position.x)<.001,'removed edits restore even constant bone position');assert.equal(robot.bones.find(b=>b.name==='spine_03').scale.x,1,'removed edits restore scale');
+console.log('PASS: actual robot/view applies edited bone and weapon after grip correction, removal restores original transforms');
