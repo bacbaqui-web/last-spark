@@ -1,0 +1,4 @@
+User-supplied audio: freesound_community-spas-12-89800.mp3
+Complete recording plays once per player shotgun shot at original playback speed.
+Converted to mono OGG for spatial playback; metadata removed.
+This supplied asset is separate from the Free Firearm library license.
