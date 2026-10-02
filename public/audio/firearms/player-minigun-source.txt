@@ -1,0 +1,4 @@
+User-supplied audio: minigun.ㅑav.wav
+Entire 0.140208 second clip plays once per minigun bullet at original speed.
+Converted to mono OGG for spatial playback; metadata removed.
+This supplied asset is separate from the Free Firearm library license.
