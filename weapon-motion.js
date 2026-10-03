@@ -7,7 +7,7 @@ export function createWeaponMotion(parent,models){
  const root=new THREE.Group();root.name='animated-weapon-arms';parent.add(root);
  const material=new THREE.MeshStandardMaterial({color:0x91aeba,metalness:.5,roughness:.45}),jointMaterial=new THREE.MeshStandardMaterial({color:0x152e3b,metalness:.3,roughness:.6}),arms=[];
  for(let side=0;side<2;side++){const parts=[];for(let i=0;i<2;i++){const mesh=new THREE.Mesh(new THREE.CylinderGeometry(i===0?.045:.038,i===0?.042:.045,1,8),material);root.add(mesh);parts.push(mesh);}const hand=new THREE.Mesh(new THREE.BoxGeometry(.08,.085,.12),jointMaterial);root.add(hand);arms.push({parts,hand});}
- const poses=sampleWeaponMotion('BowIdle',0),baseWrist=sampleWeaponMotion('Sword_Dash',0)[5].quaternion.clone().invert(),bladeRest=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,-1),new THREE.Vector3(.1,.9,-.4).normalize());
+ const poses=sampleWeaponMotion('BowIdle',0),baseWrist=sampleWeaponMotion('Sword_Dash',0)[5].quaternion.clone().invert(),bladeRest=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,-1),new THREE.Vector3(.55,.40,-1).normalize());
  let lastWeapon='',releaseAge=-1;
  function cancel(){releaseAge=-1;lastWeapon='';}
  function release(){releaseAge=0;}
