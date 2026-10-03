@@ -46,7 +46,9 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   const sightShape=new THREE.Shape();outer.forEach(([x,y],i)=>i?sightShape.lineTo(x,y):sightShape.moveTo(x,y));sightShape.closePath();const hole=new THREE.Path();inner.slice().reverse().forEach(([x,y],i)=>i?hole.lineTo(x,y):hole.moveTo(x,y));hole.closePath();sightShape.holes.push(hole);
   const sight=new THREE.Mesh(new THREE.ExtrudeGeometry(sightShape,{depth:.075,bevelEnabled:true,bevelSize:.006,bevelThickness:.004,bevelSegments:1,steps:1}),ivory);sight.position.z=-.13;root.add(sight);
   const reticleMat=new THREE.MeshBasicMaterial({color:0xff3218,transparent:true,opacity:.8});const reticle=new THREE.Mesh(new THREE.TorusGeometry(.034,.002,4,24),reticleMat);reticle.position.set(0,.41,-.09);root.add(reticle);const dot=new THREE.Mesh(new THREE.SphereGeometry(.004,6,4),reticleMat);dot.position.copy(reticle.position);root.add(dot);
-  root.position.y=-.12;
+  root.scale.setScalar(.62);
+  root.position.y=-.08;
+  root.userData.sightCenter=[0,.41,-.09];
   root.userData.muzzle=[0,.04,-1.21];
  }
  if(type==='rapid'){box([.43,.38,.58],[0,-.01,.03]);barrel(.26,.4,[0,0,-.3]);const rotor=new THREE.Group();rotor.position.set(0,0,-.48);root.add(rotor);for(let i=0;i<6;i++){const a=i/6*Math.PI*2,m=new THREE.Mesh(new THREE.CylinderGeometry(.042,.042,.85,10),metal);m.rotation.x=Math.PI/2;m.position.set(Math.cos(a)*.16,Math.sin(a)*.16,-.24);rotor.add(m);}for(const z of[.02,-.43,-.64]){const ring=new THREE.Mesh(new THREE.TorusGeometry(.21,.045,6,16),dark);ring.position.z=z;rotor.add(ring);}box([.3,.42,.4],[-.29,-.12,.1],metal);for(let i=0;i<5;i++)box([.07,.1,.07],[-.24+i*.055,.22,.2],color);box([.28,.09,.26],[0,.27,.02]);box([.09,.3,.09],[-.19,.16,.07]);box([.09,.3,.09],[.19,.16,.07]);root.userData.rotor=rotor;root.userData.muzzle=[0,0,-1.16];}

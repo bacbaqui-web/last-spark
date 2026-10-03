@@ -43,7 +43,7 @@ export function createThirdPersonView(avatar,types){
     hand.quaternion.copy(hand.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(heading));hand.updateWorldMatrix(false,true);
     // Model origin is the receiver; the trigger hand holds the actual grip below it.
     const trigger=weapon==='chainsaw'?v(.19,.16,.07):weapon==='rapid'?v(.19,.16,.07):v(0,-.2,.12);
-    model.quaternion.copy(hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(heading));model.position.copy(trigger.multiplyScalar(-1/1.17).applyQuaternion(model.quaternion));model.userData.gripRotation=model.quaternion.clone();model.userData.gripPosition=model.position.clone();model.updateWorldMatrix(true,true);
+    model.quaternion.copy(hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(heading));model.position.copy(trigger.multiplyScalar(-model.scale.x).applyQuaternion(model.quaternion));model.userData.gripRotation=model.quaternion.clone();model.userData.gripPosition=model.position.clone();model.updateWorldMatrix(true,true);
     const support=weapon==='chainsaw'?v(-.16,.22,.05):weapon==='rapid'?v(-.19,.16,.07):v(-.045,-.08,-.43);
     const target=model.localToWorld(support),leftPole=avatar.root.localToWorld(v(.45,1.1,.05));armIK(avatar.arms[0],target,leftPole);
    }else{model.quaternion.copy(model.userData.gripRotation||new THREE.Quaternion());model.position.copy(model.userData.gripPosition||v(0,0,0));}
