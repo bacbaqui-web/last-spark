@@ -12,7 +12,7 @@ export function createThirdPersonView(avatar,types){
  const customMotion=createCustomMotion(avatar,models),modelScales=Object.fromEntries(Object.entries(models).map(([k,m])=>[k,m.scale.clone()]));
  function pose(state){
   customMotion(null);for(const [k,m]of Object.entries(models))m.scale.copy(modelScales[k]);
-  const {position,yaw,pitch,weapon,speed=0,velocity=v(0,0,0),knifePhase=-1,bowDrawing=false,bowCharge=0,chainsawBlend=0,time=0,dt=0,flash=false,laserHeat=0,firing=false,rollPhase=-1,rollDirection,knifeDirection,throwPhase=-1}=state;
+  const {position,yaw,pitch,weapon,speed=0,velocity=v(0,0,0),knifePhase=-1,bowDrawing=false,bowCharge=0,chainsawBlend=0,time=0,dt=0,flash=false,laserHeat=0,firing=false,adsBlend=0,rollPhase=-1,rollDirection,knifeDirection,throwPhase=-1}=state;
   let bodyYaw=yaw+Math.PI;
   if(rollPhase>=0&&rollDirection?.lengthSq()>.01)bodyYaw=Math.atan2(rollDirection.x,rollDirection.z);
   else if(knifePhase>=0&&knifeDirection?.lengthSq()>.01)bodyYaw=Math.atan2(knifeDirection.x,knifeDirection.z);
@@ -37,14 +37,15 @@ export function createThirdPersonView(avatar,types){
     // Grip correction is layered over the source chest/shoulder pose. Lowered heavy
     // weapons and raised shoulder weapons use different anchors.
     const heavy=['rapid','flame','chainsaw','rail'].includes(weapon),reach=weapon==='chainsaw'?chainsawBlend*.15:0;
-    const canonical=position.clone().add(v(.18,heavy?-.5:-.32,-.38-reach).applyQuaternion(heading)),anchor=heavy?canonical:hand.getWorldPosition(new THREE.Vector3()).lerp(canonical,.25);
+    const aim=THREE.MathUtils.clamp(adsBlend,0,1);
+    const canonical=position.clone().add(v(THREE.MathUtils.lerp(heavy?.38:.29,.18,aim),THREE.MathUtils.lerp(heavy?-.82:-.67,-.27,aim),-.38-reach).applyQuaternion(heading)),anchor=canonical;
     if(firing&&flash&&!['laser','chainsaw','flame'].includes(weapon))anchor.add(v(0,0,.025).applyQuaternion(heading));
     const pole=avatar.root.localToWorld(v(-.45,1.1,.05));armIK(avatar.arms[1],anchor,pole);
     hand.quaternion.copy(hand.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(heading));hand.updateWorldMatrix(false,true);
     // Model origin is the receiver; the trigger hand holds the actual grip below it.
-    const trigger=weapon==='chainsaw'?v(.19,.16,.07):weapon==='rapid'?v(.19,.16,.07):v(0,-.2,.12);
+    const trigger=weapon==='chainsaw'?v(.12,-.09,.50):weapon==='rapid'?v(0,-.14,.63):v(0,-.2,.12);
     model.quaternion.copy(hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(heading));model.position.copy(trigger.multiplyScalar(-model.scale.x).applyQuaternion(model.quaternion));model.userData.gripRotation=model.quaternion.clone();model.userData.gripPosition=model.position.clone();model.updateWorldMatrix(true,true);
-    const support=weapon==='chainsaw'?v(-.16,.22,.05):weapon==='rapid'?v(-.19,.16,.07):v(-.045,-.08,-.43);
+    const support=weapon==='chainsaw'?v(-.16,.22,.05):weapon==='rapid'?v(-.19,-.22,-.14):v(-.045,-.08,-.43);
     const target=model.localToWorld(support),leftPole=avatar.root.localToWorld(v(.45,1.1,.05));armIK(avatar.arms[0],target,leftPole);
    }else{model.quaternion.copy(model.userData.gripRotation||new THREE.Quaternion());model.position.copy(model.userData.gripPosition||v(0,0,0));}
   }
