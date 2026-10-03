@@ -265,7 +265,8 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   const toothSteel=new THREE.MeshStandardMaterial({color:0x92938e,metalness:.85,roughness:.38});
   const red=new THREE.MeshStandardMaterial({color:0x8d3028,metalness:.4,roughness:.5});
   box([.32,.28,.40],[0,-.04,.12],iron);box([.27,.23,.13],[0,-.04,.36],black);box([.34,.045,.31],[0,.12,.10],black);
-  // Heavy oval guide bar lies horizontally, matching the combat grip.
+  // Rotate the complete guide bar and chain into a vertical cutting plane.
+  const bodyParts=new Set(root.children);
   const shape=new THREE.Shape();shape.moveTo(.135,-.16);shape.lineTo(.135,-1.05);shape.absarc(0,-1.05,.135,0,Math.PI,true);shape.lineTo(-.135,-.16);shape.closePath();
   const bar=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.075,bevelEnabled:true,bevelSize:.007,bevelThickness:.006,bevelSegments:1,steps:1}),iron);bar.geometry.translate(0,0,-.0375);bar.rotation.x=Math.PI/2;bar.position.y=.02;root.add(bar);
   const parts=[];for(const x of[-.105,.105])parts.push([[.012,.018,.80],[x,.068,-.59],bronze]);
@@ -278,6 +279,10 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   for(const side of[-1,1])for(let i=0;i<15;i++){const tooth=new THREE.Mesh(toothGeometry,toothSteel);tooth.scale.x=side;tooth.position.set(side*.13,.035,-.18-i*.059);tooth.userData.baseZ=tooth.position.z;root.add(tooth);root.userData.chainTeeth.push(tooth);parts.push([[.038,.075,.031],[side*.135,.025,-.18-i*.059],black]);}
   // Curved end teeth complete the saw silhouette.
   for(let i=0;i<7;i++){const angle=i*Math.PI/6;const tooth=new THREE.Mesh(toothGeometry,toothSteel);tooth.position.set(Math.cos(angle)*.13,.035,-1.05-Math.sin(angle)*.13);tooth.rotation.y=angle;root.add(tooth);}
+  const blade=new THREE.Group();blade.name='vertical-chain-guide';blade.position.y=.02;
+  for(const mesh of [...root.children])if(!bodyParts.has(mesh)){mesh.position.y-=.02;blade.add(mesh);}
+  detailBatch(blade,parts.map(([size,pos,mat])=>[size,[pos[0],pos[1]-.02,pos[2]],mat]));parts.length=0;
+  blade.rotation.z=Math.PI/2;root.add(blade);
   const handle=(points)=>root.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),18,.028,6,false),black));
   handle([[-.20,-.035,-.02],[-.20,.27,-.025],[-.14,.34,.07],[.14,.34,.07],[.20,.27,-.025],[.20,-.035,-.02]]);
   handle([[-.12,.04,.34],[-.13,-.09,.50],[.13,-.09,.50],[.12,.04,.34]]);
