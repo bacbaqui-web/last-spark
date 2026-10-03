@@ -127,10 +127,14 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   const center=new THREE.Vector3(0,.04,-.60),radius=.38;
   const globe=new THREE.Mesh(new THREE.SphereGeometry(radius,24,16),shell);globe.position.copy(center);root.add(globe);
   // Recessed vent mouths follow the curved housing rather than a flat grid.
+  const ventMaterial=new THREE.MeshStandardMaterial({color:0x101723,emissive:0xbf62ff,emissiveIntensity:0,metalness:.35,roughness:.4}),glowMaterial=new THREE.MeshBasicMaterial({color:0xc977ff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+  root.userData.chargeVents=[];root.userData.chargeGlowMaterial=glowMaterial;
   for(const theta of[.62,1.02,1.42,1.85,2.25])for(let i=0;i<12;i++){
    const phi=i*Math.PI/6+(theta>1.5?.15:0),normal=new THREE.Vector3(Math.sin(theta)*Math.cos(phi),Math.sin(theta)*Math.sin(phi),-Math.cos(theta));
-   const vent=new THREE.Mesh(new THREE.CircleGeometry(.041,10),dark);vent.position.copy(center).addScaledVector(normal,radius+.001);vent.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),normal);root.add(vent);
+   const vent=new THREE.Mesh(new THREE.CircleGeometry(.041,10),ventMaterial);vent.position.copy(center).addScaledVector(normal,radius+.001);vent.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),normal);root.add(vent);
    const lip=new THREE.Mesh(new THREE.TorusGeometry(.044,.006,5,10),metal);lip.position.copy(vent.position);lip.quaternion.copy(vent.quaternion);root.add(lip);
+   const spill=new THREE.Mesh(new THREE.ConeGeometry(.040,.12,10),glowMaterial);spill.position.copy(vent.position).addScaledVector(normal,.035);spill.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),normal);spill.visible=false;root.add(spill);root.userData.chargeVents.push({vent,spill,normal});
+
   }
   barrel(.115,.10,[0,.04,-.975],dark);barrel(.078,.015,[0,.04,-1.029],color);
   const rim=new THREE.Mesh(new THREE.TorusGeometry(.115,.018,8,20),metal);rim.position.set(0,.04,-1.029);root.add(rim);
@@ -143,6 +147,7 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   const hose=new THREE.CatmullRomCurve3([new THREE.Vector3(.18,-.06,-.27),new THREE.Vector3(.28,-.14,.04),new THREE.Vector3(.24,-.10,.38),new THREE.Vector3(.08,0,.39)]);
   root.add(new THREE.Mesh(new THREE.TubeGeometry(hose,18,.027,6,false),dark));
   box([.16,.04,.14],[0,.45,.20],dark);box([.025,.09,.035],[-.055,.50,.20],color);box([.025,.09,.035],[.055,.50,.20],color);root.userData.sightCenter=[0,.515,.20];
+  const chargeLight=new THREE.PointLight(0xbe66ff,0,4);chargeLight.position.copy(center);root.add(chargeLight);root.userData.chargeLight=chargeLight;
   root.userData.muzzle=[0,.04,-1.04];
  }
  if(type==='sniper'){
