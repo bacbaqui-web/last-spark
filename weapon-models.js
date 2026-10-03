@@ -194,7 +194,9 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   const path=(points,r,mat)=>root.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),24,r,8,false),mat));
   path([[0,.018,-.66],[0,-.035,-.79],[0,-.045,-1.02],[0,.01,-1.20]],.012,black);
   // The pilot light sits beside the main outlet, as in the reference.
-  const pilot=new THREE.Mesh(new THREE.SphereGeometry(.015,8,6),new THREE.MeshBasicMaterial({color:0xff9f32}));pilot.position.set(0,.01,-1.215);root.add(pilot);
+  const pilot=new THREE.Group();pilot.position.set(.045,-.065,-1.235);root.add(pilot);
+  for(const [radius,length,color] of [[.029,.13,0xff6c13],[.017,.095,0xffd85b],[.011,.035,0x629cff]]){const flame=new THREE.Mesh(new THREE.ConeGeometry(radius,length,7),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.85,depthWrite:false,blending:THREE.AdditiveBlending}));flame.rotation.x=-Math.PI/2;flame.position.z=-length/2;pilot.add(flame);}
+  root.userData.pilotFlame=pilot;
   barrel(.135,.28,[0,-.19,-.24],steel);barrel(.10,.045,[0,-.19,-.41],black);barrel(.105,.045,[0,-.19,-.065],black);
   for(const z of[-.36,-.12]){const band=new THREE.Mesh(new THREE.TorusGeometry(.134,.014,6,20),black);band.position.set(0,-.19,z);root.add(band);}
   barrel(.085,.22,[0,-.19,-.53],black);

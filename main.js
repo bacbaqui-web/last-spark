@@ -165,14 +165,20 @@ function leaveFire(point,normal){
  if(firePatches.length>=36){clearItem(firePatches[0].m);firePatches.shift();}
  const m=new THREE.Group();m.userData.effect=true;scene.add(m);for(let i=0;i<6;i++){const f=createFlameVisual(.7);scene.remove(f);f.position.set(Math.cos(i*2.4)*.65,0,Math.sin(i*2.4)*.65);m.add(f);}m.position.copy(point).addScaledVector(normal,.05);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),normal);firePatches.push({m,pos:m.position.clone(),normal:normal.clone(),life:4,age:0});
 }
+function createFlameJet(direction){
+ const root=new THREE.Group();root.userData.effect=true;
+ for(const [radius,length,color] of [[.22,1.65,0xff5910],[.14,1.45,0xffa527],[.075,1.15,0xffef9a]]){const mesh=new THREE.Mesh(new THREE.ConeGeometry(radius,length,9),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.22,depthWrite:false,blending:THREE.AdditiveBlending}));mesh.position.y=-length/2;root.add(mesh);}
+ root.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction);scene.add(root);return root;
+}
 function launchFlames(origin,muzzle,forward){
  // Prevent the offset muzzle from spraying through cover when the camera remains outside it.
  const offset=muzzle.clone().sub(origin);ray.set(origin,offset.clone().normalize());ray.far=offset.length();const blocked=ray.intersectObjects(worldObstacles,false)[0];if(blocked){leaveFire(blocked.point,blocked.face.normal.clone().transformDirection(blocked.object.matrixWorld));return;}
- for(let i=0;i<3;i++){const direction=forward.clone().add(new THREE.Vector3((Math.random()-.5)*.2,(Math.random()-.5)*.2,(Math.random()-.5)*.2)).normalize(),m=createFlameVisual(.35);m.position.copy(muzzle);flamePackets.push({m,v:direction.multiplyScalar(17),life:.55,age:0,travel:0});}
+ for(let i=0;i<3;i++){const direction=forward.clone().add(new THREE.Vector3((Math.random()-.5)*.055,(Math.random()-.5)*.055,(Math.random()-.5)*.055)).normalize(),m=createFlameJet(direction);m.position.copy(muzzle);flamePackets.push({m,v:direction.multiplyScalar(24),life:.4,age:0,travel:0});}
 }
 function updateFire(dt){
+ for(const model of [weaponModels.flame,thirdView.models.flame]){const pilot=model?.userData.pilotFlame;if(pilot){pilot.scale.set(1+Math.sin(time*37)*.12,1+Math.cos(time*43)*.12,1+Math.sin(time*31)*.2);pilot.rotation.z=Math.sin(time*19)*.1;}}
  scene.updateMatrixWorld(true);
- for(let i=flamePackets.length-1;i>=0;i--){const p=flamePackets[i],start=p.m.position.clone(),direction=p.v.clone().normalize(),travel=Math.min(p.v.length()*dt,8-p.travel);ray.set(start,direction);ray.far=travel;const wall=ray.intersectObjects(worldObstacles,false)[0];let nearest=wall?.distance??Infinity,target=null;for(const e of enemies){if(e.hp<=0)continue;const point=ray.ray.intersectSphere(new THREE.Sphere(spikeCenter(e),e.boss?1.4:e.type==='spider'?.55:.8),new THREE.Vector3()),distance=point?.distanceTo(start);if(distance!==undefined&&distance<=travel&&distance<nearest){nearest=distance;target=e;}}p.m.position.addScaledVector(direction,Math.min(travel,nearest));p.travel+=travel;p.life-=dt;p.age+=dt;flickerFire(p.m,p.age,.35+p.age*1.3);
+ for(let i=flamePackets.length-1;i>=0;i--){const p=flamePackets[i],start=p.m.position.clone(),direction=p.v.clone().normalize(),travel=Math.min(p.v.length()*dt,8-p.travel);ray.set(start,direction);ray.far=travel;const wall=ray.intersectObjects(worldObstacles,false)[0];let nearest=wall?.distance??Infinity,target=null;for(const e of enemies){if(e.hp<=0)continue;const point=ray.ray.intersectSphere(new THREE.Sphere(spikeCenter(e),e.boss?1.4:e.type==='spider'?.55:.8),new THREE.Vector3()),distance=point?.distanceTo(start);if(distance!==undefined&&distance<=travel&&distance<nearest){nearest=distance;target=e;}}p.m.position.addScaledVector(direction,Math.min(travel,nearest));p.travel+=travel;p.life-=dt;p.age+=dt;flickerFire(p.m,p.age,.65+p.age*1.15);p.m.scale.y=Math.min(p.m.scale.y,p.travel/1.65);
   if(target){igniteEnemy(target);hitTime=.12;}else if(wall)leaveFire(wall.point,wall.face.normal.clone().transformDirection(wall.object.matrixWorld));
   if(target||wall||p.life<=0||p.travel>=8){clearItem(p.m);flamePackets.splice(i,1);}
  }
@@ -421,3 +427,5 @@ if(import.meta.env.DEV&&new URLSearchParams(location.search).has('chainsawCheck'
 if(import.meta.env.DEV&&new URLSearchParams(location.search).has('thirdPersonCheck')){const mode=new URLSearchParams(location.search).get('thirdPersonCheck');reset(false);weapon=weapons[mode]?mode:'knife';ammo=100;player.pos.set(30,1.7,30);camera.position.copy(player.pos);damageGrace=999;thirdPerson=true;spawn();enemies[0].group.position.set(30,0,24);enemies[0].hp=enemies[0].max=10000;if(weapon==='knife')startKnifeAttack();if(weapon==='chainsaw')firing=true;if(weapon==='bow'){firing=true;startBowDraw();bowCharge=2.2;}for(let i=0;i<12;i++)update(.016);active=new URLSearchParams(location.search).has('liveCamera');$('overlay').style.display='none';}
 
 if(import.meta.env.DEV&&new URLSearchParams(location.search).has('dashSlideCheck')){reset(false);thirdPerson=true;player.pos.set(26,1.7,12);camera.position.copy(player.pos);damageGrace=999;keys.add('KeyD');keys.add('KeyW');evade();for(let i=0;i<15;i++)update(.016);active=false;notify('벽 슬라이딩 · 돌진 이동 확인');$('overlay').style.display='none';}
+
+if(import.meta.env.DEV&&new URLSearchParams(location.search).has('flameJetCheck')){reset(false);weapon='flame';ammo=100;player.pos.set(30,1.7,30);firing=true;for(let i=0;i<24;i++)update(.016);firing=false;active=false;$('overlay').style.display='none';}
