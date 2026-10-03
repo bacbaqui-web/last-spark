@@ -12,7 +12,7 @@ export function createWeaponMotion(parent,models){
  let lastWeapon='',releaseAge=-1;
  function cancel(){releaseAge=-1;lastWeapon='';}
  function release(){releaseAge=0;}
- function update(dt,{weapon,bowDrawing=false,bowCharge=0,knifePhase=-1,ammo=0}){
+ function update(dt,{weapon,bowDrawing=false,bowCharge=0,knifePhase=-1,knifeCombo=1,knifeGuard=false,knifeBlock=0,knifeRush=false,ammo=0}){
   root.visible=weapon==='knife'||weapon==='bow';if(!root.visible){lastWeapon=weapon;return;}
   const changed=lastWeapon!==weapon;lastWeapon=weapon;let name,phase;
   if(weapon==='bow'){if(bowDrawing){releaseAge=-1;name=bowCharge>=2.2?'BowHold':'BowLoad';phase=bowCharge>=2.2?(bowCharge-2.2)%motionData.BowHold.duration/motionData.BowHold.duration:bowCharge/2.2;}else if(releaseAge>=0&&releaseAge<.65){name='BowRelease';phase=releaseAge/.65;releaseAge+=dt;}else{name='BowIdle';phase=0;}}
@@ -21,7 +21,7 @@ export function createWeaponMotion(parent,models){
   for(let i=0;i<poses.length;i++){poses[i].position.lerp(sampled[i].position.clone().add(offset),blend);poses[i].quaternion.slerp(sampled[i].quaternion,blend);}
   for(let side=0;side<2;side++){const p=poses.slice(side*3,side*3+3),arm=arms[side];for(let i=0;i<2;i++){const delta=p[i+1].position.clone().sub(p[i].position),mesh=arm.parts[i];mesh.position.copy(p[i].position).add(p[i+1].position).multiplyScalar(.5);mesh.scale.y=delta.length()*.94;mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());}arm.hand.position.copy(p[2].position);arm.hand.quaternion.copy(p[2].quaternion);}
   const model=models[weapon];if(weapon==='knife'){
-   const slash=sampleKnifeSlash(knifePhase);model.position.copy(slash.grip);model.quaternion.copy(slash.rotation);
+   const slash=sampleKnifeSlash(knifePhase,{combo:knifeCombo,guard:knifeGuard,block:knifeBlock,rush:knifeRush});model.position.copy(slash.grip);model.quaternion.copy(slash.rotation);
    const right=slash.grip,left=right.clone().add(new THREE.Vector3(0,0,.12).applyQuaternion(slash.rotation));
    for(const [side,target] of [[0,left],[1,right]]){const arm=arms[side],shoulder=new THREE.Vector3(side===0?-.25:.25,-.3,.03),elbow=shoulder.clone().lerp(target,.5).add(new THREE.Vector3(side===0?-.13:.13,-.12,.08));
     for(const [i,a,b] of [[0,shoulder,elbow],[1,elbow,target]]){const d=b.clone().sub(a),mesh=arm.parts[i];mesh.position.copy(a).add(b).multiplyScalar(.5);mesh.scale.y=d.length()*.94;mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());}arm.hand.position.copy(target);arm.hand.quaternion.copy(slash.rotation);}
@@ -30,5 +30,5 @@ export function createWeaponMotion(parent,models){
   else{model.quaternion.identity();model.rotation.z=-.08;model.position.copy(poses[2].position).sub(new THREE.Vector3(0,0,-.43).multiplyScalar(.8).applyQuaternion(model.quaternion));model.updateMatrixWorld(true);const pull=model.worldToLocal(parent.localToWorld(poses[5].position.clone())),string=model.userData.string,positions=string.geometry.attributes.position;if(!bowDrawing)pull.set(0,0,.14);positions.setXYZ(1,pull.x,pull.y,pull.z);positions.needsUpdate=true;string.geometry.computeBoundingSphere();const arrow=model.userData.nockedArrow;arrow.visible=bowDrawing&&ammo>0;arrow.position.copy(pull).sub(new THREE.Vector3(0,0,.14));arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1),new THREE.Vector3(0,0,-.43).sub(pull).normalize());for(const limb of model.userData.limbs)limb.rotation.x=limb.userData.side*Math.min(1,bowCharge/2.2)*.08;}
   root.userData.clip=name;root.userData.phase=phase;root.userData.weapon=weapon;
  }
- return {root,update,release,cancel,arms};
+ return {root,update,release,cancel,arms,sampleKnifeSlash};
 }

@@ -33,7 +33,7 @@ export function createThirdPersonMotion(avatar){
   else if(landAge<.16){apply('Jump_Land',landAge/.16,n=>lower.test(n),1-landAge/.16);bodyClip+=' + Jump_Land';}
   if(knifePhase>=0){
    apply('Sword_Dash',0,n=>upper.test(n));
-   const slash=sampleKnifeSlash(knifePhase);bones.spine_02.rotateY(slash.twist*.45);bones.spine_03.rotateY(slash.twist*.55);bones.spine_02.rotateX(.12);bones.pelvis.rotateX(.06);
+   const slash=sampleKnifeSlash(knifePhase,{combo:state.knifeCombo,rush:state.knifeRush});bones.spine_02.rotateY(slash.twist*.45);bones.spine_03.rotateY(slash.twist*.55);bones.spine_02.rotateX(.12);bones.pelvis.rotateX(.06);
    bodyClip='Sword_Dash';
   }
   else if(rollPhase>=0){apply('Roll',rollPhase);bodyClip='Roll';}

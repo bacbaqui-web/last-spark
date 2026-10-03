@@ -15,7 +15,7 @@ export function createThirdPersonView(avatar,types){
  const customMotion=createCustomMotion(avatar,models),modelScales=Object.fromEntries(Object.entries(models).map(([k,m])=>[k,m.scale.clone()]));
  function pose(state){
   customMotion(null);for(const [k,m]of Object.entries(models))m.scale.copy(modelScales[k]);
-  const {position,yaw,pitch,weapon,speed=0,velocity=v(0,0,0),knifePhase=-1,bowDrawing=false,bowCharge=0,chainsawBlend=0,time=0,dt=0,flash=false,laserHeat=0,firing=false,adsBlend=0,rollPhase=-1,rollDirection,knifeDirection,throwPhase=-1}=state;
+  const {position,yaw,pitch,weapon,speed=0,velocity=v(0,0,0),knifePhase=-1,knifeCombo=1,knifeGuard=false,knifeBlock=0,knifeRush=false,bowDrawing=false,bowCharge=0,chainsawBlend=0,time=0,dt=0,flash=false,laserHeat=0,firing=false,adsBlend=0,rollPhase=-1,rollDirection,knifeDirection,throwPhase=-1}=state;
   let bodyYaw=yaw+Math.PI;
   if(rollPhase>=0&&rollDirection?.lengthSq()>.01)bodyYaw=Math.atan2(rollDirection.x,rollDirection.z);
   else if(knifePhase>=0&&knifeDirection?.lengthSq()>.01)bodyYaw=Math.atan2(knifeDirection.x,knifeDirection.z);
@@ -32,9 +32,9 @@ export function createThirdPersonView(avatar,types){
   const heading=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ'));
   model.position.set(0,0,0);model.quaternion.identity();
   if(weapon==='knife'){
-   if(knifePhase<0||result.rolling||throwPhase>=0)model.quaternion.copy(knifeMount);
+   if(knifePhase<0&&!knifeGuard||result.rolling||throwPhase>=0)model.quaternion.copy(knifeMount);
    else{
-    const slash=sampleKnifeSlash(knifePhase),worldRotation=heading.clone().multiply(slash.rotation),grip=position.clone().add(slash.grip.clone().applyQuaternion(heading)),hand=avatar.arms[1].hand;
+    const slash=sampleKnifeSlash(knifePhase,{combo:knifeCombo,guard:knifeGuard,block:knifeBlock,rush:knifeRush}),worldRotation=heading.clone().multiply(slash.rotation),grip=position.clone().add(slash.grip.clone().applyQuaternion(heading)),hand=avatar.arms[1].hand;
     armIK(avatar.arms[1],grip,position.clone().add(v(.65,-.2,.1).applyQuaternion(heading)));avatar.root.updateMatrixWorld(true);
     hand.quaternion.copy(hand.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(worldRotation));hand.updateWorldMatrix(false,true);
     model.quaternion.copy(hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(worldRotation));model.position.set(0,0,0);model.updateWorldMatrix(true,true);
