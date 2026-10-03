@@ -21,7 +21,7 @@ source=source.replace("import {createWeaponMotion} from './weapon-motion.js';",'
 source=source.replace("import {poseSword} from './sword-combat.js';",'');
 source=source.replace("import {createWeaponModel} from './weapon-models.js';",'const {createWeaponModel}=WM;');
 source=source.replace("import {createRobot,animateRobot,robotFired,animateDeath,disposeRobot,swordFired,createSpider} from './robot.js';",'const {createRobot,animateRobot,robotFired,animateDeath,disposeRobot,swordFired,createSpider}=ROBOT;').replace("import {attachEnemyAI,updateEnemyAI,steerEnemy,chooseCover,coverRoute} from './enemy-ai.js';",'const {attachEnemyAI,updateEnemyAI,steerEnemy,chooseCover,coverRoute}=AI;');
-source=source.replace("import {createBoss,animateBoss} from './boss-models.js';",'const {createBoss,animateBoss}=BOSSES;');
+source=source.replace("import {createBoss,animateBoss,createScoutDrone,createAssassin} from './boss-models.js';",'const {createBoss,animateBoss,createScoutDrone,createAssassin}=BOSSES;');
 source=source.replace("import {panelTexture,decorateArena} from './model-detail.js';",'const {panelTexture,decorateArena}=DETAIL;');
 source=source.replace("import {createProgression,randomUpgradePair,applyUpgrade,buildSummary} from './progression.js';",'const {createProgression,randomUpgradePair,applyUpgrade,buildSummary}=PROGRESS;');
 source=source.replace("import {moveBladeBoss,tryBladeLeap} from './boss-navigation.js';",'const {moveBladeBoss,tryBladeLeap}=NAV;');

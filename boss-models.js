@@ -22,3 +22,6 @@ export function animateBoss(r,dt,time,attack){
  if(r.bossKind==='drone'){r.flashTime=Math.max(0,r.flashTime-dt);r.muzzleFlash.visible=r.flashTime>0;for(const rotor of r.rotors)rotor.rotation.y+=dt*35;r.droneBody.rotation.z=Math.sin(time*2)*.08;r.droneBody.rotation.x=Math.sin(time*1.5)*.05;}
  if(r.bossKind==='blade'){for(const [i,arm]of r.arms.entries()){const swing=attack?Math.sin(Math.min(1,attack/.65)*Math.PI):0;arm.shoulder.rotateX(-.35-swing*2.1);arm.shoulder.rotateZ((i?1:-1)*(.3+swing*.8));arm.elbow.rotateX(-.3);}}
 }
+
+export function createScoutDrone(){const r=createBoss('drone');r.root.scale.setScalar(.32);r.root.name='scout-drone';return r;}
+export function createAssassin(){const r=createBoss('blade');r.root.scale.setScalar(1);r.root.name='assassin';const materials=new Map();r.root.traverse(o=>{if(!o.isMesh||!o.material?.color)return;const original=o.material;if(!materials.has(original)){const m=original.clone();m.color.setHex(original===bladeLight?0x98697b:0x161c24);materials.set(original,m);}o.material=materials.get(original);});return r;}
