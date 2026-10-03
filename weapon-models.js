@@ -191,9 +191,33 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
  if(type==='laser'){box([.26,.24,.7],[0,0,-.25]);for(const x of[-.16,.16])box([.05,.06,.75],[x,.04,-.4],color);barrel(.09,.18,[0,0,-.8],color);box([.12,.25,.15],[0,-.22,.04]);root.userData.chargeRings=[];for(const z of[-.18,-.31,-.44,-.57,-.70]){const mat=accent(0xff426b);mat.color.setHex(0x37424c);mat.emissiveIntensity=.08;const ring=new THREE.Mesh(new THREE.TorusGeometry(.19,.025,8,24),mat);ring.position.set(0,0,z);root.add(ring);root.userData.chargeRings.push(ring);}root.userData.muzzle=[0,0,-.92];}
  if(type==='bow'){
   root.scale.setScalar(.8);root.userData.limbs=[];
-  for(const side of[-1,1]){const limb=new THREE.Group();limb.userData.side=side;root.add(limb);root.userData.limbs.push(limb);for(const x of[-.035,.035]){const points=[new THREE.Vector3(x,side*.12,-.42),new THREE.Vector3(x,side*.36,-.58),new THREE.Vector3(x,side*.64,-.48),new THREE.Vector3(x,side*.85,-.22)];limb.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),20,.026,8,false),metal));}const wheel=new THREE.Mesh(new THREE.TorusGeometry(.11,.025,8,24),dark);wheel.rotation.y=Math.PI/2;wheel.position.set(0,side*.85,-.22);limb.add(wheel);const hub=new THREE.Mesh(new THREE.SphereGeometry(.045,12,8),color);hub.position.copy(wheel.position);limb.add(hub);for(let j=0;j<3;j++)box([.11,.035,.075],[0,side*(.3+j*.15),-.55+j*.06],color);}
-  box([.12,.25,.14],[0,0,-.43],dark);for(const side of[-1,1]){box([.17,.055,.12],[0,side*.16,-.43],metal);box([.055,.24,.09],[.105,side*.12,-.43],metal);}const string=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,-.85,-.22),new THREE.Vector3(0,0,.14),new THREE.Vector3(0,.85,-.22)]),new THREE.LineBasicMaterial({color:0x8af6ff}));root.add(string);root.userData.string=string;
-  const arrow=new THREE.Group();const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,1,6),metal);shaft.rotation.x=Math.PI/2;shaft.position.z=-.36;arrow.add(shaft);const tip=new THREE.Mesh(new THREE.ConeGeometry(.055,.18,4),color);tip.rotation.x=-Math.PI/2;tip.position.z=-.94;arrow.add(tip);for(const x of[-.05,.05]){const fin=new THREE.Mesh(new THREE.BoxGeometry(.09,.012,.16),color);fin.position.set(x,0,.1);arrow.add(fin);}root.add(arrow);arrow.visible=false;root.userData.nockedArrow=arrow;root.userData.muzzle=[0,0,-1.05];
+  const steel=new THREE.MeshStandardMaterial({color:0x949d99,metalness:.75,roughness:.4});
+  const black=new THREE.MeshStandardMaterial({color:0x242a28,metalness:.5,roughness:.5});
+  const red=new THREE.MeshStandardMaterial({color:0x73352c,metalness:.6,roughness:.4});
+  const gold=new THREE.MeshStandardMaterial({color:0xb6a14c,metalness:.7,roughness:.38});
+  const cableMat=new THREE.LineBasicMaterial({color:0x333834});
+  const tube=(parent,points,r,mat)=>parent.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),18,r,6,false),mat));
+  for(const side of[-1,1]){
+   const limb=new THREE.Group();limb.userData.side=side;root.add(limb);root.userData.limbs.push(limb);
+   for(const x of[-.045,.045])tube(limb,[[x,side*.18,-.43],[x,side*.37,-.56],[x,side*.61,-.43],[x,side*.83,-.22]],.023,black);
+   const plates=[];for(let i=0;i<3;i++)plates.push([[.145,.075,.10],[0,side*(.30+i*.16),-.52+i*.055],steel]);plates.push([[.19,.04,.19],[0,side*.85,-.28],steel]);detailBatch(limb,plates);
+   const wheel=new THREE.Mesh(new THREE.TorusGeometry(.088,.018,8,24),black);wheel.rotation.y=Math.PI/2;wheel.position.set(0,side*.85,-.22);limb.add(wheel);
+   for(const x of[-.031,.031]){const rim=new THREE.Mesh(new THREE.TorusGeometry(.069,.006,6,20),red);rim.rotation.y=Math.PI/2;rim.position.set(x,side*.85,-.22);limb.add(rim);for(let i=0;i<4;i++){const angle=i*Math.PI/2;tube(limb,[[x,side*.85,-.22],[x,side*.85+Math.cos(angle)*.069,-.22+Math.sin(angle)*.069]],.007,steel);}}
+   const hub=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.085,12),steel);hub.rotation.z=Math.PI/2;hub.position.copy(wheel.position);limb.add(hub);
+  }
+  box([.095,.22,.10],[0,0,-.43],black);
+  for(const side of[-1,1]){tube(root,[[-.07,side*.08,-.43],[-.08,side*.20,-.48],[-.065,side*.32,-.53]],.028,steel);tube(root,[[.065,side*.08,-.43],[.07,side*.19,-.35],[.065,side*.31,-.52]],.021,steel);box([.14,.035,.075],[0,side*.18,-.43],black);}
+  // Offset control cables keep the centre clear for the arrow and drawn string.
+  for(const x of[-.038,.038]){const cable=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x,-.85,-.22),new THREE.Vector3(x,.85,-.22)]),cableMat);root.add(cable);}
+  const string=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,-.85,-.22),new THREE.Vector3(0,0,.14),new THREE.Vector3(0,.85,-.22)]),new THREE.LineBasicMaterial({color:0xaaa99b}));root.add(string);root.userData.string=string;
+  tube(root,[[.06,.055,-.44],[.17,.055,-.44],[.17,.055,-.60]],.012,black);
+  const sight=new THREE.Mesh(new THREE.TorusGeometry(.045,.007,6,16),black);sight.position.set(.17,.055,-.61);root.add(sight);
+  barrel(.018,.23,[0,-.13,-.65],steel);barrel(.027,.055,[0,-.13,-.78],black);
+  const arrow=new THREE.Group();const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.009,.009,1,8),black);shaft.rotation.x=Math.PI/2;shaft.position.z=-.36;arrow.add(shaft);
+  for(const z of[-.79,.08]){const band=new THREE.Mesh(new THREE.CylinderGeometry(.011,.011,.055,8),gold);band.rotation.x=Math.PI/2;band.position.z=z;arrow.add(band);}
+  const tip=new THREE.Mesh(new THREE.ConeGeometry(.034,.14,3),steel);tip.rotation.x=-Math.PI/2;tip.position.z=-.91;arrow.add(tip);
+  for(let i=0;i<3;i++){const fin=new THREE.Mesh(new THREE.BoxGeometry(.045,.005,.12),gold);fin.rotation.z=i*Math.PI*2/3;fin.position.set(Math.cos(i*Math.PI*2/3)*.022,Math.sin(i*Math.PI*2/3)*.022,.06);arrow.add(fin);}
+  root.add(arrow);arrow.visible=false;root.userData.nockedArrow=arrow;root.userData.muzzle=[0,0,-1.05];
  }
  if(type==='knife'){
   const black=new THREE.MeshStandardMaterial({color:0x202125,metalness:.7,roughness:.38});
