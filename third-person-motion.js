@@ -7,7 +7,7 @@ const clips=Object.fromEntries(Object.entries(data).map(([name,clip])=>[name,{du
 // Gameplay owns translation. These layers preserve source torso/shoulder/hip rotations,
 // while weapon grips and aim receive small final corrections in third-person.js.
 export function createThirdPersonMotion(avatar){
- const bones=Object.fromEntries(avatar.bones.map(b=>[b.name,b])),previous=new Map();let clock=0,strideClock=0,wasGrounded=true,airAge=0,landAge=1,lastWeapon='',shotKick=0,lastFlash=false,wasMoving=false,transitionKind='',transitionAge=1,walkBlend=0;
+ const bones=Object.fromEntries(avatar.bones.map(b=>[b.name,b])),previous=new Map();let clock=0,strideClock=0,wasGrounded=true,airAge=0,landAge=1,lastWeapon='',shotKick=0,lastFlash=false,wasMoving=false,transitionKind='',transitionAge=1,walkBlend=0;const momentum=new THREE.Vector3();
  function apply(name,phase,mask=()=>true,weight=1){const clip=clips[name];if(!clip)return;for(const t of clip.tracks){const b=bones[t.bone];if(!b||!mask(t.bone))continue;const a=t.sample.evaluate(THREE.MathUtils.clamp(phase,0,1)*clip.duration);if(t.property==='quaternion')b.quaternion.slerp(new THREE.Quaternion().fromArray(a),weight);else b.position.lerp(new THREE.Vector3().fromArray(a),weight);}}
  function update(dt,state){
   clock+=dt;const {weapon,speed=0,velocity,yaw,pitch=0,grounded=true,knifePhase=-1,rollPhase=-1,meleePhase=-1,throwPhase=-1,bowMotionClip='BowIdle',bowMotionPhase=0,bowDrawing=false,bowCharge=0,flash=false}=state;
@@ -55,7 +55,7 @@ export function createThirdPersonMotion(avatar){
   if(state.motionPreview){const {action,phase:p}=state.motionPreview;const name=action==='move'?'TPSRun':action==='jump'?'Jump_Loop':action==='idle'? (weapon==='knife'?'Sword_Idle':weapon==='bow'?'M2MBowIdle':['rapid','rocket','rail','chainsaw','flame'].includes(weapon)?'Idle_Rail_Loop':'TPSAimIdle'):action==='hold'?'M2MBowHold':null;if(name)apply(name,p,n=>['move','jump'].includes(action)?lower.test(n):true);if(action==='move'&&gun)apply('TPSAimWalk',p,n=>upper.test(n));}
   const attack=boosting||jetJump||knifePhase>=0||rollPhase>=0||meleePhase>=0;const alpha=state.motionPreview||previous.size===0?1:dt>0?1-Math.exp(-dt*(knifePhase>=0?90:attack?38:18)):0;
   for(const b of avatar.bones){let old=previous.get(b.name);if(old){b.quaternion.copy(old.q.clone().slerp(b.quaternion,alpha));b.position.copy(old.p.clone().lerp(b.position,alpha));}else old={q:new THREE.Quaternion(),p:new THREE.Vector3()};old.q.copy(b.quaternion);old.p.copy(b.position);previous.set(b.name,old);}
-  avatar.motion.rotation.x=leanX;avatar.motion.rotation.z=leanZ;avatar.root.userData.motion=bodyClip;avatar.root.userData.sourceMotion=knifePhase>=0?'AuthoredDragonSlash':bodyClip;avatar.root.userData.strideRate=Math.min(1.3,Math.max(.35,speed/9.8));return {bodyClip,attack,rolling:rollPhase>=0};
+  const localMomentum=velocity.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-(yaw+Math.PI));momentum.lerp(localMomentum,1-Math.exp(-dt*8));avatar.motion.rotation.x=leanX+THREE.MathUtils.clamp(momentum.z*.008,-.16,.16);avatar.motion.rotation.z=leanZ-THREE.MathUtils.clamp(momentum.x*.008,-.16,.16);avatar.root.userData.motion=bodyClip;avatar.root.userData.sourceMotion=knifePhase>=0?'AuthoredDragonSlash':bodyClip;avatar.root.userData.strideRate=Math.min(1.3,Math.max(.35,speed/9.8));return {bodyClip,attack,rolling:rollPhase>=0};
  }
  return {update,bones,apply};
 }

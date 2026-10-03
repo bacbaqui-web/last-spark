@@ -12,5 +12,5 @@ settle({boostPhase:-1,jetJump:.2,grounded:false});assert.equal(avatar.root.userD
 view.jetpack.update({boostPhase:-1,jetJump:0,weapon:'pistol'});assert(!view.jetpack.exhaust.visible,'first leg jump does not ignite thrusters');
 view.jetpack.update({boostPhase:.4,boostDirection:new THREE.Vector3(1,0,0),weapon:'pistol',time:1});assert(view.jetpack.exhaust.visible);const axis=new THREE.Vector3(0,1,0).applyQuaternion(view.jetpack.exhaust.children[0].quaternion);assert(axis.x<-.9,'exhaust points opposite travel');
 view.jetpack.update({jetJump:.2,weapon:'pistol'});const upAxis=new THREE.Vector3(0,1,0).applyQuaternion(view.jetpack.exhaust.children[0].quaternion);assert(upAxis.y<-.99,'second jump exhaust points downward');
-settle({boostPhase:-1,jetJump:0,speed:0});assert.equal(avatar.motion.rotation.z,0,'lean resets after boost');
+settle({boostPhase:-1,jetJump:0,speed:0});assert(Math.abs(avatar.motion.rotation.z)<.001,'lean resets after boost');
 console.log('PASS: fixed boost feet, directional torso lean, first/second jump separation, directional exhaust, recovery');
