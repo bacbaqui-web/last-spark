@@ -195,7 +195,25 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   box([.12,.25,.14],[0,0,-.43],dark);for(const side of[-1,1]){box([.17,.055,.12],[0,side*.16,-.43],metal);box([.055,.24,.09],[.105,side*.12,-.43],metal);}const string=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,-.85,-.22),new THREE.Vector3(0,0,.14),new THREE.Vector3(0,.85,-.22)]),new THREE.LineBasicMaterial({color:0x8af6ff}));root.add(string);root.userData.string=string;
   const arrow=new THREE.Group();const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,1,6),metal);shaft.rotation.x=Math.PI/2;shaft.position.z=-.36;arrow.add(shaft);const tip=new THREE.Mesh(new THREE.ConeGeometry(.055,.18,4),color);tip.rotation.x=-Math.PI/2;tip.position.z=-.94;arrow.add(tip);for(const x of[-.05,.05]){const fin=new THREE.Mesh(new THREE.BoxGeometry(.09,.012,.16),color);fin.position.set(x,0,.1);arrow.add(fin);}root.add(arrow);arrow.visible=false;root.userData.nockedArrow=arrow;root.userData.muzzle=[0,0,-1.05];
  }
- if(type==='knife'){box([.09,.12,.32],[0,-.08,.04]);box([.26,.045,.08],[0,-.02,-.16],metal);box([.11,.035,.55],[0,-.02,-.46],metal);const tip=new THREE.Mesh(new THREE.ConeGeometry(.075,.2,3),metal);tip.rotation.x=-Math.PI/2;tip.position.set(0,-.02,-.83);root.add(tip);root.userData.muzzle=[0,-.02,-.94];}
+ if(type==='knife'){
+  const black=new THREE.MeshStandardMaterial({color:0x202125,metalness:.7,roughness:.38});
+  const rubber=new THREE.MeshStandardMaterial({color:0x16171c,metalness:.12,roughness:.75});
+  const red=new THREE.MeshStandardMaterial({color:0x9d3825,metalness:.45,roughness:.4});
+  const orange=new THREE.MeshStandardMaterial({color:0xff8c22,emissive:0xff6310,emissiveIntensity:1.5,metalness:.35,roughness:.3});
+  const hot=new THREE.MeshStandardMaterial({color:0xffd961,emissive:0xffba32,emissiveIntensity:1.8,metalness:.15,roughness:.3});
+  // Side profile follows a shallow curved saber, keeping the original grip origin.
+  const profile=(points,width,material)=>{const shape=new THREE.Shape();points.forEach(([z,x],i)=>i?shape.lineTo(x,-z):shape.moveTo(x,-z));shape.closePath();const geometry=new THREE.ExtrudeGeometry(shape,{depth:width,bevelEnabled:true,bevelSize:.003,bevelThickness:.002,bevelSegments:1,steps:1});geometry.translate(0,0,-width/2);geometry.rotateX(-Math.PI/2);const mesh=new THREE.Mesh(geometry,material);root.add(mesh);return mesh;};
+  profile([[-.16,-.055],[-.38,-.056],[-.64,-.032],[-.90,.013],[-1.13,.075],[-1.26,.13],[-1.16,.031],[-.96,-.077],[-.68,-.124],[-.39,-.139],[-.16,-.125]],.035,black);
+  profile([[-.17,-.104],[-.40,-.119],[-.68,-.105],[-.95,-.06],[-1.15,.045],[-1.26,.13],[-1.16,.031],[-.96,-.077],[-.68,-.124],[-.39,-.139],[-.17,-.125]],.039,orange);
+  profile([[-.17,-.119],[-.40,-.133],[-.68,-.117],[-.96,-.071],[-1.16,.038],[-1.26,.13],[-1.16,.031],[-.96,-.077],[-.68,-.124],[-.39,-.139],[-.17,-.125]],.041,hot);
+  const strip=[new THREE.Vector3(-.077,.024,-.19),new THREE.Vector3(-.087,.024,-.42),new THREE.Vector3(-.065,.024,-.70),new THREE.Vector3(-.025,.024,-.94)];root.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(strip),24,.004,5,false),orange));
+  box([.11,.095,.26],[0,0,.025],rubber);box([.13,.105,.045],[0,0,.175],black);
+  for(let i=0;i<6;i++){const rib=box([.116,.10,.012],[0,0,-.075+i*.041],black);rib.rotation.y=-.12;}
+  box([.25,.08,.05],[-.012,0,-.135],black);box([.13,.09,.033],[-.015,0,-.165],red);box([.09,.032,.12],[-.072,.052,-.12],red);
+  const pommel=new THREE.Mesh(new THREE.TorusGeometry(.045,.014,6,12),black);pommel.rotation.x=Math.PI/2;pommel.position.set(.012,0,.225);root.add(pommel);
+  for(const z of[-.12,.11]){const screw=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.012,8),metal);screw.position.set(0,.057,z);root.add(screw);}
+  root.userData.muzzle=[.13,0,-1.26];
+ }
  if(type==='chainsaw'){box([.33,.29,.44],[0,-.04,.03],color);box([.15,.12,.9],[0,.02,-.62],metal);root.userData.chainTeeth=[];for(let i=0;i<13;i++)for(const x of[-.1,.1]){const tooth=box([.065,.07,.035],[x,.02,-.2-i*.065],dark);tooth.userData.baseZ=tooth.position.z;root.userData.chainTeeth.push(tooth);}for(const x of[-.22,.22])box([.055,.28,.055],[x,.08,.05]);box([.49,.055,.055],[0,.22,.05],metal);root.userData.muzzle=[0,.02,-1.1];}
  if(type==='sword'){box([.13,.38,.13],[0,0,0]);box([.6,.1,.2],[0,.24,0],metal);box([.28,2.5,.085],[0,1.54,0],metal);box([.035,2.43,.10],[.155,1.53,0],color);box([.2,.12,.2],[0,-.25,0],color);const tip=new THREE.Mesh(new THREE.ConeGeometry(.16,.3,4),metal);tip.position.set(0,2.94,0);root.add(tip);root.userData.grip=[0,0,0];}
 
