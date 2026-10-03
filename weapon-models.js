@@ -142,6 +142,7 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   for(let i=0;i<4;i++)box([.10,.02,.055],[.202,.08,-.17+i*.12],color);
   const hose=new THREE.CatmullRomCurve3([new THREE.Vector3(.18,-.06,-.27),new THREE.Vector3(.28,-.14,.04),new THREE.Vector3(.24,-.10,.38),new THREE.Vector3(.08,0,.39)]);
   root.add(new THREE.Mesh(new THREE.TubeGeometry(hose,18,.027,6,false),dark));
+  box([.16,.04,.14],[0,.45,.20],dark);box([.025,.09,.035],[-.055,.50,.20],color);box([.025,.09,.035],[.055,.50,.20],color);root.userData.sightCenter=[0,.515,.20];
   root.userData.muzzle=[0,.04,-1.04];
  }
  if(type==='sniper'){
@@ -250,7 +251,7 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   }
   root.userData.chargeRings=[];for(const z of[-.16,-.26,-.36,-.46,-.56]){const mat=accent(0x48ddff);mat.color.setHex(0x37424c);mat.emissiveIntensity=.08;const ring=new THREE.Mesh(new THREE.TorusGeometry(.092,.012,8,20),mat);ring.position.set(0,.015,z);root.add(ring);root.userData.chargeRings.push(ring);}
   box([.07,.045,.12],[0,.28,.07],black);box([.025,.012,.025],[0,.308,.065],cyan);
-  root.scale.setScalar(.78);root.userData.muzzle=[0,.015,-1.11];
+  root.scale.setScalar(.78);root.userData.sightCenter=[0,.32,.065];root.userData.muzzle=[0,.015,-1.11];
  }
  if(type==='bow'){
   root.scale.setScalar(.8);root.userData.limbs=[];
