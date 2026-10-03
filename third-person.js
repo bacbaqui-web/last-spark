@@ -38,14 +38,14 @@ export function createThirdPersonView(avatar,types){
     // weapons and raised shoulder weapons use different anchors.
     const heavy=['rapid','flame','chainsaw','rail'].includes(weapon),reach=weapon==='chainsaw'?chainsawBlend*.15:0;
     const aim=THREE.MathUtils.clamp(adsBlend,0,1);
-    const canonical=position.clone().add(v(THREE.MathUtils.lerp(heavy?.38:.29,.18,aim),THREE.MathUtils.lerp(heavy?-.82:-.67,-.27,aim),-.38-reach).applyQuaternion(heading)),anchor=canonical;
+    const canonical=position.clone().add(v(THREE.MathUtils.lerp(heavy?.38:.29,.18,aim),THREE.MathUtils.lerp(heavy?-.82:-.67,-.27,aim),-.38-reach).applyQuaternion(heading)),anchor=weapon==='rocket'?position.clone().add(v(.12,-.44,-.25).applyQuaternion(heading)):canonical;
     if(firing&&flash&&!['laser','chainsaw','flame'].includes(weapon))anchor.add(v(0,0,.025).applyQuaternion(heading));
     const pole=avatar.root.localToWorld(v(-.45,1.1,.05));armIK(avatar.arms[1],anchor,pole);
     hand.quaternion.copy(hand.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(heading));hand.updateWorldMatrix(false,true);
     // Model origin is the receiver; the trigger hand holds the actual grip below it.
-    const trigger=weapon==='chainsaw'?v(.12,-.09,.50):weapon==='rapid'?v(0,-.14,.63):v(0,-.2,.12);
+    const trigger=weapon==='rocket'?v(-.30,-.29,.10):weapon==='chainsaw'?v(.12,-.09,.50):weapon==='rapid'?v(0,-.14,.63):v(0,-.2,.12);
     model.quaternion.copy(hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(heading));model.position.copy(trigger.multiplyScalar(-model.scale.x).applyQuaternion(model.quaternion));model.userData.gripRotation=model.quaternion.clone();model.userData.gripPosition=model.position.clone();model.updateWorldMatrix(true,true);
-    const support=weapon==='chainsaw'?v(-.16,.22,.05):weapon==='rapid'?v(-.19,-.22,-.14):v(-.045,-.08,-.43);
+    const support=weapon==='rocket'?v(.16,-.23,-.06):weapon==='chainsaw'?v(-.16,.22,.05):weapon==='rapid'?v(-.19,-.22,-.14):v(-.045,-.08,-.43);
     const target=model.localToWorld(support),leftPole=avatar.root.localToWorld(v(.45,1.1,.05));armIK(avatar.arms[0],target,leftPole);
    }else{model.quaternion.copy(model.userData.gripRotation||new THREE.Quaternion());model.position.copy(model.userData.gripPosition||v(0,0,0));}
   }
