@@ -1,3 +1,4 @@
+import {sampleKnifeSlash} from './knife-motion.js';
 import * as THREE from 'three';
 import motionData from './weapon-motion-data.json' with {type:'json'};
 // Baked arm joint positions and wrist rotations from the credited animation files.
@@ -7,7 +8,7 @@ export function createWeaponMotion(parent,models){
  const root=new THREE.Group();root.name='animated-weapon-arms';parent.add(root);
  const material=new THREE.MeshStandardMaterial({color:0x91aeba,metalness:.5,roughness:.45}),jointMaterial=new THREE.MeshStandardMaterial({color:0x152e3b,metalness:.3,roughness:.6}),arms=[];
  for(let side=0;side<2;side++){const parts=[];for(let i=0;i<2;i++){const mesh=new THREE.Mesh(new THREE.CylinderGeometry(i===0?.045:.038,i===0?.042:.045,1,8),material);root.add(mesh);parts.push(mesh);}const hand=new THREE.Mesh(new THREE.BoxGeometry(.08,.085,.12),jointMaterial);root.add(hand);arms.push({parts,hand});}
- const poses=sampleWeaponMotion('BowIdle',0),baseWrist=sampleWeaponMotion('Sword_Dash',0)[5].quaternion.clone().invert(),bladeRest=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,-1),new THREE.Vector3(.55,.40,-1).normalize());
+ const poses=sampleWeaponMotion('BowIdle',0);
  let lastWeapon='',releaseAge=-1;
  function cancel(){releaseAge=-1;lastWeapon='';}
  function release(){releaseAge=0;}
@@ -19,7 +20,13 @@ export function createWeaponMotion(parent,models){
   const sampled=sampleWeaponMotion(name,phase),offset=weapon==='bow'?new THREE.Vector3(-.18,.03,-.75):new THREE.Vector3(.05,.12,-.85),blend=changed?1:1-Math.exp(-dt*35);
   for(let i=0;i<poses.length;i++){poses[i].position.lerp(sampled[i].position.clone().add(offset),blend);poses[i].quaternion.slerp(sampled[i].quaternion,blend);}
   for(let side=0;side<2;side++){const p=poses.slice(side*3,side*3+3),arm=arms[side];for(let i=0;i<2;i++){const delta=p[i+1].position.clone().sub(p[i].position),mesh=arm.parts[i];mesh.position.copy(p[i].position).add(p[i+1].position).multiplyScalar(.5);mesh.scale.y=delta.length()*.94;mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());}arm.hand.position.copy(p[2].position);arm.hand.quaternion.copy(p[2].quaternion);}
-  const model=models[weapon];if(weapon==='knife'){model.position.copy(poses[5].position);model.quaternion.copy(poses[5].quaternion).multiply(baseWrist).multiply(bladeRest);}
+  const model=models[weapon];if(weapon==='knife'){
+   const slash=sampleKnifeSlash(knifePhase);model.position.copy(slash.grip);model.quaternion.copy(slash.rotation);
+   const right=slash.grip,left=right.clone().add(new THREE.Vector3(0,0,.12).applyQuaternion(slash.rotation));
+   for(const [side,target] of [[0,left],[1,right]]){const arm=arms[side],shoulder=new THREE.Vector3(side===0?-.25:.25,-.3,.03),elbow=shoulder.clone().lerp(target,.5).add(new THREE.Vector3(side===0?-.13:.13,-.12,.08));
+    for(const [i,a,b] of [[0,shoulder,elbow],[1,elbow,target]]){const d=b.clone().sub(a),mesh=arm.parts[i];mesh.position.copy(a).add(b).multiplyScalar(.5);mesh.scale.y=d.length()*.94;mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());}arm.hand.position.copy(target);arm.hand.quaternion.copy(slash.rotation);}
+   root.userData.slashStage=slash.stage;
+  }
   else{model.quaternion.identity();model.rotation.z=-.08;model.position.copy(poses[2].position).sub(new THREE.Vector3(0,0,-.43).multiplyScalar(.8).applyQuaternion(model.quaternion));model.updateMatrixWorld(true);const pull=model.worldToLocal(parent.localToWorld(poses[5].position.clone())),string=model.userData.string,positions=string.geometry.attributes.position;if(!bowDrawing)pull.set(0,0,.14);positions.setXYZ(1,pull.x,pull.y,pull.z);positions.needsUpdate=true;string.geometry.computeBoundingSphere();const arrow=model.userData.nockedArrow;arrow.visible=bowDrawing&&ammo>0;arrow.position.copy(pull).sub(new THREE.Vector3(0,0,.14));arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1),new THREE.Vector3(0,0,-.43).sub(pull).normalize());for(const limb of model.userData.limbs)limb.rotation.x=limb.userData.side*Math.min(1,bowCharge/2.2)*.08;}
   root.userData.clip=name;root.userData.phase=phase;root.userData.weapon=weapon;
  }

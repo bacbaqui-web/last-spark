@@ -1,3 +1,4 @@
+import {sampleKnifeSlash} from './knife-motion.js';
 import * as THREE from 'three';
 import {createWeaponModel} from './weapon-models.js';
 import {createThirdPersonMotion} from './third-person-motion.js';
@@ -27,7 +28,17 @@ export function createThirdPersonView(avatar,types){
   firePose=THREE.MathUtils.damp(firePose,Math.max(adsBlend,fireHold>0?1:0),18,dt);
   const heading=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ'));
   model.position.set(0,0,0);model.quaternion.identity();
-  if(weapon==='knife')model.quaternion.copy(knifeMount);
+  if(weapon==='knife'){
+   if(knifePhase<0||result.rolling||throwPhase>=0)model.quaternion.copy(knifeMount);
+   else{
+    const slash=sampleKnifeSlash(knifePhase),worldRotation=heading.clone().multiply(slash.rotation),grip=position.clone().add(slash.grip.clone().applyQuaternion(heading)),hand=avatar.arms[1].hand;
+    armIK(avatar.arms[1],grip,position.clone().add(v(.65,-.2,.1).applyQuaternion(heading)));avatar.root.updateMatrixWorld(true);
+    hand.quaternion.copy(hand.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(worldRotation));hand.updateWorldMatrix(false,true);
+    model.quaternion.copy(hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(worldRotation));model.position.set(0,0,0);model.updateWorldMatrix(true,true);
+    armIK(avatar.arms[0],model.localToWorld(v(0,0,.12)),position.clone().add(v(-.65,-.2,.1).applyQuaternion(heading)));
+    model.userData.slashStage=slash.stage;
+   }
+  }
   else if(weapon==='bow'){
    // Keep both grip and nock on the aim line; retargeted wrist trajectories
    // have different proportions and otherwise turn the displayed arrow sideways.

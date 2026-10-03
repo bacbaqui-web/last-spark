@@ -1,3 +1,4 @@
+import {sampleKnifeSlash} from './knife-motion.js';
 import * as THREE from 'three';
 import data from './third-person-motion-data.json' with {type:'json'};
 const upper=/^(spine|neck|Head|clavicle|upperarm|lowerarm|hand)/;
@@ -31,8 +32,8 @@ export function createThirdPersonMotion(avatar){
   if(!grounded){const clip=airAge<.15?'Jump_Start':'Jump_Loop';apply(clip,airAge<.15?airAge/.15:(clock%clips.Jump_Loop.duration)/clips.Jump_Loop.duration,n=>lower.test(n));bodyClip+=' + '+clip;}
   else if(landAge<.16){apply('Jump_Land',landAge/.16,n=>lower.test(n),1-landAge/.16);bodyClip+=' + Jump_Land';}
   if(knifePhase>=0){
-   if(knifePhase<.12)apply('Sword_Dash',knifePhase/.12*.08);
-   else{const swing=THREE.MathUtils.clamp((knifePhase-.12)/.65,0,1);apply('M2MSwordSlash',swing*swing*(3-2*swing));}
+   apply('Sword_Dash',0,n=>upper.test(n));
+   const slash=sampleKnifeSlash(knifePhase);bones.spine_02.rotateY(slash.twist*.45);bones.spine_03.rotateY(slash.twist*.55);bones.spine_02.rotateX(.12);bones.pelvis.rotateX(.06);
    bodyClip='Sword_Dash';
   }
   else if(rollPhase>=0){apply('Roll',rollPhase);bodyClip='Roll';}
@@ -42,9 +43,9 @@ export function createThirdPersonMotion(avatar){
   if(rollPhase<0){bones.spine_02.rotateX(THREE.MathUtils.clamp(pitch,-1.1,1.1)*.3);bones.spine_03.rotateX(THREE.MathUtils.clamp(pitch,-1.1,1.1)*.35);bones.neck_01.rotateX(THREE.MathUtils.clamp(pitch,-1.1,1.1)*.2);}
   if(shotKick>.001&&!['knife','bow','laser','chainsaw','flame'].includes(weapon)&&rollPhase<0)bones.spine_03.rotateX(-shotKick*.04);
   if(state.motionPreview){const {action,phase:p}=state.motionPreview;const name=action==='move'?'TPSRun':action==='jump'?'Jump_Loop':action==='idle'? (weapon==='knife'?'Sword_Idle':weapon==='bow'?'M2MBowIdle':['rapid','rocket','rail','chainsaw','flame'].includes(weapon)?'Idle_Rail_Loop':'TPSAimIdle'):action==='hold'?'M2MBowHold':null;if(name)apply(name,p,n=>['move','jump'].includes(action)?lower.test(n):true);if(action==='move'&&gun)apply('TPSAimWalk',p,n=>upper.test(n));}
-  const attack=knifePhase>=0||rollPhase>=0||meleePhase>=0;const alpha=state.motionPreview||previous.size===0?1:dt>0?1-Math.exp(-dt*(attack?38:18)):0;
+  const attack=knifePhase>=0||rollPhase>=0||meleePhase>=0;const alpha=state.motionPreview||previous.size===0?1:dt>0?1-Math.exp(-dt*(knifePhase>=0?90:attack?38:18)):0;
   for(const b of avatar.bones){let old=previous.get(b.name);if(old){b.quaternion.copy(old.q.clone().slerp(b.quaternion,alpha));b.position.copy(old.p.clone().lerp(b.position,alpha));}else old={q:new THREE.Quaternion(),p:new THREE.Vector3()};old.q.copy(b.quaternion);old.p.copy(b.position);previous.set(b.name,old);}
-  avatar.motion.rotation.x=0;avatar.root.userData.motion=bodyClip;avatar.root.userData.sourceMotion=knifePhase>=.12?'M2MSwordSlash':bodyClip;avatar.root.userData.strideRate=Math.min(1.3,Math.max(.35,speed/9.8));return {bodyClip,attack,rolling:rollPhase>=0};
+  avatar.motion.rotation.x=0;avatar.root.userData.motion=bodyClip;avatar.root.userData.sourceMotion=knifePhase>=0?'AuthoredDragonSlash':bodyClip;avatar.root.userData.strideRate=Math.min(1.3,Math.max(.35,speed/9.8));return {bodyClip,attack,rolling:rollPhase>=0};
  }
  return {update,bones,apply};
 }
