@@ -53,7 +53,7 @@ export function createThirdPersonView(avatar,types){
     const heavy=['rapid','flame','chainsaw','rail'].includes(weapon),reach=weapon==='chainsaw'?chainsawBlend*.15:0;
     const aim=THREE.MathUtils.clamp(Math.max(adsBlend,firePose),0,1);
     const weaponHeading=heading.clone();if(weapon!=='rocket')weaponHeading.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(THREE.MathUtils.lerp(heavy?-.16:-.30,0,aim),THREE.MathUtils.lerp(heavy?.34:.14,0,aim),THREE.MathUtils.lerp(heavy?-.10:-.05,0,aim))));
-    const canonical=position.clone().add(v(THREE.MathUtils.lerp(heavy?.25:.22,heavy?.32:.18,aim),THREE.MathUtils.lerp(heavy?-.59:-.46,heavy?-.49:-.27,aim),THREE.MathUtils.lerp(-.27,heavy?-.43:-.38,aim)-reach).applyQuaternion(heading)),anchor=weapon==='rocket'?position.clone().add(v(.12,-.44,-.25).applyQuaternion(heading)):canonical;
+    const canonical=position.clone().add(v(THREE.MathUtils.lerp(heavy?.25:.22,heavy?.32:.18,aim),THREE.MathUtils.lerp(heavy?-.59:-.46,heavy?-.49:-.27,aim),THREE.MathUtils.lerp(-.27,heavy?-.43:-.38,aim)-reach).applyQuaternion(heading)),anchor=weapon==='rocket'?avatar.arms[1].shoulder.getWorldPosition(new THREE.Vector3()).add(v(.03,.10,-.16).applyQuaternion(heading)).add(v(-.30,-.29,.10).multiplyScalar(model.scale.x).applyQuaternion(heading)):canonical;
     if(firing&&flash&&!['laser','chainsaw','flame'].includes(weapon))anchor.add(v(0,0,.025).applyQuaternion(heading));
     const pole=avatar.root.localToWorld(v(-.45,1.1,.05));armIK(avatar.arms[1],anchor,pole);
     hand.quaternion.copy(hand.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(weaponHeading));hand.updateWorldMatrix(false,true);
