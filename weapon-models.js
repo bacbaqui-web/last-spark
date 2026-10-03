@@ -120,7 +120,30 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   detailBatch(root,parts);
   root.scale.setScalar(.68);root.userData.sightCenter=[0,.205,-.04];root.userData.muzzle=[0,.055,-1.36];
  }
- if(type==='rail'){box([.3,.3,.6],[0,0,-.12]);for(const x of[-.18,.18]){box([.085,.13,.64],[x,.04,-.45],metal);box([.055,.055,.55],[x,.11,-.44],color);}const core=new THREE.Mesh(new THREE.SphereGeometry(.135,12,8),color);core.position.set(0,.02,-.5);root.add(core);for(const z of[-.24,-.44,-.65]){const ring=new THREE.Mesh(new THREE.TorusGeometry(.18,.025,6,16),color);ring.position.set(0,.02,z);root.add(ring);}box([.13,.25,.15],[0,-.21,.12]);root.userData.muzzle=[0,.02,-.77];}
+ if(type==='rail'){
+  const shell=new THREE.MeshStandardMaterial({color:0x9ba5ad,metalness:.85,roughness:.38}),ochre=new THREE.MeshStandardMaterial({color:0x88713b,metalness:.72,roughness:.5});
+  barrel(.20,.66,[0,0,.02],ochre);barrel(.23,.10,[0,0,.30],metal);
+  box([.13,.27,.15],[0,-.21,.12]);box([.22,.06,.36],[0,-.35,.01],ochre);box([.055,.27,.06],[.11,-.19,-.15],ochre);
+  const center=new THREE.Vector3(0,.04,-.60),radius=.38;
+  const globe=new THREE.Mesh(new THREE.SphereGeometry(radius,24,16),shell);globe.position.copy(center);root.add(globe);
+  // Recessed vent mouths follow the curved housing rather than a flat grid.
+  for(const theta of[.62,1.02,1.42,1.85,2.25])for(let i=0;i<12;i++){
+   const phi=i*Math.PI/6+(theta>1.5?.15:0),normal=new THREE.Vector3(Math.sin(theta)*Math.cos(phi),Math.sin(theta)*Math.sin(phi),-Math.cos(theta));
+   const vent=new THREE.Mesh(new THREE.CircleGeometry(.041,10),dark);vent.position.copy(center).addScaledVector(normal,radius+.001);vent.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),normal);root.add(vent);
+   const lip=new THREE.Mesh(new THREE.TorusGeometry(.044,.006,5,10),metal);lip.position.copy(vent.position);lip.quaternion.copy(vent.quaternion);root.add(lip);
+  }
+  barrel(.115,.10,[0,.04,-.975],dark);barrel(.078,.015,[0,.04,-1.029],color);
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(.115,.018,8,20),metal);rim.position.set(0,.04,-1.029);root.add(rim);
+  for(const z of[-.24,.05,.27]){barrel(.215,.045,[0,0,z],metal);}
+  for(const x of[-.23,.23]){
+   box([.045,.045,.69],[x,.25,.02],ochre);box([.045,.20,.045],[x,.15,-.30],ochre);box([.045,.20,.045],[x,.15,.34],ochre);
+   box([.025,.025,.46],[x,-.20,-.02],metal);
+  }
+  for(let i=0;i<4;i++)box([.10,.02,.055],[.202,.08,-.17+i*.12],color);
+  const hose=new THREE.CatmullRomCurve3([new THREE.Vector3(.18,-.06,-.27),new THREE.Vector3(.28,-.14,.04),new THREE.Vector3(.24,-.10,.38),new THREE.Vector3(.08,0,.39)]);
+  root.add(new THREE.Mesh(new THREE.TubeGeometry(hose,18,.027,6,false),dark));
+  root.userData.muzzle=[0,.04,-1.04];
+ }
  if(type==='sniper'){
   const steel=new THREE.MeshStandardMaterial({color:0x77797b,metalness:.8,roughness:.4,map:panelTexture});
   const black=new THREE.MeshStandardMaterial({color:0x24272b,metalness:.65,roughness:.4});
@@ -314,16 +337,5 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
  }
  if(type==='sword'){box([.13,.38,.13],[0,0,0]);box([.6,.1,.2],[0,.24,0],metal);box([.28,2.5,.085],[0,1.54,0],metal);box([.035,2.43,.10],[.155,1.53,0],color);box([.2,.12,.2],[0,-.25,0],color);const tip=new THREE.Mesh(new THREE.ConeGeometry(.16,.3,4),metal);tip.position.set(0,2.94,0);root.add(tip);root.userData.grip=[0,0,0];}
 
- if(['rail'].includes(type)){
-  const wide=type==='rapid'?.42:type==='rail'?.32:.22;
-  const parts=[[[wide,.055,.28],[0,.17,.02],metal],[[.035,.07,.025],[-wide/2,.07,.16],type==='pistol'?dark:color],[[.035,.07,.025],[wide/2,.07,.16],type==='pistol'?dark:color],[[.1,.045,.12],[0,-.31,.15],metal]];
-  if(type==='rail'){for(const x of[-.18,.18])for(let i=0;i<5;i++)parts.push([[.12,.045,.03],[x,.065,-.27-i*.09],metal]);parts.push([[.17,.08,.2],[0,.22,.02],metal],[[.12,.045,.11],[0,.27,.01],color],[[.18,.12,.15],[0,-.14,-.24],metal]);}
-  if(type==='rail'){
-   for(const x of[-.23,.23])for(let i=0;i<4;i++)parts.push([[.07,.11,.045],[x,.025,-.18-i*.105],dark]);
-   parts.push([[.13,.18,.23],[0,-.19,-.33],color],[[.32,.03,.17],[0,-.16,.06],metal]);
-  }
-
-  detailBatch(root,parts);
- }
  root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return root;
 }
