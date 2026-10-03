@@ -1,3 +1,4 @@
+import {createJetpack} from './jetpack.js';
 import {createHeavyEquipment} from './heavy-equipment.js';
 import {sampleKnifeSlash} from './knife-motion.js';
 import * as THREE from 'three';
@@ -11,14 +12,13 @@ export function createThirdPersonView(avatar,types){
  const camera=new THREE.PerspectiveCamera(78,1,.08,150),models={},motion=createThirdPersonMotion(avatar);let bodyInitialized=false,firePose=0,fireHold=0,poseWeapon='',minigunAim=0;
  motion.apply('Sword_Idle',0);avatar.root.updateMatrixWorld(true);const knifeMount=avatar.arms[1].hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(new THREE.Quaternion().setFromUnitVectors(v(0,0,-1),v(-.45,.35,1).normalize()));
  for(const type of types){const model=createWeaponModel(type);model.scale.multiplyScalar((type==='rocket'?1.45:1)/1.17);model.visible=false;const muzzleFlash=new THREE.Mesh(new THREE.ConeGeometry(.07,.2,5),new THREE.MeshBasicMaterial({color:0xffeaa1}));muzzleFlash.rotation.x=-Math.PI/2;muzzleFlash.position.fromArray(model.userData.muzzle);muzzleFlash.visible=false;model.add(muzzleFlash);model.userData.viewFlash=muzzleFlash;avatar.arms[type==='bow'?0:1].hand.add(model);model.traverse(o=>{if(o.isMesh)o.castShadow=true;});models[type]=model;}
- const equipment=createHeavyEquipment(avatar);
+ const equipment=createHeavyEquipment(avatar),jetpack=createJetpack(avatar);
  const customMotion=createCustomMotion(avatar,models),modelScales=Object.fromEntries(Object.entries(models).map(([k,m])=>[k,m.scale.clone()]));
  function pose(state){
   customMotion(null);for(const [k,m]of Object.entries(models))m.scale.copy(modelScales[k]);
   const {position,yaw,pitch,weapon,speed=0,velocity=v(0,0,0),knifePhase=-1,knifeCombo=1,knifeGuard=false,knifeBlock=0,knifeRush=false,bowDrawing=false,bowCharge=0,chainsawBlend=0,time=0,dt=0,flash=false,laserHeat=0,firing=false,adsBlend=0,rollPhase=-1,rollDirection,knifeDirection,throwPhase=-1}=state;
   let bodyYaw=yaw+Math.PI;
-  if(rollPhase>=0&&rollDirection?.lengthSq()>.01)bodyYaw=Math.atan2(rollDirection.x,rollDirection.z);
-  else if(knifePhase>=0&&knifeDirection?.lengthSq()>.01)bodyYaw=Math.atan2(knifeDirection.x,knifeDirection.z);
+  if(knifePhase>=0&&knifeDirection?.lengthSq()>.01)bodyYaw=Math.atan2(knifeDirection.x,knifeDirection.z);
   avatar.root.position.copy(position).add(v(0,-1.7,0));const turn=Math.atan2(Math.sin(bodyYaw-avatar.root.rotation.y),Math.cos(bodyYaw-avatar.root.rotation.y));avatar.root.rotation.set(0,bodyInitialized?avatar.root.rotation.y+turn*(1-Math.exp(-dt*24)):bodyYaw,0);bodyInitialized=true;avatar.blaster.visible=false;
   // Normalize animation speed to the stride's recorded pace, never the 30m/s dash speed.
   animateRobot(avatar,dt,{speed:Math.min(5,speed/9.8*4.5),aim:0,velocityX:velocity.x,velocityZ:velocity.z,yaw:bodyYaw});
@@ -68,7 +68,7 @@ export function createThirdPersonView(avatar,types){
     const target=model.localToWorld(support),leftPole=avatar.root.localToWorld(v(.45,1.1,.05));armIK(avatar.arms[0],target,leftPole);
    }else{model.quaternion.copy(model.userData.gripRotation||new THREE.Quaternion());model.position.copy(model.userData.gripPosition||v(0,0,0));}
   }
-  const customized=customMotion(state);if(customized&&weapon==='bow'&&bowDrawing){const pull=model.worldToLocal(avatar.arms[1].hand.getWorldPosition(new THREE.Vector3())),pos=model.userData.string.geometry.attributes.position;pos.setXYZ(1,pull.x,pull.y,pull.z);pos.needsUpdate=true;model.userData.string.geometry.computeBoundingSphere();model.userData.nockedArrow.position.copy(pull).sub(v(0,0,.14));const direction=v(0,0,-.43).sub(pull).normalize();model.userData.nockedArrow.quaternion.setFromUnitVectors(v(0,0,-1),direction);}
+  const customized=state.boostPhase>=0||state.jetJump>0?false:customMotion(state);if(customized&&weapon==='bow'&&bowDrawing){const pull=model.worldToLocal(avatar.arms[1].hand.getWorldPosition(new THREE.Vector3())),pos=model.userData.string.geometry.attributes.position;pos.setXYZ(1,pull.x,pull.y,pull.z);pos.needsUpdate=true;model.userData.string.geometry.computeBoundingSphere();model.userData.nockedArrow.position.copy(pull).sub(v(0,0,.14));const direction=v(0,0,-.43).sub(pull).normalize();model.userData.nockedArrow.quaternion.setFromUnitVectors(v(0,0,-1),direction);}
   if(weapon==='chainsaw')for(const tooth of model.userData.chainTeeth)tooth.position.z=tooth.userData.baseZ+((time*8)%1)*.065*chainsawBlend;
   equipment.update(weapon,model,time);
   model.userData.viewFlash.visible=flash&&!['knife','bow','chainsaw','laser','flame'].includes(weapon);if(weapon==='laser')for(const [i,ring]of model.userData.chargeRings.entries()){const lit=firing&&i<=Math.min(4,Math.floor(laserHeat+1e-7));ring.material.color.setHex(lit?0xff7398:0x37424c);ring.material.emissiveIntensity=lit?2.5:.08;}if(weapon==='rapid')model.userData.rotor.rotation.z=time*(firing?45:0);avatar.root.updateMatrixWorld(true);
@@ -78,5 +78,5 @@ export function createThirdPersonView(avatar,types){
   let limit=distance;for(const side of[v(0,0,0),v(.2,0,0),v(-.2,0,0),v(0,.2,0),v(0,-.2,0)]){const ray=new THREE.Raycaster(origin.clone().add(side),direction,0,distance),wall=ray.intersectObjects(obstacles,false)[0];if(wall)limit=Math.min(limit,Math.max(.08,wall.distance-.25));}
   camera.position.copy(origin).addScaledVector(direction,limit);camera.lookAt(aimPoint);camera.updateMatrixWorld(true);return camera;
  }
- return {camera,models,pose,cameraPose,motion,equipment};
+ return {camera,models,pose,cameraPose,motion,equipment,jetpack};
 }
