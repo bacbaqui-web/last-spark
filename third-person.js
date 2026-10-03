@@ -6,7 +6,7 @@ import {armIK} from './sword-combat.js';
 import {animateRobot} from './robot.js';
 const v=(x,y,z)=>new THREE.Vector3(x,y,z);
 export function createThirdPersonView(avatar,types){
- const camera=new THREE.PerspectiveCamera(78,1,.08,150),models={},motion=createThirdPersonMotion(avatar);let bodyInitialized=false;
+ const camera=new THREE.PerspectiveCamera(78,1,.08,150),models={},motion=createThirdPersonMotion(avatar);let bodyInitialized=false,firePose=0,fireHold=0,poseWeapon='';
  motion.apply('Sword_Idle',0);avatar.root.updateMatrixWorld(true);const knifeMount=avatar.arms[1].hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(new THREE.Quaternion().setFromUnitVectors(v(0,0,-1),v(-.45,.35,1).normalize()));
  for(const type of types){const model=createWeaponModel(type);model.scale.multiplyScalar(1/1.17);model.visible=false;const muzzleFlash=new THREE.Mesh(new THREE.ConeGeometry(.07,.2,5),new THREE.MeshBasicMaterial({color:0xffeaa1}));muzzleFlash.rotation.x=-Math.PI/2;muzzleFlash.position.fromArray(model.userData.muzzle);muzzleFlash.visible=false;model.add(muzzleFlash);model.userData.viewFlash=muzzleFlash;avatar.arms[type==='bow'?0:1].hand.add(model);model.traverse(o=>{if(o.isMesh)o.castShadow=true;});models[type]=model;}
  const customMotion=createCustomMotion(avatar,models),modelScales=Object.fromEntries(Object.entries(models).map(([k,m])=>[k,m.scale.clone()]));
@@ -22,6 +22,9 @@ export function createThirdPersonView(avatar,types){
   const result=motion.update(dt,{...state,velocity});avatar.root.updateMatrixWorld(true);
   for(const [type,model]of Object.entries(models))model.visible=type===weapon;
   const model=models[weapon];if(!model)return;
+  if(poseWeapon!==weapon){poseWeapon=weapon;firePose=0;fireHold=0;}
+  if(firing||flash)fireHold=.22;else fireHold=Math.max(0,fireHold-dt);
+  firePose=THREE.MathUtils.damp(firePose,Math.max(adsBlend,fireHold>0?1:0),18,dt);
   const heading=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ'));
   model.position.set(0,0,0);model.quaternion.identity();
   if(weapon==='knife')model.quaternion.copy(knifeMount);
@@ -37,15 +40,16 @@ export function createThirdPersonView(avatar,types){
     // Grip correction is layered over the source chest/shoulder pose. Lowered heavy
     // weapons and raised shoulder weapons use different anchors.
     const heavy=['rapid','flame','chainsaw','rail'].includes(weapon),reach=weapon==='chainsaw'?chainsawBlend*.15:0;
-    const aim=THREE.MathUtils.clamp(adsBlend,0,1);
-    const canonical=position.clone().add(v(THREE.MathUtils.lerp(heavy?.38:.29,.18,aim),THREE.MathUtils.lerp(heavy?-.82:-.67,-.27,aim),-.38-reach).applyQuaternion(heading)),anchor=weapon==='rocket'?position.clone().add(v(.12,-.44,-.25).applyQuaternion(heading)):canonical;
+    const aim=THREE.MathUtils.clamp(Math.max(adsBlend,firePose),0,1);
+    const weaponHeading=heading.clone();if(weapon!=='rocket')weaponHeading.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(THREE.MathUtils.lerp(heavy?-.16:-.30,0,aim),THREE.MathUtils.lerp(heavy?.34:.14,0,aim),THREE.MathUtils.lerp(heavy?-.10:-.05,0,aim))));
+    const canonical=position.clone().add(v(THREE.MathUtils.lerp(heavy?.25:.22,heavy?.32:.18,aim),THREE.MathUtils.lerp(heavy?-.59:-.46,heavy?-.49:-.27,aim),THREE.MathUtils.lerp(-.27,heavy?-.43:-.38,aim)-reach).applyQuaternion(heading)),anchor=weapon==='rocket'?position.clone().add(v(.12,-.44,-.25).applyQuaternion(heading)):canonical;
     if(firing&&flash&&!['laser','chainsaw','flame'].includes(weapon))anchor.add(v(0,0,.025).applyQuaternion(heading));
     const pole=avatar.root.localToWorld(v(-.45,1.1,.05));armIK(avatar.arms[1],anchor,pole);
-    hand.quaternion.copy(hand.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(heading));hand.updateWorldMatrix(false,true);
+    hand.quaternion.copy(hand.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(weaponHeading));hand.updateWorldMatrix(false,true);
     // Model origin is the receiver; the trigger hand holds the actual grip below it.
     const trigger=weapon==='rocket'?v(-.30,-.29,.10):weapon==='chainsaw'?v(.12,-.09,.50):weapon==='rapid'?v(0,-.14,.63):v(0,-.2,.12);
-    model.quaternion.copy(hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(heading));model.position.copy(trigger.multiplyScalar(-model.scale.x).applyQuaternion(model.quaternion));model.userData.gripRotation=model.quaternion.clone();model.userData.gripPosition=model.position.clone();model.updateWorldMatrix(true,true);
-    const support=weapon==='rocket'?v(.16,-.23,-.06):weapon==='chainsaw'?v(-.16,.22,.05):weapon==='rapid'?v(-.19,-.22,-.14):v(-.045,-.08,-.43);
+    model.quaternion.copy(hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(weaponHeading));model.position.copy(trigger.multiplyScalar(-model.scale.x).applyQuaternion(model.quaternion));model.userData.gripRotation=model.quaternion.clone();model.userData.gripPosition=model.position.clone();model.updateWorldMatrix(true,true);
+    const support=weapon==='rocket'?v(.16,-.23,-.06):weapon==='chainsaw'?v(-.16,.22,.05):weapon==='rapid'?v(-.19,-.22,-.14):weapon==='flame'?v(-.06,-.19,-.24):v(-.045,-.08,-.43);
     const target=model.localToWorld(support),leftPole=avatar.root.localToWorld(v(.45,1.1,.05));armIK(avatar.arms[0],target,leftPole);
    }else{model.quaternion.copy(model.userData.gripRotation||new THREE.Quaternion());model.position.copy(model.userData.gripPosition||v(0,0,0));}
   }
