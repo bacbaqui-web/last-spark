@@ -770,3 +770,9 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - 드론: 드론 보스 모델의 32% 크기, 기본 체력 32, 이동 속도 1.8. 느리게 비행하며 시야가 확보되면 1.6~2.3초마다 단발 사격합니다. 지형 높이보다 위에서 비행합니다.
 - 암살자: 보병 크기의 검은색 쌍칼 적, 기본 체력 65, 이동 속도 5.2. 총 조준을 받으면 엄폐 경로를 선택하며, 엄폐가 없으면 측면으로 크게 우회해 플레이어 뒤쪽을 노립니다. 근접 피해는 정면 10/후방 18이며 1.4초 간격으로 공격합니다. 기존 지형 경로 탐색과 충돌 처리를 사용합니다.
 - 검증: 빌드, verify-fire-knife(드론 단발/간격, 암살자 후방 우회/크기 포함), verify-third-person 통과. 두 적 외형을 브라우저에서 확인했습니다.
+
+### 이동 속도와 모션 소스 조사 (2026-10-04)
+- 일반 이동 속도를 9.8에서 10.8(+10.2%), 정밀 조준 이동을 1.8에서 2로 조정했습니다. 기존 이동 속도 기반 보행 재생 기준은 유지하여 빨라진 속도를 반영합니다.
+- 모션 후보: Mixamo(https://www.mixamo.com/)는 Adobe ID로 무료 이용 및 게임 사용 가능, Quaternius Universal Animation Library(https://quaternius.com/packs/universalanimationlibrary.html)는 현재 골격과 호환되는 CC0/FBX/GLB 소스, Rifle Animation Vicon Mocap(https://www.fab.com/listings/41f95e28-6892-4f6d-b9de-fa16becb3f15)는 8방향 이동의 시작/반복/정지, 회전 및 ADS를 포함하는 UE5 골격 기반 후보입니다. 후자는 별도 변환과 라이선스/가격 확인이 필요합니다. 새 소스는 아직 다운로드하거나 적용하지 않았습니다.
+- 자연스러움 개선 우선순위: 출발/정지/회전 전환, 보폭과 속도 일치, 지면 발 고정, 무기 파지 보정의 상체 모션 덮어쓰기 완화.
+- 확인: verify-third-person / verify-fire-knife 및 빌드 통과.
