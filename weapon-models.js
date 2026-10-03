@@ -122,13 +122,40 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
  }
  if(type==='rail'){box([.3,.3,.6],[0,0,-.12]);for(const x of[-.18,.18]){box([.085,.13,.64],[x,.04,-.45],metal);box([.055,.055,.55],[x,.11,-.44],color);}const core=new THREE.Mesh(new THREE.SphereGeometry(.135,12,8),color);core.position.set(0,.02,-.5);root.add(core);for(const z of[-.24,-.44,-.65]){const ring=new THREE.Mesh(new THREE.TorusGeometry(.18,.025,6,16),color);ring.position.set(0,.02,z);root.add(ring);}box([.13,.25,.15],[0,-.21,.12]);root.userData.muzzle=[0,.02,-.77];}
  if(type==='sniper'){
-  box([.24,.22,.64],[0,.02,-.1],metal);box([.20,.14,.54],[0,.025,-.64]);
-  barrel(.035,.75,[0,.06,-1.19]);barrel(.065,.18,[0,.06,-1.56]);barrel(.043,.01,[0,.06,-1.655],dark);
-  box([.16,.28,.17],[0,-.2,.15]);box([.17,.25,.18],[0,-.22,-.12]);box([.2,.22,.5],[0,-.01,.44]);box([.24,.29,.06],[0,-.02,.72]);
-  for(const z of[-.24,.08])box([.1,.09,.05],[0,.2,z]);
-  barrel(.076,.5,[0,.28,-.15],dark);barrel(.104,.15,[0,.28,-.44],metal);barrel(.095,.13,[0,.28,.15],metal);barrel(.088,.012,[0,.28,-.52],color);
-  barrel(.035,.09,[.13,.28,-.1],metal);box([.08,.06,.09],[.15,.29,-.09]);box([.11,.035,.07],[.17,.04,.08],metal);
-  root.userData.muzzle=[0,.06,-1.67];
+  const steel=new THREE.MeshStandardMaterial({color:0x77797b,metalness:.8,roughness:.4,map:panelTexture});
+  const black=new THREE.MeshStandardMaterial({color:0x24272b,metalness:.65,roughness:.4});
+  const rubber=new THREE.MeshStandardMaterial({color:0x14171a,metalness:.1,roughness:.75});
+  box([.23,.235,.65],[0,.01,.025],steel);
+  const parts=[];
+  // Perforated rectangular handguard built around open vents.
+  for(const x of[-.112,.112]){
+   for(const y of[-.075,.005,.09])parts.push([[.025,.025,.54],[x,y,-.56],steel]);
+   for(let i=0;i<8;i++)parts.push([[.025,.07,.022],[x,.047,-.80+i*.07],steel],[[.025,.065,.022],[x,-.036,-.80+i*.07],steel]);
+  }
+  parts.push([[.225,.035,.55],[0,.122,-.56],steel],[[.20,.035,.52],[0,-.105,-.55],black]);
+  barrel(.052,.92,[0,.028,-1.25],black);
+  for(let i=0;i<8;i++){const angle=i*Math.PI/4;parts.push([[.014,.014,.81],[Math.cos(angle)*.052,.028+Math.sin(angle)*.052,-1.25],steel]);}
+  // Rectangular muzzle brake with deep side vents and visible bore.
+  box([.18,.15,.26],[0,.028,-1.78],black);
+  for(const x of[-.094,.094])for(let i=0;i<2;i++)parts.push([[.008,.10,.066],[x,.028,-1.73-i*.09],rubber]);
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(.043,.009,8,24),steel);rim.position.set(0,.028,-1.916);root.add(rim);barrel(.034,.009,[0,.028,-1.914],rubber);
+  box([.165,.34,.23],[0,-.26,-.035],black);box([.19,.04,.24],[0,-.43,-.035],steel);
+  for(const x of[-.085,.085])for(let i=0;i<3;i++)parts.push([[.012,.29,.017],[x,-.26,-.10+i*.067],steel]);
+  const grip=box([.12,.29,.13],[0,-.24,.21],rubber);grip.rotation.x=-.18;
+  parts.push([[.14,.023,.22],[0,-.14,.1],black],[[.14,.023,.20],[0,-.27,.1],black],[[.14,.12,.024],[0,-.205,.015],black],[[.026,.075,.025],[0,-.19,.13],steel]);
+  // Open buttstock with cheek rest and shoulder pad.
+  parts.push([[.19,.12,.48],[0,.065,.54],steel],[[.12,.035,.42],[0,-.20,.56],black],[[.16,.28,.05],[0,-.08,.77],steel],[[.18,.31,.035],[0,-.08,.81],rubber]);
+  for(const x of[-.067,.067])parts.push([[.025,.21,.045],[x,-.10,.40],black]);
+  parts.push([[.18,.035,1.26],[0,.16,-.17],black],[[.018,.06,.16],[.124,.065,.04],rubber],[[.06,.04,.065],[.14,.095,.12],black]);
+  for(let i=0;i<25;i++)parts.push([[.20,.019,.018],[0,.185,-.78+i*.05],steel]);
+  for(const z of[-.22,.13]){parts.push([[.11,.08,.06],[0,.23,z],black]);const ring=new THREE.Mesh(new THREE.TorusGeometry(.074,.012,6,20),steel);ring.position.set(0,.33,z);root.add(ring);}
+  barrel(.065,.43,[0,.33,-.025],black);barrel(.106,.16,[0,.33,-.32],black);barrel(.082,.13,[0,.33,.24],black);
+  const lens=new THREE.MeshStandardMaterial({color:0x263b4d,metalness:.85,roughness:.15});barrel(.086,.007,[0,.33,-.405],lens);barrel(.067,.007,[0,.33,.31],lens);
+  const turret=new THREE.Mesh(new THREE.CylinderGeometry(.043,.043,.105,16),black);turret.position.set(0,.435,-.025);root.add(turret);box([.10,.025,.10],[0,.49,-.025],steel);
+  const dial=new THREE.Mesh(new THREE.CylinderGeometry(.043,.043,.06,16),black);dial.rotation.z=Math.PI/2;dial.position.set(.09,.33,-.025);root.add(dial);
+  // Deployed bipod, attached to the underside of the handguard.
+  for(const side of[-1,1]){const leg=box([.033,.40,.035],[side*.13,-.30,-.69],black);leg.rotation.z=side*.42;box([.14,.028,.10],[side*.215,-.49,-.69],rubber);for(let i=0;i<6;i++)parts.push([[.012,.017,.038],[side*(.065+i*.026),-.15-i*.055,-.69],steel]);}
+  detailBatch(root,parts);root.scale.setScalar(.66);root.userData.muzzle=[0,.028,-1.93];
  }
  if(type==='rocket'){
   barrel(.23,1.3,[0,.04,-.35],dark);barrel(.26,.13,[0,.04,-1.02],metal);barrel(.19,.014,[0,.04,-1.09],dark);barrel(.26,.12,[0,.04,.31],metal);
@@ -147,7 +174,7 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
  if(type==='chainsaw'){box([.33,.29,.44],[0,-.04,.03],color);box([.15,.12,.9],[0,.02,-.62],metal);root.userData.chainTeeth=[];for(let i=0;i<13;i++)for(const x of[-.1,.1]){const tooth=box([.065,.07,.035],[x,.02,-.2-i*.065],dark);tooth.userData.baseZ=tooth.position.z;root.userData.chainTeeth.push(tooth);}for(const x of[-.22,.22])box([.055,.28,.055],[x,.08,.05]);box([.49,.055,.055],[0,.22,.05],metal);root.userData.muzzle=[0,.02,-1.1];}
  if(type==='sword'){box([.13,.38,.13],[0,0,0]);box([.6,.1,.2],[0,.24,0],metal);box([.28,2.5,.085],[0,1.54,0],metal);box([.035,2.43,.10],[.155,1.53,0],color);box([.2,.12,.2],[0,-.25,0],color);const tip=new THREE.Mesh(new THREE.ConeGeometry(.16,.3,4),metal);tip.position.set(0,2.94,0);root.add(tip);root.userData.grip=[0,0,0];}
 
- if(['rail','sniper','rocket'].includes(type)){
+ if(['rail','rocket'].includes(type)){
   const wide=type==='rapid'?.42:type==='rail'?.32:.22;
   const parts=[[[wide,.055,.28],[0,.17,.02],metal],[[.035,.07,.025],[-wide/2,.07,.16],type==='pistol'?dark:color],[[.035,.07,.025],[wide/2,.07,.16],type==='pistol'?dark:color],[[.1,.045,.12],[0,-.31,.15],metal]];
   if(type==='rail'){for(const x of[-.18,.18])for(let i=0;i<5;i++)parts.push([[.12,.045,.03],[x,.065,-.27-i*.09],metal]);parts.push([[.17,.08,.2],[0,.22,.02],metal],[[.12,.045,.11],[0,.27,.01],color],[[.18,.12,.15],[0,-.14,-.24],metal]);}
@@ -155,7 +182,7 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
    for(const x of[-.23,.23])for(let i=0;i<4;i++)parts.push([[.07,.11,.045],[x,.025,-.18-i*.105],dark]);
    parts.push([[.13,.18,.23],[0,-.19,-.33],color],[[.32,.03,.17],[0,-.16,.06],metal]);
   }
-  if(type==='sniper'){for(let i=0;i<7;i++)parts.push([[.23,.025,.025],[0,.11,-.43-i*.062],metal]);for(const x of[-.09,.09])parts.push([[.025,.12,.4],[x,-.05,.43],dark]);}
+
   detailBatch(root,parts);
  }
  root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return root;
