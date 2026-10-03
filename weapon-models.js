@@ -238,7 +238,35 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   for(const z of[-.12,.11]){const screw=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.012,8),metal);screw.position.set(0,.057,z);root.add(screw);}
   root.userData.muzzle=[.13,0,-1.26];
  }
- if(type==='chainsaw'){box([.33,.29,.44],[0,-.04,.03],color);box([.15,.12,.9],[0,.02,-.62],metal);root.userData.chainTeeth=[];for(let i=0;i<13;i++)for(const x of[-.1,.1]){const tooth=box([.065,.07,.035],[x,.02,-.2-i*.065],dark);tooth.userData.baseZ=tooth.position.z;root.userData.chainTeeth.push(tooth);}for(const x of[-.22,.22])box([.055,.28,.055],[x,.08,.05]);box([.49,.055,.055],[0,.22,.05],metal);root.userData.muzzle=[0,.02,-1.1];}
+ if(type==='chainsaw'){
+  const iron=new THREE.MeshStandardMaterial({color:0x3c3b39,metalness:.8,roughness:.52,map:panelTexture});
+  const black=new THREE.MeshStandardMaterial({color:0x181b1d,metalness:.55,roughness:.5});
+  const bronze=new THREE.MeshStandardMaterial({color:0x745b4c,metalness:.75,roughness:.45});
+  const toothSteel=new THREE.MeshStandardMaterial({color:0x92938e,metalness:.85,roughness:.38});
+  const red=new THREE.MeshStandardMaterial({color:0x8d3028,metalness:.4,roughness:.5});
+  box([.32,.28,.40],[0,-.04,.12],iron);box([.27,.23,.13],[0,-.04,.36],black);box([.34,.045,.31],[0,.12,.10],black);
+  // Heavy oval guide bar lies horizontally, matching the combat grip.
+  const shape=new THREE.Shape();shape.moveTo(.135,-.16);shape.lineTo(.135,-1.05);shape.absarc(0,-1.05,.135,0,Math.PI,true);shape.lineTo(-.135,-.16);shape.closePath();
+  const bar=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.075,bevelEnabled:true,bevelSize:.007,bevelThickness:.006,bevelSegments:1,steps:1}),iron);bar.geometry.translate(0,0,-.0375);bar.rotation.x=Math.PI/2;bar.position.y=.02;root.add(bar);
+  const parts=[];for(const x of[-.105,.105])parts.push([[.012,.018,.80],[x,.068,-.59],bronze]);
+  for(let i=0;i<6;i++)parts.push([[.028,.015,.17],[0,.068,-.24-i*.12],black]);
+  const nose=new THREE.Mesh(new THREE.CylinderGeometry(.085,.085,.012,20),bronze);nose.position.set(0,.073,-1.05);root.add(nose);
+  for(const z of[-.15,-1.05]){const screw=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,.022,8),toothSteel);screw.position.set(0,.09,z);root.add(screw);}
+  root.userData.chainTeeth=[];
+  const toothShape=new THREE.Shape();toothShape.moveTo(0,-.03);toothShape.lineTo(.06,-.025);toothShape.lineTo(.085,.012);toothShape.lineTo(.05,.004);toothShape.lineTo(.06,.034);toothShape.lineTo(.022,.025);toothShape.closePath();
+  const toothGeometry=new THREE.ExtrudeGeometry(toothShape,{depth:.025,bevelEnabled:false});toothGeometry.rotateX(Math.PI/2);
+  for(const side of[-1,1])for(let i=0;i<15;i++){const tooth=new THREE.Mesh(toothGeometry,toothSteel);tooth.scale.x=side;tooth.position.set(side*.13,.035,-.18-i*.059);tooth.userData.baseZ=tooth.position.z;root.add(tooth);root.userData.chainTeeth.push(tooth);parts.push([[.038,.075,.031],[side*.135,.025,-.18-i*.059],black]);}
+  // Curved end teeth complete the saw silhouette.
+  for(let i=0;i<7;i++){const angle=i*Math.PI/6;const tooth=new THREE.Mesh(toothGeometry,toothSteel);tooth.position.set(Math.cos(angle)*.13,.035,-1.05-Math.sin(angle)*.13);tooth.rotation.y=angle;root.add(tooth);}
+  const handle=(points)=>root.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),18,.028,6,false),black));
+  handle([[-.20,-.035,-.02],[-.20,.27,-.025],[-.14,.34,.07],[.14,.34,.07],[.20,.27,-.025],[.20,-.035,-.02]]);
+  handle([[-.12,.04,.34],[-.13,-.09,.50],[.13,-.09,.50],[.12,.04,.34]]);
+  for(const x of[-.17,.17])for(let i=0;i<7;i++)parts.push([[.018,.018,.18],[x,-.10+i*.027,.14],black]);
+  for(let i=0;i<5;i++)parts.push([[.30,.015,.027],[0,.155,.005+i*.049],iron]);
+  parts.push([[.045,.045,.045],[.17,.045,.30],red],[[.12,.025,.16],[0,.35,.07],iron]);
+  for(const x of[-.18,.18]){const cap=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.032,12),bronze);cap.rotation.z=Math.PI/2;cap.position.set(x,-.12,.05);root.add(cap);}
+  detailBatch(root,parts);root.scale.setScalar(.85);root.userData.muzzle=[0,.02,-1.26];
+ }
  if(type==='sword'){box([.13,.38,.13],[0,0,0]);box([.6,.1,.2],[0,.24,0],metal);box([.28,2.5,.085],[0,1.54,0],metal);box([.035,2.43,.10],[.155,1.53,0],color);box([.2,.12,.2],[0,-.25,0],color);const tip=new THREE.Mesh(new THREE.ConeGeometry(.16,.3,4),metal);tip.position.set(0,2.94,0);root.add(tip);root.userData.grip=[0,0,0];}
 
  if(['rail','rocket'].includes(type)){
