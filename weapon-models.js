@@ -168,11 +168,13 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   const mouth=new THREE.Mesh(new THREE.TorusGeometry(.198,.022,8,24),black);mouth.position.set(0,.06,-1.16);root.add(mouth);
   barrel(.25,.08,[0,.06,.47],rubber);barrel(.28,.045,[0,.06,.525],black);
   // Boxy command sight mounted alongside the shoulder tube.
+  const sightStart=root.children.length;
   box([.29,.29,.33],[-.27,-.06,-.04],olive);box([.18,.22,.15],[-.40,-.055,.13],black);
   barrel(.061,.065,[-.40,-.025,.235],rubber);barrel(.038,.008,[-.40,-.025,.274],black);
   box([.025,.105,.145],[-.427,-.04,-.11],black);
   const glass=new THREE.MeshStandardMaterial({color:0x456a66,metalness:.8,roughness:.18});box([.027,.076,.10],[-.442,-.04,-.11],glass);
   box([.11,.24,.11],[-.30,-.29,.10],black);box([.10,.19,.09],[.16,-.23,-.06],black);
+  const sightAssembly=new THREE.Group();sightAssembly.name='launcher-command-unit';for(const part of root.children.slice(sightStart))sightAssembly.add(part);root.add(sightAssembly);root.userData.sightAssembly=sightAssembly;
   const parts=[[[.14,.10,.31],[0,-.17,.13],rubber],[[.08,.025,.18],[0,.28,-.18],black],[[.035,.035,.09],[-.29,-.19,.12],yellow]];
   for(const x of[-.20,.20])for(const z of[-.62,.13])parts.push([[.025,.10,.07],[x,.06,z],black]);
   for(let i=0;i<5;i++)parts.push([[.018,.018,.19],[-.425,-.13+i*.04,-.035],black]);
