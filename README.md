@@ -776,3 +776,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - 모션 후보: Mixamo(https://www.mixamo.com/)는 Adobe ID로 무료 이용 및 게임 사용 가능, Quaternius Universal Animation Library(https://quaternius.com/packs/universalanimationlibrary.html)는 현재 골격과 호환되는 CC0/FBX/GLB 소스, Rifle Animation Vicon Mocap(https://www.fab.com/listings/41f95e28-6892-4f6d-b9de-fa16becb3f15)는 8방향 이동의 시작/반복/정지, 회전 및 ADS를 포함하는 UE5 골격 기반 후보입니다. 후자는 별도 변환과 라이선스/가격 확인이 필요합니다. 새 소스는 아직 다운로드하거나 적용하지 않았습니다.
 - 자연스러움 개선 우선순위: 출발/정지/회전 전환, 보폭과 속도 일치, 지면 발 고정, 무기 파지 보정의 상체 모션 덮어쓰기 완화.
 - 확인: verify-third-person / verify-fire-knife 및 빌드 통과.
+
+### 플레이어 머리 비율 조정 (2026-10-04)
+- 플레이어 머리와 머리에 연결된 바이저/장식을 기존 크기의 82%로 줄였습니다. 사망 연출 캐릭터에도 같은 비율을 적용합니다.
+- 확인: 빌드, verify-third-person 통과.
