@@ -210,7 +210,25 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   for(const x of[-.09,.09]){const bolt=new THREE.Mesh(new THREE.CylinderGeometry(.014,.014,.014,8),steel);bolt.rotation.z=Math.PI/2;bolt.position.set(x,-.04,.14);root.add(bolt);}
   detailBatch(root,parts);root.scale.setScalar(.8);root.userData.muzzle=[0,.025,-1.23];
  }
- if(type==='laser'){box([.26,.24,.7],[0,0,-.25]);for(const x of[-.16,.16])box([.05,.06,.75],[x,.04,-.4],color);barrel(.09,.18,[0,0,-.8],color);box([.12,.25,.15],[0,-.22,.04]);root.userData.chargeRings=[];for(const z of[-.18,-.31,-.44,-.57,-.70]){const mat=accent(0xff426b);mat.color.setHex(0x37424c);mat.emissiveIntensity=.08;const ring=new THREE.Mesh(new THREE.TorusGeometry(.19,.025,8,24),mat);ring.position.set(0,0,z);root.add(ring);root.userData.chargeRings.push(ring);}root.userData.muzzle=[0,0,-.92];}
+ if(type==='laser'){
+  // Offset open-frame energy rifle, with a visible reactor and twin cooling hoses.
+  const shell=new THREE.MeshStandardMaterial({color:0x252a40,metalness:.72,roughness:.34}),steel=new THREE.MeshStandardMaterial({color:0x82959c,metalness:.85,roughness:.3}),black=new THREE.MeshStandardMaterial({color:0x101a21,metalness:.55,roughness:.48}),cyan=accent(0x48ddff);
+  box([.23,.13,1.15],[0,.19,-.31],shell);box([.26,.09,.8],[0,-.17,-.53],shell);
+  box([.22,.33,.25],[0,-.005,.27],shell);box([.19,.26,.13],[0,-.31,.12],black).rotation.x=-.22;
+  box([.17,.055,.30],[0,-.47,.03],shell);box([.04,.28,.055],[.095,-.30,-.04],steel);
+  box([.13,.07,.35],[0,.10,.49],shell);box([.21,.33,.09],[0,-.02,.69],black);
+  barrel(.102,.60,[0,.015,-.36],black);barrel(.072,.48,[0,.015,-.4],cyan);
+  for(const z of[-.11,-.59]){barrel(.13,.095,[0,.015,z],steel);for(let i=0;i<6;i++){const angle=i*Math.PI/3;box([.035,.04,.075],[Math.cos(angle)*.145,.015+Math.sin(angle)*.145,z],steel);}}
+  barrel(.085,.28,[0,.015,-.86],steel);barrel(.115,.13,[0,.015,-1.025],black);barrel(.06,.018,[0,.015,-1.096],cyan);
+  for(const side of[-1,1]){
+   for(let i=0;i<3;i++)box([.015,.025,.10],[side*.122,.19,-.59+i*.18],cyan);
+   const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(side*.10,.02,.24),new THREE.Vector3(side*.19,-.045,.02),new THREE.Vector3(side*.20,-.10,-.20),new THREE.Vector3(side*.10,-.045,-.41)]);const hose=new THREE.Mesh(new THREE.TubeGeometry(curve,16,.025,6,false),steel);root.add(hose);
+   for(let i=0;i<7;i++)box([.018,.025,.035],[side*.14,-.17,-.91+i*.10],steel);
+  }
+  root.userData.chargeRings=[];for(const z of[-.16,-.26,-.36,-.46,-.56]){const mat=accent(0x48ddff);mat.color.setHex(0x37424c);mat.emissiveIntensity=.08;const ring=new THREE.Mesh(new THREE.TorusGeometry(.092,.012,8,20),mat);ring.position.set(0,.015,z);root.add(ring);root.userData.chargeRings.push(ring);}
+  box([.07,.045,.12],[0,.28,.07],black);box([.025,.012,.025],[0,.308,.065],cyan);
+  root.scale.setScalar(.78);root.userData.muzzle=[0,.015,-1.11];
+ }
  if(type==='bow'){
   root.scale.setScalar(.8);root.userData.limbs=[];
   const steel=new THREE.MeshStandardMaterial({color:0x949d99,metalness:.75,roughness:.4});

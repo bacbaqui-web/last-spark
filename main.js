@@ -128,7 +128,7 @@ function updateLaser(dt){
  }
  if(weapon!=='laser'||ammo<=0){stopLaser();return;}
  if(!laserBeam)laserBeam=makeLaserBeam();laserBeam.visible=true;const stage=Math.min(4,Math.floor(laserHeat+1e-7)),origin=camera.position.clone(),forward=camera.getWorldDirection(new THREE.Vector3());ray.set(origin,forward);ray.far=90;const wall=ray.intersectObjects(worldObstacles,false)[0],end=origin.addScaledVector(forward,wall?.distance??90);gun.updateWorldMatrix(true,true);let start=combatMuzzle('laser');const offset=start.clone().sub(camera.position);ray.set(camera.position,offset.clone().normalize());ray.far=offset.length();const cover=ray.intersectObjects(worldObstacles,false)[0];if(cover){start=camera.position.clone();end.copy(cover.point);}const delta=end.clone().sub(start);laserBeam.position.copy(start).add(end).multiplyScalar(.5);laserBeam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.clone().normalize());laserBeam.scale.set(.025+stage*.027,delta.length(),.025+stage*.027);
- for(const [i,ring]of weaponModels.laser.userData.chargeRings.entries()){ring.material.color.setHex(i<=stage?0xff7398:0x37424c);ring.material.emissiveIntensity=i<=stage?2.5:.08;}
+ for(const [i,ring]of weaponModels.laser.userData.chargeRings.entries()){ring.material.color.setHex(i<=stage?0x65e8ff:0x37424c);ring.material.emissiveIntensity=i<=stage?2.5:.08;}
  if(audio&&!laserHum){const osc=audio.createOscillator(),gain=audio.createGain();osc.type='sine';gain.gain.value=.035;osc.connect(gain);gain.connect(audio.destination);osc.start();laserHum={osc,gain};}if(laserHum)laserHum.osc.frequency.value=90+stage*35;
 }
 function updateBowPose(dt=1/60){weaponMotion.update(dt,{weapon,bowDrawing,bowCharge,ammo});}
