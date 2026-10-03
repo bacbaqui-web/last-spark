@@ -42,9 +42,9 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   detailBatch(root,parts);
   // A genuinely open, chamfered reflex housing; no opaque plate across the window.
   const outer=[[-.115,.285],[-.115,.49],[-.075,.55],[.075,.55],[.115,.49],[.115,.285]];
-  const inner=[[-.077,.318],[-.077,.475],[-.048,.509],[.048,.509],[.077,.475],[.077,.318]];
+  const inner=[[-.101,.299],[-.101,.486],[-.069,.536],[.069,.536],[.101,.486],[.101,.299]];
   const sightShape=new THREE.Shape();outer.forEach(([x,y],i)=>i?sightShape.lineTo(x,y):sightShape.moveTo(x,y));sightShape.closePath();const hole=new THREE.Path();inner.slice().reverse().forEach(([x,y],i)=>i?hole.lineTo(x,y):hole.moveTo(x,y));hole.closePath();sightShape.holes.push(hole);
-  const sight=new THREE.Mesh(new THREE.ExtrudeGeometry(sightShape,{depth:.075,bevelEnabled:true,bevelSize:.006,bevelThickness:.004,bevelSegments:1,steps:1}),ivory);sight.position.z=-.13;root.add(sight);
+  const sight=new THREE.Mesh(new THREE.ExtrudeGeometry(sightShape,{depth:.035,bevelEnabled:true,bevelSize:.002,bevelThickness:.002,bevelSegments:1,steps:1}),ivory);sight.position.z=-.13;root.add(sight);
   const reticleMat=new THREE.MeshBasicMaterial({color:0xff3218,transparent:true,opacity:.8});const reticle=new THREE.Mesh(new THREE.TorusGeometry(.034,.002,4,24),reticleMat);reticle.position.set(0,.41,-.09);root.add(reticle);const dot=new THREE.Mesh(new THREE.SphereGeometry(.004,6,4),reticleMat);dot.position.copy(reticle.position);root.add(dot);
   root.scale.setScalar(.62);
   root.position.y=-.08;
