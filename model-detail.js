@@ -6,7 +6,7 @@ export const panelGeometry=new RoundedBoxGeometry(1,1,1,1,.065);
 panelGeometry.userData.sharedModelGeometry=true;
 const pixels=new Uint8Array(128*128*4);for(let y=0;y<128;y++)for(let x=0;x<128;x++){const seam=x%64<2||y%64<2,scuff=(x*17+y*43)%137<3,noise=((x*73+y*97)%13)-6,v=seam?185:scuff?208:242+noise,i=(y*128+x)*4;pixels[i]=pixels[i+1]=pixels[i+2]=v;pixels[i+3]=255;}
 export const panelTexture=new THREE.DataTexture(pixels,128,128);panelTexture.wrapS=panelTexture.wrapT=THREE.RepeatWrapping;panelTexture.magFilter=THREE.LinearFilter;panelTexture.needsUpdate=true;panelTexture.colorSpace=THREE.SRGBColorSpace;
-const steel=new THREE.MeshStandardMaterial({color:0xa59d88,metalness:.8,roughness:.35,map:panelTexture}),black=new THREE.MeshStandardMaterial({color:0x14262e,metalness:.6,roughness:.55}),indicator=new THREE.MeshBasicMaterial({color:0x82dbea});
+const steel=new THREE.MeshStandardMaterial({color:0xa59d88,metalness:.8,roughness:.35,map:panelTexture}),black=new THREE.MeshStandardMaterial({color:0x15191d,metalness:.6,roughness:.55}),indicator=new THREE.MeshBasicMaterial({color:0x82dbea});
 for(const m of [steel,black,indicator])m.userData.sharedWeaponMaterial=true;
 // Bake small decorative parts per bone/material into one draw, without changing hit volumes.
 export function detailBatch(parent,parts){const groups=new Map();for(const [size,pos,material=steel]of parts){const geometry=panelGeometry.clone();geometry.scale(...size);geometry.translate(...pos);if(!groups.has(material))groups.set(material,[]);groups.get(material).push(geometry);}for(const [material,geometries]of groups){const geometry=mergeGeometries(geometries);for(const g of geometries)g.dispose();const mesh=new THREE.Mesh(geometry,material);mesh.userData.cosmetic=true;parent.add(mesh);}}
@@ -37,17 +37,16 @@ export function decorateRobot(r,boss=false,type='trooper'){
  detailBatch(r.body,[[[.23,.035,.025],[0,.14,-.13],identity]]);
  const backpack=new THREE.Group();backpack.name='original-backpack';r.body.add(backpack);detailBatch(backpack,[[[.3,.32,.15],[0,.015,-.22],black]]);r.backpack=backpack;
  for(const [index,arm]of r.arms.entries()){
-  const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.10,24,16),identity);shoulder.scale.set(1.02,1,1.02);shoulder.position.y=.005;shoulder.userData.cosmetic=true;arm.shoulder.add(shoulder);
-  sculpt(arm.elbow,.135,.22,.045,[0,-.15,.073],identity);
-  detailBatch(arm.elbow,[[[.08,.015,.008],[0,-.085,.096],black],[[.07,.015,.008],[0,-.12,.099],black]]);
+  const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.10,24,16),black);shoulder.scale.set(1.02,1,1.02);shoulder.position.y=.005;shoulder.userData.cosmetic=true;arm.shoulder.add(shoulder);
   const joint=new THREE.Mesh(new THREE.SphereGeometry(.088,20,14),black);joint.userData.cosmetic=true;arm.elbow.add(joint);
  }
  for(const leg of r.legs){
   const joint=new THREE.Mesh(new THREE.SphereGeometry(.099,20,14),black);joint.userData.cosmetic=true;leg.knee.add(joint);
-  sculpt(leg.hip,.145,.27,.04,[0,-.195,.093]);
-  sculpt(leg.knee,.145,.12,.05,[0,-.025,.06],identity);
-  sculpt(leg.knee,.11,.26,.04,[0,-.23,.083]);
  }
+ // Acquired armor is separate from the smooth unarmored body.
+ const armorPieces=[];for(const arm of r.arms)armorPieces.push(sculpt(arm.elbow,.135,.22,.045,[0,-.15,.073],identity));for(const leg of r.legs)armorPieces.push(sculpt(leg.knee,.145,.12,.05,[0,-.025,.06],identity));
+ const chest=sculpt(r.body,.29,.24,.04,[0,.02,.105],identity);armorPieces.push(chest);
+ r.setArmorLevel=(level=0)=>{r.root.userData.armorLevel=Math.max(0,level);armorPieces.forEach((part,i)=>part.visible=level>=(i===4?1:i<2?2:3));};r.setArmorLevel(0);
  if(type==='sniper')detailBatch(helmet,[[[.06,.07,.07],[.14,.025,.16],indicator]]);
 }
 export function decorateArena(scene,platforms,mats){

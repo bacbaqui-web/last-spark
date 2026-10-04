@@ -939,3 +939,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Removed forehead/cheek shells, chest/abdomen plates and projecting upper-arm armor. Full spherical shoulders and restrained clavicle bridges preserve the smooth body and eye strip.
 - Jetpack size is reduced another 20% and its mount follows the actual torso shell frame, keeping it close to the back through torso lean.
 - Ordinary weapons rest further back and to the right; raised aiming posture remains. Weapon carry, jetpack and forward gaze checks pass.
+
+### Smooth black base body and earned armor
+- Removed default protruding forearm, thigh, knee and shin plates; rounded the pelvis shell. Limbs, shoulder joints and neck use near-black material.
+- Existing wave reward armor upgrades now add visible chest, forearm and knee shells in three stages. New games reset the player to the unarmored base body.
