@@ -1011,3 +1011,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Third-person idle/run hold the bow horizontally at waist height with the right hand at the string ready position.
 - Drawing raises the same mount toward the right arm; draw/hold/release share the same grip location and smoothly return to carry. Right-hand IK follows the nock through charging.
 - Front-view carry/draw review, draw/release grip coordinate comparison, bow combat and gun carry checks plus production build pass.
+
+### Upright neutral idle
+- Grounded neutral idle restores the pelvis and spine to the straight rest stance instead of keeping weapon-source combat crouch/lean. Moving and active aim/draw/attack poses retain their lean.
+- Reviewed bow idle from the side; running preview, carry/grip and level-gaze checks plus build pass.
