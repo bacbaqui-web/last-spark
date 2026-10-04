@@ -46,8 +46,9 @@ export function animateRobot(r,dt,{speed=0,aim=0,elevation=0,hit=0,velocityX,vel
  const jog=THREE.MathUtils.clamp((speed-1.8)/1.4,0,1),sprint=THREE.MathUtils.clamp((speed-3.2)/1.8,0,1);
  const weights={Idle_Loop:1-r.walkBlend,Walk_Loop:r.walkBlend*(1-jog),Jog_Fwd_Loop:r.walkBlend*jog*(1-sprint),Sprint_Loop:r.walkBlend*jog*sprint};
  const forward=velocityX===undefined?1:(Math.sin(yaw)*velocityX+Math.cos(yaw)*velocityZ)/Math.max(.1,speed);
- for(const [name,w]of Object.entries(weights)){const a=r.actions[name];a.setEffectiveWeight(w);a.setEffectiveTimeScale(name==='Idle_Loop'?1:Math.max(.15,speed/(name==='Walk_Loop'?1.5:name==='Jog_Fwd_Loop'?3:4.5))*(forward<-.2?-1:1));}
- for(const [name,w]of Object.entries(weights)){const a=r.actions[name+'_Upper'];a.setEffectiveWeight(w*(1-r.aimBlend));a.setEffectiveTimeScale(r.actions[name].getEffectiveTimeScale());}
+ const strideName=sprint>.5?'Sprint_Loop':jog>.5?'Jog_Fwd_Loop':'Walk_Loop',nominal=strideName==='Sprint_Loop'?4.5:strideName==='Jog_Fwd_Loop'?3:1.5;
+ r.strideRate=damp(r.strideRate??1,THREE.MathUtils.clamp(speed/nominal,.15,1.4),10);r.stridePhase=((r.stridePhase||0)+dt*r.strideRate/r.actions[strideName].getClip().duration*(forward<-.2?-1:1)+1)%1;
+ for(const [name,w]of Object.entries(weights))for(const suffix of['','_Upper']){const a=r.actions[name+suffix];a.setEffectiveWeight(w*(suffix?1-r.aimBlend:1));if(name==='Idle_Loop')a.setEffectiveTimeScale(1);else{a.time=r.stridePhase*a.getClip().duration;a.setEffectiveTimeScale(0);}}
  const up=THREE.MathUtils.clamp(elevation/.8,0,1),down=THREE.MathUtils.clamp(-elevation/.65,0,1);
  r.actions.Pistol_Aim_Neutral.setEffectiveWeight(r.aimBlend*(1-up-down));r.actions.Pistol_Aim_Up.setEffectiveWeight(r.aimBlend*up);r.actions.Pistol_Aim_Down.setEffectiveWeight(r.aimBlend*down);
  for(const name of ['Pistol_Shoot','Hit_Chest']){const a=r.actions[name];if(a.isRunning())a.setEffectiveWeight(Math.max(0,1-a.time/a.getClip().duration));else a.setEffectiveWeight(0);}
@@ -63,7 +64,7 @@ export function animateRobot(r,dt,{speed=0,aim=0,elevation=0,hit=0,velocityX,vel
  r.mixer.update(dt);
  // Plant the stride and lean back during the short momentum slide into a stop.
  const localForward=velocityX===undefined?speed:Math.sin(yaw)*velocityX+Math.cos(yaw)*velocityZ;
- r.motion.rotation.x=damp(r.motion.rotation.x,(rolling?0:-(Math.sign(localForward)||1)*r.brakeBlend*.23));
+ r.motion.rotation.x=damp(r.motion.rotation.x,(rolling?0:-(Math.sign(localForward)||1)*r.brakeBlend*.23+(Math.sign(localForward)||1)*Math.min(speed/6,1)*.09));
  if(r.brakeBlend>.01&&!rolling)for(const leg of r.legs)leg.knee.rotateX(r.brakeBlend*.22);
  r.recoil=damp(r.recoil,0,18);r.flashTime-=dt;r.muzzleFlash.visible=r.flashTime>0;
 }

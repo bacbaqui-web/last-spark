@@ -7,11 +7,11 @@ const clips=Object.fromEntries(Object.entries(data).map(([name,clip])=>[name,{du
 // Gameplay owns translation. These layers preserve source torso/shoulder/hip rotations,
 // while weapon grips and aim receive small final corrections in third-person.js.
 export function createThirdPersonMotion(avatar){
- const bones=Object.fromEntries(avatar.bones.map(b=>[b.name,b])),previous=new Map();let clock=0,strideClock=0,wasGrounded=true,airAge=0,landAge=1,lastWeapon='',shotKick=0,lastFlash=false,wasMoving=false,transitionKind='',transitionAge=1,walkBlend=0;const momentum=new THREE.Vector3();
+ const bones=Object.fromEntries(avatar.bones.map(b=>[b.name,b])),previous=new Map();let clock=0,strideClock=0,strideRate=.35,wasGrounded=true,airAge=0,landAge=1,lastWeapon='',shotKick=0,lastFlash=false,wasMoving=false,transitionKind='',transitionAge=1,walkBlend=0;const momentum=new THREE.Vector3();
  function apply(name,phase,mask=()=>true,weight=1){const clip=clips[name];if(!clip)return;for(const t of clip.tracks){const b=bones[t.bone];if(!b||!mask(t.bone))continue;const a=t.sample.evaluate(THREE.MathUtils.clamp(phase,0,1)*clip.duration);if(t.property==='quaternion')b.quaternion.slerp(new THREE.Quaternion().fromArray(a),weight);else b.position.lerp(new THREE.Vector3().fromArray(a),weight);}}
  function update(dt,state){
   clock+=dt;const {weapon,speed=0,velocity,yaw,pitch=0,grounded=true,knifePhase=-1,rollPhase=-1,meleePhase=-1,throwPhase=-1,bowMotionClip='BowIdle',bowMotionPhase=0,bowDrawing=false,bowCharge=0,flash=false}=state;
-  strideClock+=dt*Math.min(1.3,Math.max(.35,speed/9.8));
+  strideRate=THREE.MathUtils.damp(strideRate,Math.min(1.3,Math.max(.35,speed/9.8)),8,dt);strideClock+=dt*strideRate;
   if(grounded&&!wasGrounded)landAge=0;if(!grounded&&wasGrounded)airAge=0;wasGrounded=grounded;airAge+=dt;landAge+=dt;
   if(lastWeapon!==weapon){lastWeapon=weapon;shotKick=0;}if(flash&&!lastFlash)shotKick=1;lastFlash=flash;shotKick=THREE.MathUtils.damp(shotKick,0,18,dt);
   const gun=['pistol','shotgun','sniper','laser'].includes(weapon),moving=speed>.7;walkBlend=THREE.MathUtils.damp(walkBlend,moving?1:0,10,dt);if(moving!==wasMoving){transitionKind=moving?'TPSStartRun':'TPSStopRun';transitionAge=0;}wasMoving=moving;transitionAge+=dt;
@@ -25,7 +25,7 @@ export function createThirdPersonMotion(avatar){
    const local=velocity.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-yaw),angle=Math.atan2(local.x,-local.z),directions=['Forward','ForwardRight','Right','BackwardRight','Backward','BackwardLeft','Left','ForwardLeft'],sector=((angle/(Math.PI/4))%8+8)%8,index=Math.floor(sector),mix=sector-index;
    const stride=name=>name==='Forward'?(speed<3?'TPSAimWalk':'TPSRun'):'Strafe'+name;
    const a=stride(directions[index]),b=stride(directions[(index+1)%8]);
-   apply(a,(strideClock/clips[a].duration)%1,n=>lower.test(n));if(mix>.001)apply(b,(strideClock/clips[b].duration)%1,n=>lower.test(n),mix);
+   apply(a,(strideClock/clips.TPSRun.duration)%1,n=>lower.test(n));if(mix>.001)apply(b,(strideClock/clips.TPSRun.duration)%1,n=>lower.test(n),mix);
    bodyClip+=' + '+a+(mix>.001?' / '+b:'');
    if(Math.abs(angle)<Math.PI/4&&transitionKind==='TPSStartRun'&&transitionAge<.24){apply(transitionKind,.2+.5*transitionAge/.24,n=>lower.test(n),(1-transitionAge/.24)*.8);bodyClip+=' + '+transitionKind;}
   }else if(grounded&&transitionKind==='TPSStopRun'&&transitionAge<.22){apply('TPSStopRun',transitionAge/.22,n=>lower.test(n),1-transitionAge/.22);bodyClip+=' + TPSStopRun';}
