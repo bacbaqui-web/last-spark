@@ -13,7 +13,9 @@ export function createFootPlant(avatar){
   const phase=avatar.root.userData.stridePhase||0,running=speed>=3;
   // Each half-stride has stance, push-off, then flight. Walk retains longer contact.
   const start=.02,end=running?.18:.49;
-  const half=phase%.5,flight=running&&(half>=end||half<start);
+  const contacts=avatar.root.userData.contactPhases||[.065,.565];
+  const locals=contacts.map(center=>(phase-center+.065+1)%1);
+  const flight=running&&locals.every(p=>p<start||p>=end);
   if(enabled){
    avatar.root.updateMatrixWorld(true);
    const lift=running?-(avatar.root.userData.sourceSprint?.025:.095)*Math.cos((phase-.065)*Math.PI*4):0;
@@ -29,7 +31,7 @@ export function createFootPlant(avatar){
   }
   avatar.root.updateMatrixWorld(true);
   for(const f of feet){
-   f.weight=0;const local=(phase-f.index*.5+1)%1,stance=enabled&&local>=start&&local<end;
+   f.weight=0;const local=locals[f.index],stance=enabled&&local>=start&&local<end;
    if(!stance){
     f.anchor=null;f.age=0;f.inStance=false;
     if(enabled&&running&&!avatar.root.userData.sourceSprint&&local>=end){

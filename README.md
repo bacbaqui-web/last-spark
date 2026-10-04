@@ -849,3 +849,9 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Player sprint source alignment
 - Forward player running now samples the same `Sprint_Loop` clip used by assassin infantry, instead of `TPSRun`.
 - Source sprint keeps its authored heel recovery; added recovery IK is disabled for it and pelvis/torso overlays are reduced. Directional strafes, weapon grips, ground support, jump and boost behavior remain separate layers.
+
+### Contact-aware directional movement and braking
+- Directional clips have their own measured foot-contact phases; left/right/diagonal/backward movement no longer uses the forward sprint contact timing.
+- Ground deceleration keeps a short momentum slide and drives a predicted braking step: preserve the current support point, swing the opposite foot toward the stopping point, compress the pelvis and settle back to idle. New input, jump, boost, attacks and teleports cancel the step.
+- `locomotion-feet.js` adds this procedural layer to existing authored animation; it is not a full motion-matching database or a neural animation system. Forward `Sprint_Loop` remains the baseline.
+- `node scripts/verify-locomotion-feet.mjs` checks actual directional support positions, braking support, opposite-foot landing, bounded slide, resume/jump cancellation and the game's second zero-delta pose pass. Running, collision, third-person and jetpack checks pass; browser previews inspected strafe and braking poses.
