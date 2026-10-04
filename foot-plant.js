@@ -16,15 +16,15 @@ export function createFootPlant(avatar){
   const half=phase%.5,flight=running&&(half>=end||half<start);
   if(enabled){
    avatar.root.updateMatrixWorld(true);
-   const lift=running?-.095*Math.cos((phase-.065)*Math.PI*4):0;
+   const lift=running?-(avatar.root.userData.sourceSprint?.025:.095)*Math.cos((phase-.065)*Math.PI*4):0;
    avatar.root.userData.runPelvisOffset=lift*blend;
    bones.pelvis.position.add(new THREE.Vector3(0,lift*blend,0).applyQuaternion(bones.pelvis.parent.getWorldQuaternion(new THREE.Quaternion()).invert()));
-   const twist=running?-.10*Math.sin(phase*Math.PI*2):0;
+   const twist=running?-(avatar.root.userData.sourceSprint?.04:.10)*Math.sin(phase*Math.PI*2):0;
    const torso=bones.spine_01;
    const up=new THREE.Vector3(0,1,0).applyQuaternion(torso.parent.getWorldQuaternion(new THREE.Quaternion()).invert());
    torso.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(up,twist*blend));
    avatar.root.userData.runTorsoTwist=twist*blend;
-   avatar.motion.rotation.x+=running?.065*blend:0;
+   avatar.motion.rotation.x+=running?(avatar.root.userData.sourceSprint?.025:.065)*blend:0;
    bones.neck_01.rotateX(-avatar.motion.rotation.x*.8-.05*blend);
   }
   avatar.root.updateMatrixWorld(true);
@@ -32,7 +32,7 @@ export function createFootPlant(avatar){
    f.weight=0;const local=(phase-f.index*.5+1)%1,stance=enabled&&local>=start&&local<end;
    if(!stance){
     f.anchor=null;f.age=0;f.inStance=false;
-    if(enabled&&running&&local>=end){
+    if(enabled&&running&&!avatar.root.userData.sourceSprint&&local>=end){
      // Recover the heel up behind the body, then drive the bent knee forward.
      const swing=(local-end)/(1-end),envelope=Math.sin(Math.PI*swing)**2;
      const raw=f.foot.getWorldPosition(new THREE.Vector3());

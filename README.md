@@ -845,3 +845,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Running recovery and cadence
 - Running cadence increases by 25% while walking cadence stays unchanged. Lower-body interpolation responds faster so heel recovery is not flattened by smoothing.
 - Swing feet recover higher (up to 24 cm added lift) with a rearward-then-forward arc. Pelvis bounce amplitude increases and the torso leans further forward; stance locking remains intact.
+
+### Player sprint source alignment
+- Forward player running now samples the same `Sprint_Loop` clip used by assassin infantry, instead of `TPSRun`.
+- Source sprint keeps its authored heel recovery; added recovery IK is disabled for it and pelvis/torso overlays are reduced. Directional strafes, weapon grips, ground support, jump and boost behavior remain separate layers.
