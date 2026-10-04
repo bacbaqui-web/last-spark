@@ -947,3 +947,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Charcoal chassis and neck protection
 - Replaced the clavicle-like strips with a low curved neck guard. Limb, neck, joint and foot materials share charcoal coloring instead of near-black.
 - Forward gaze and weapon carry/boost/second-jump checks pass.
+
+### Restrained idle and running upper body
+- Ordinary gun idle freezes the standing leg pose and adds only subtle upper-body breathing.
+- Running keeps a steady carry pose with waist yaw and stride-synchronized vertical torso movement; the head has smaller vertical movement and retains a level forward-facing orientation without roll.
+- Removed passive whole-body velocity tilt; jetpack directional lean remains.
