@@ -989,3 +989,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Connected waist hinge
 - Removed independent upward/world-position correction at the waist socket. The abdomen stays attached to the animated pelvis and receives lean through rotation only.
 - Run-preview checks now cover the pelvis-to-waist socket across every stride phase; repeated-frame, weapon carry and gaze checks pass. Reviewed the raised stride pose in the editor.
+
+### Gun carry follows pelvis
+- Gun forward locomotion now inherits the pelvis orientation at the connected waist socket instead of counter-rotating the torso into a world-fixed pose.
+- Preserved the preferred knife run, level gaze, restrained weapon follow and fixed waist connection. Preview determinism, carry/grip and gaze checks pass.

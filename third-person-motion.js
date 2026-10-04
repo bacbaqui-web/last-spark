@@ -25,7 +25,7 @@ export function createThirdPersonMotion(avatar){
    else{const p=new THREE.Vector3().fromArray(values);if(mirror)p.x=-p.x;b.position.copy(p);}
   }
  }
- const savedPose=avatar.bones.map(b=>({b,p:b.position.clone(),q:b.quaternion.clone()}));apply('TPSAimIdle',0);avatar.root.updateMatrixWorld(true);const upperAnchor={p:avatar.root.worldToLocal(bones.spine_01.getWorldPosition(new THREE.Vector3())),q:avatar.root.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(bones.spine_01.getWorldQuaternion(new THREE.Quaternion()))};for(const {b,p,q}of savedPose){b.position.copy(p);b.quaternion.copy(q);}
+ const savedPose=avatar.bones.map(b=>({b,p:b.position.clone(),q:b.quaternion.clone()}));apply('TPSAimIdle',0);avatar.root.updateMatrixWorld(true);const upperAnchor={parentQ:avatar.root.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(bones.spine_01.parent.getWorldQuaternion(new THREE.Quaternion())),q:avatar.root.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(bones.spine_01.getWorldQuaternion(new THREE.Quaternion()))};for(const {b,p,q}of savedPose){b.position.copy(p);b.quaternion.copy(q);}
  const restPositions=new Map(avatar.bones.filter(b=>/^(spine|neck|Head)/.test(b.name)).map(b=>[b.name,b.position.clone()]));
  function update(dt,state){
   for(const [name,position]of restPositions)bones[name].position.copy(position);
@@ -86,8 +86,8 @@ export function createThirdPersonMotion(avatar){
    const lift=runLift,twist=runTwist;
    avatar.motion.position.y=lift;avatar.root.updateMatrixWorld(true);
    bones.pelvis.rotateY(twist*.45);avatar.root.updateMatrixWorld(true);
-   const parent=bones.spine_01.parent,rotation=avatar.root.getWorldQuaternion(new THREE.Quaternion()).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(.20*runPoseBlend,twist,0))).multiply(upperAnchor.q);
-   // Keep the waist socket attached to the pelvis; lean changes orientation only.
+   const parent=bones.spine_01.parent,base=weapon==='knife'?avatar.root.getWorldQuaternion(new THREE.Quaternion()):parent.getWorldQuaternion(new THREE.Quaternion()).multiply(upperAnchor.parentQ.clone().invert()),rotation=base.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(.20*runPoseBlend,twist,0))).multiply(upperAnchor.q);
+   // Keep the socket attached and let gun carry inherit pelvis rotation. Knife keeps its preferred pose.
    bones.spine_01.position.copy(restPositions.get('spine_01')); bones.spine_01.quaternion.copy(parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(rotation));bones.spine_01.updateWorldMatrix(false,true);avatar.root.userData.upperBodyStabilized=false;
   }else avatar.root.userData.upperBodyStabilized=false;
   avatar.lookForward?.(pitch);return {bodyClip,attack,rolling:rollPhase>=0};
