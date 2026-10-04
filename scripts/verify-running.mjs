@@ -30,12 +30,12 @@ for(const yaw of [0,.7,Math.PI]){
  assert.equal(controller.speedFor(forward,yaw),10.8,'forward runs regardless of world heading');
  for(const local of [new THREE.Vector3(1,0,0),new THREE.Vector3(-1,0,0),new THREE.Vector3(0,0,1),new THREE.Vector3(1,0,-1).normalize()]){
   const direction=local.applyAxisAngle(axis,yaw);
-  assert.equal(controller.speedFor(direction,yaw),5.4,'side/back/diagonal walk');
-  assert(directionalCadence(5.4,direction,yaw)<directionalCadence(10.8,forward,yaw),'walking cadence is slower');
+  assert.equal(controller.speedFor(direction,yaw),10.8,'all directions run at the same speed');
+  assert.equal(directionalCadence(10.8,direction,yaw),directionalCadence(10.8,forward,yaw),'all directions share cadence');
   assert.equal(controller.speedFor(direction,yaw,true),2,'aim speed preserved');
   const robot=createRobot(),view=createThirdPersonView(robot,['pistol']);
   for(let frame=0;frame<90;frame++)view.pose({position:new THREE.Vector3(0,1.7,0),yaw,weapon:'pistol',speed:5.4,velocity:direction.clone().multiplyScalar(5.4),grounded:true,dt:1/60});
-  assert(!robot.root.userData.sourceSprint,'non-forward travel never selects sprint');
+  assert(robot.root.userData.sourceSprint,'every direction selects the preferred sprint');
  }
 }
-console.log('PASS: forward-only sprint, half-speed directional walking, slower cadence and aim speed at rotated headings');
+console.log('PASS: same sprint, speed and cadence in all directions, preserved aim speed at rotated headings');

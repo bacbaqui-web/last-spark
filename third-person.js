@@ -28,7 +28,7 @@ export function createThirdPersonView(avatar,types){
   const model=models[weapon];if(!model)return;
   if(poseWeapon!==weapon){poseWeapon=weapon;firePose=0;fireHold=0;}
   if(firing||flash)fireHold=.22;else fireHold=Math.max(0,fireHold-dt);
-  firePose=THREE.MathUtils.damp(firePose,Math.max(adsBlend,fireHold>0?1:0),18,dt);
+  if(!(state.boostPhase>=0||rollPhase>=0))firePose=THREE.MathUtils.damp(firePose,Math.max(adsBlend,fireHold>0?1:0),18,dt);
   minigunAim=weapon==='rapid'?adsBlend:0;
   const heading=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ'));
   model.position.set(0,0,0);model.quaternion.identity();
@@ -51,7 +51,7 @@ export function createThirdPersonView(avatar,types){
    const pull=bowDrawing?model.worldToLocal(avatar.arms[1].hand.getWorldPosition(new THREE.Vector3())):v(0,0,.14),pos=model.userData.string.geometry.attributes.position;pull.x=0;pull.y=0;pos.setXYZ(1,pull.x,pull.y,pull.z);pos.needsUpdate=true;model.userData.string.geometry.computeBoundingSphere();model.userData.nockedArrow.visible=bowDrawing;model.userData.nockedArrow.position.copy(pull).sub(v(0,0,.14));model.userData.nockedArrow.quaternion.identity();for(const limb of model.userData.limbs)limb.rotation.x=limb.userData.side*Math.min(1,bowCharge/2.2)*.08;
   }else{
    const hand=avatar.arms[1].hand;
-   if(!result.attack&&throwPhase<0){
+   if((!result.attack||state.boostPhase>=0||rollPhase>=0)&&throwPhase<0){
     // Grip correction is layered over the source chest/shoulder pose. Lowered heavy
     // weapons and raised shoulder weapons use different anchors.
     const heavy=['rapid','flame','chainsaw','rail'].includes(weapon),reach=weapon==='chainsaw'?chainsawBlend*.15:0;

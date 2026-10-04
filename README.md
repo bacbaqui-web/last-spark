@@ -883,3 +883,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Moving carry anchors now follow the animated chest's translation and rotation, so arms and held guns inherit pelvis bounce and torso twist. Firing/aiming blends into the existing stable shoulder mount; heavy weapons keep their lower firing anchors.
 - Pure left/right clips are baked as short lead-foot opening and trailing-foot follow steps, with separate foot lanes, low lifts and forward knee bends. Runtime does not generate foot targets; diagonal clips and support-foot transition states remain available.
 - Weapon-carry checks verify body bounce transfer, firing height and trigger-hand attachment. Running, locomotion, third-person, jetpack and build checks pass; side-step pose inspected in browser.
+
+### Unified sprint and separate third-person boost grip
+- All travel directions now use the preferred Sprint_Loop with the same speed and cadence. Removed lateral step waiting and directional walk selection; stopping steps and movement inertia remain.
+- Third-person jet boosts continue to solve both weapon grips and retain the current raised/carry blend. First-person weapon-lowering presentation remains separate; jetpack lean and frozen boost feet remain active.
+- Directional sprint, stopping, weapon attachment/boost grip, third-person and jetpack checks pass.

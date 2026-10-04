@@ -1,4 +1,4 @@
-import {directionalRunWeight,directionalCadence} from './step-locomotion.js';
+import {directionalCadence} from './step-locomotion.js';
 import {sampleKnifeSlash} from './knife-motion.js';
 import * as THREE from 'three';
 import data from './third-person-motion-data.json' with {type:'json'};
@@ -36,15 +36,10 @@ export function createThirdPersonMotion(avatar){
   apply(bodyClip,phase,n=>upper.test(n)||speed<.2&&lower.test(n));
   if(gun&&moving)apply('TPSAimWalk',(strideClock/clips.TPSAimWalk.duration)%1,n=>upper.test(n),walkBlend);
   if(gun&&Math.abs(pitch)>.01)apply(pitch>0?'TPSAimUp':'TPSAimDown',0,n=>upper.test(n),Math.min(.65,Math.abs(pitch)/1.2));
-  // Eight directional source strides avoid running backward or sideways with forward feet.
+  // The same preferred forward sprint plays in every travel direction.
   if(speed>.2&&grounded){
-   const local=velocity.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-yaw),angle=Math.atan2(local.x,-local.z),directions=['Forward','ForwardRight','Right','BackwardRight','Backward','BackwardLeft','Left','ForwardLeft'],sector=((angle/(Math.PI/4))%8+8)%8,index=Math.floor(sector),mix=sector-index;
-   const runWeight=directionalRunWeight(velocity,yaw);
-   const stride=name=>name==='Forward'?(speed<3||runWeight<.5?'TPSAimWalk':'Sprint_Loop'):'Strafe'+name;
-   const a=stride(directions[index]),b=stride(directions[(index+1)%8]);
-   apply(a,(strideClock/clips.TPSRun.duration)%1,n=>lower.test(n));if(mix>.001)apply(b,(strideClock/clips.TPSRun.duration)%1,n=>lower.test(n),mix);
-   bodyClip+=' + '+a+(mix>.001?' / '+b:'');
-   if(Math.abs(angle)<Math.PI/4&&transitionKind==='TPSStartRun'&&transitionAge<.24){apply(transitionKind,.2+.5*transitionAge/.24,n=>lower.test(n),(1-transitionAge/.24)*.8);bodyClip+=' + '+transitionKind;}
+   apply('Sprint_Loop',(strideClock/clips.TPSRun.duration)%1,n=>lower.test(n));
+   bodyClip+=' + Sprint_Loop';
   }else if(grounded&&transitionKind==='TPSStopRun'&&transitionAge<.22){apply('TPSStopRun',transitionAge/.22,n=>lower.test(n),1-transitionAge/.22);bodyClip+=' + TPSStopRun';}
   if(grounded&&state.locomotion?.action){const action=state.locomotion.action;applyStep(action.name,action.phase);bodyClip+=' + '+action.name;}
   if(!grounded){const clip=airAge<.15?'Jump_Start':'Jump_Loop';apply(clip,airAge<.15?airAge/.15:(clock%clips.Jump_Loop.duration)/clips.Jump_Loop.duration,n=>lower.test(n));bodyClip+=' + '+clip;}

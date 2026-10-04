@@ -14,3 +14,8 @@ assert(firingHeight>carryMean+.06,'firing raises weapon toward the face and shou
 const model=view.models.pistol,trigger=new THREE.Vector3(0,-.33,.20),hand=avatar.arms[1].hand;
 assert(model.localToWorld(trigger).distanceTo(hand.getWorldPosition(new THREE.Vector3()))<.001,'weapon grip stays attached to trigger hand');
 console.log('PASS: moving body carries weapon, firing raises shoulder pose, trigger grip stays attached');
+const beforeBoost=model.getWorldPosition(new THREE.Vector3());
+for(let i=0;i<15;i++)view.pose({...sample,speed:30,velocity:new THREE.Vector3(0,0,-30),boostPhase:i/15,boostDirection:new THREE.Vector3(0,0,-1),firing:false});
+assert(model.getWorldPosition(new THREE.Vector3()).y>beforeBoost.y-.22,'third-person boost keeps raised gun instead of dropping it');
+assert(model.localToWorld(new THREE.Vector3(0,-.33,.20)).distanceTo(hand.getWorldPosition(new THREE.Vector3()))<.001,'boost retains trigger-hand grip');
+console.log('PASS: third-person boost retains weapon carry and shoulder state');
