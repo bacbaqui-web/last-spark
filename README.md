@@ -930,3 +930,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Upper/lower arms and thighs/calves now use thick rounded capsule bodies with closely matched diameters, replacing the narrow exposed frame. Shoulder and elbow sizes follow the arm silhouette.
 - Feet are shorter rounded shells instead of long block boots; armor panels follow the fuller limb surface. Existing skeleton and animation lengths remain.
 - Weapon carry, boost, second-jump and forward-gaze checks pass.
+
+### Slimmer limbs, ball joints and oval helmet
+- Arm and leg diameters are reduced about 15%; spherical elbow and knee joints close the gaps through bending poses.
+- The helmet is an egg-shaped surface that narrows toward the chin. A raised helmet and rounded neck column expose a longer neck while retaining forward gaze.

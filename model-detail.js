@@ -29,27 +29,28 @@ export function decorateRobot(r,boss=false,type='trooper'){
   for(let k=0;k<rim.length;k++){const a=rim[k],b=rim[(k+1)%rim.length];indices.push(a,b,a+count,b,b+count,a+count);}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setIndex(indices);g.computeVertexNormals();const mesh=new THREE.Mesh(g,material);mesh.position.set(...pos);mesh.castShadow=true;mesh.userData.cosmetic=true;parent.add(mesh);return mesh;
  }
- r.head.geometry=new RoundedBoxGeometry(1,1,1,3,.20);
+ // Egg-shaped helmet narrows smoothly toward the chin.
+ r.head.geometry=new THREE.SphereGeometry(.5,28,20);const hp=r.head.geometry.attributes.position;for(let i=0;i<hp.count;i++){const y=hp.getY(i),t=THREE.MathUtils.smoothstep(y,-.5,.12),width=.74+.26*t;hp.setX(i,hp.getX(i)*width);hp.setZ(i,hp.getZ(i)*(.84+.16*t));}r.head.geometry.computeVertexNormals();r.head.userData.cosmetic=true;
  const helmet=new THREE.Group();helmet.name='tapered-helmet';helmet.position.copy(r.head.position);helmet.quaternion.copy(r.head.quaternion);r.head.parent.add(helmet);
- plate(helmet,[[-.13,.15],[-.08,.18],[.08,.18],[.13,.15],[.10,.055],[-.10,.055]],.055,[0,0,.06],identity);
- for(const side of[-1,1]){const cheek=plate(helmet,[[-.045,.09],[.025,.12],[.045,-.05],[.025,-.12],[-.025,-.105]],.035,[side*.11,-.025,.11],shell);cheek.rotation.y=side*.22;}
- detailBatch(helmet,[[[.12,.035,.045],[0,-.105,.13],black]]);
+ sculpt(helmet,.19,.14,.024,[0,.085,.087],identity,.85);
+ for(const side of[-1,1]){const cheek=sculpt(helmet,.055,.135,.018,[side*.084,-.055,.085],shell,.65);cheek.rotation.y=side*.30;}
  // Two angled pectoral shells and a narrow abdomen leave space to bend at the waist.
  for(const side of[-1,1]){const chest=sculpt(r.body,.17,.25,.055,[side*.09,.045,.095],identity,.72);chest.rotation.y=side*.16;}
  plate(r.bones.find(b=>b.name==='spine_01'),[[-.065,.09],[.065,.09],[.055,-.06],[0,-.10],[-.055,-.06]],.028,[0,.04,.09]);
  detailBatch(r.body,[[[.23,.035,.025],[0,.14,-.13],identity]]);
  const backpack=new THREE.Group();backpack.name='original-backpack';r.body.add(backpack);detailBatch(backpack,[[[.3,.32,.15],[0,.015,-.22],black]]);r.backpack=backpack;
  for(const [index,arm]of r.arms.entries()){
-  const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.115,24,16,0,Math.PI*2,0,Math.PI*.69),identity);shoulder.scale.set(1.02,1,1.02);shoulder.position.y=.005;shoulder.userData.cosmetic=true;arm.shoulder.add(shoulder);
-  sculpt(arm.shoulder,.12,.18,.035,[0,-.145,.092]);
-  sculpt(arm.elbow,.135,.22,.045,[0,-.15,.088],identity);
+  const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.10,24,16,0,Math.PI*2,0,Math.PI*.69),identity);shoulder.scale.set(1.02,1,1.02);shoulder.position.y=.005;shoulder.userData.cosmetic=true;arm.shoulder.add(shoulder);
+  sculpt(arm.shoulder,.12,.18,.035,[0,-.145,.076]);
+  sculpt(arm.elbow,.135,.22,.045,[0,-.15,.073],identity);
   detailBatch(arm.elbow,[[[.08,.015,.008],[0,-.085,.096],black],[[.07,.015,.008],[0,-.12,.099],black]]);
-  const joint=new THREE.Mesh(new THREE.SphereGeometry(.086,16,12),black);joint.userData.cosmetic=true;arm.elbow.add(joint);
+  const joint=new THREE.Mesh(new THREE.SphereGeometry(.088,20,14),black);joint.userData.cosmetic=true;arm.elbow.add(joint);
  }
  for(const leg of r.legs){
-  sculpt(leg.hip,.145,.27,.04,[0,-.195,.109]);
+  const joint=new THREE.Mesh(new THREE.SphereGeometry(.099,20,14),black);joint.userData.cosmetic=true;leg.knee.add(joint);
+  sculpt(leg.hip,.145,.27,.04,[0,-.195,.093]);
   sculpt(leg.knee,.145,.12,.05,[0,-.025,.06],identity);
-  sculpt(leg.knee,.11,.26,.04,[0,-.23,.098]);
+  sculpt(leg.knee,.11,.26,.04,[0,-.23,.083]);
  }
  if(type==='sniper')detailBatch(helmet,[[[.06,.07,.07],[.14,.025,.16],indicator]]);
 }
