@@ -878,3 +878,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Straight forward movement retains speed 10.8; lateral, backward and diagonal movement uses speed 5.4. A narrow forward angle blends speeds smoothly, while existing inertia and support-foot transitions remain active. Aiming retains speed 2.
 - Side/back strides use a slower walking cadence and separated lateral clips. Forward sprint is selected only near straight forward travel; cadence also drives first-person support-foot timing.
 - Running checks cover rotated headings, diagonal walking, reduced cadence, no sideways sprint and preserved aim speed. Locomotion, third-person, jetpack, collision checks and production build pass.
+
+### Chest-following weapon carry and authored side steps
+- Moving carry anchors now follow the animated chest's translation and rotation, so arms and held guns inherit pelvis bounce and torso twist. Firing/aiming blends into the existing stable shoulder mount; heavy weapons keep their lower firing anchors.
+- Pure left/right clips are baked as short lead-foot opening and trailing-foot follow steps, with separate foot lanes, low lifts and forward knee bends. Runtime does not generate foot targets; diagonal clips and support-foot transition states remain available.
+- Weapon-carry checks verify body bounce transfer, firing height and trigger-hand attachment. Running, locomotion, third-person, jetpack and build checks pass; side-step pose inspected in browser.
