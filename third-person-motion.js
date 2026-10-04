@@ -1,3 +1,4 @@
+import {directionalRunWeight,directionalCadence} from './step-locomotion.js';
 import {sampleKnifeSlash} from './knife-motion.js';
 import * as THREE from 'three';
 import data from './third-person-motion-data.json' with {type:'json'};
@@ -26,7 +27,7 @@ export function createThirdPersonMotion(avatar){
  }
  function update(dt,state){
   clock+=dt;const {weapon,speed=0,velocity,yaw,pitch=0,grounded=true,knifePhase=-1,rollPhase=-1,meleePhase=-1,throwPhase=-1,bowMotionClip='BowIdle',bowMotionPhase=0,bowDrawing=false,bowCharge=0,flash=false}=state;
-  strideRate=THREE.MathUtils.damp(strideRate,Math.min(1.6,Math.max(.35,speed/9.8*(speed>=3?1.25:1))),8,dt);strideClock+=dt*strideRate;
+  strideRate=THREE.MathUtils.damp(strideRate,directionalCadence(speed,velocity,yaw),8,dt);strideClock+=dt*strideRate;
   if(grounded&&!wasGrounded)landAge=0;if(!grounded&&wasGrounded)airAge=0;wasGrounded=grounded;airAge+=dt;landAge+=dt;
   if(lastWeapon!==weapon){lastWeapon=weapon;shotKick=0;}if(flash&&!lastFlash)shotKick=1;lastFlash=flash;shotKick=THREE.MathUtils.damp(shotKick,0,18,dt);
   const gun=['pistol','shotgun','sniper','laser'].includes(weapon),moving=speed>.7;walkBlend=THREE.MathUtils.damp(walkBlend,moving?1:0,10,dt);if(moving!==wasMoving){transitionKind=moving?'TPSStartRun':'TPSStopRun';transitionAge=0;}wasMoving=moving;transitionAge+=dt;
@@ -38,7 +39,8 @@ export function createThirdPersonMotion(avatar){
   // Eight directional source strides avoid running backward or sideways with forward feet.
   if(speed>.2&&grounded){
    const local=velocity.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-yaw),angle=Math.atan2(local.x,-local.z),directions=['Forward','ForwardRight','Right','BackwardRight','Backward','BackwardLeft','Left','ForwardLeft'],sector=((angle/(Math.PI/4))%8+8)%8,index=Math.floor(sector),mix=sector-index;
-   const stride=name=>name==='Forward'?(speed<3?'TPSAimWalk':'Sprint_Loop'):'Strafe'+name;
+   const runWeight=directionalRunWeight(velocity,yaw);
+   const stride=name=>name==='Forward'?(speed<3||runWeight<.5?'TPSAimWalk':'Sprint_Loop'):'Strafe'+name;
    const a=stride(directions[index]),b=stride(directions[(index+1)%8]);
    apply(a,(strideClock/clips.TPSRun.duration)%1,n=>lower.test(n));if(mix>.001)apply(b,(strideClock/clips.TPSRun.duration)%1,n=>lower.test(n),mix);
    bodyClip+=' + '+a+(mix>.001?' / '+b:'');
@@ -71,7 +73,7 @@ export function createThirdPersonMotion(avatar){
   if(state.motionPreview){const {action,phase:p}=state.motionPreview;const name=action==='move'?'TPSRun':action==='jump'?'Jump_Loop':action==='idle'? (weapon==='knife'?'Sword_Idle':weapon==='bow'?'M2MBowIdle':['rapid','rocket','rail','chainsaw','flame'].includes(weapon)?'Idle_Rail_Loop':'TPSAimIdle'):action==='hold'?'M2MBowHold':null;if(name)apply(name,p,n=>['move','jump'].includes(action)?lower.test(n):true);if(action==='move'&&gun)apply('TPSAimWalk',p,n=>upper.test(n));}
   const attack=boosting||jetJump||knifePhase>=0||rollPhase>=0||meleePhase>=0;const alpha=state.motionPreview||previous.size===0?1:dt>0?1-Math.exp(-dt*(knifePhase>=0?90:attack?38:18)):0;
   for(const b of avatar.bones){let old=previous.get(b.name);if(old){b.quaternion.copy(old.q.clone().slerp(b.quaternion,grounded&&speed>=3&&!attack&&lower.test(b.name)&&dt>0?1-Math.exp(-dt*36):alpha));b.position.copy(old.p.clone().lerp(b.position,alpha));}else old={q:new THREE.Quaternion(),p:new THREE.Vector3()};old.q.copy(b.quaternion);old.p.copy(b.position);previous.set(b.name,old);}
-  const localMomentum=velocity.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-(yaw+Math.PI));momentum.lerp(localMomentum,1-Math.exp(-dt*8));avatar.motion.rotation.x=leanX+THREE.MathUtils.clamp(momentum.z*.008,-.16,.16);avatar.motion.rotation.z=leanZ-THREE.MathUtils.clamp(momentum.x*.008,-.16,.16);avatar.root.userData.locomotionAction=state.locomotion?.action?.name??null;avatar.root.userData.footContacts=[null,null];avatar.root.userData.sourceSprint=bodyClip.includes('Sprint_Loop');avatar.root.userData.motion=bodyClip;avatar.root.userData.sourceMotion=knifePhase>=0?'AuthoredDragonSlash':bodyClip;avatar.root.userData.stridePhase=(strideClock/clips.TPSRun.duration)%1;avatar.root.userData.strideRate=Math.min(1.6,Math.max(.35,speed/9.8*(speed>=3?1.25:1)));return {bodyClip,attack,rolling:rollPhase>=0};
+  const localMomentum=velocity.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-(yaw+Math.PI));momentum.lerp(localMomentum,1-Math.exp(-dt*8));avatar.motion.rotation.x=leanX+THREE.MathUtils.clamp(momentum.z*.008,-.16,.16);avatar.motion.rotation.z=leanZ-THREE.MathUtils.clamp(momentum.x*.008,-.16,.16);avatar.root.userData.locomotionAction=state.locomotion?.action?.name??null;avatar.root.userData.footContacts=[null,null];avatar.root.userData.sourceSprint=bodyClip.includes('Sprint_Loop');avatar.root.userData.motion=bodyClip;avatar.root.userData.sourceMotion=knifePhase>=0?'AuthoredDragonSlash':bodyClip;avatar.root.userData.stridePhase=(strideClock/clips.TPSRun.duration)%1;avatar.root.userData.strideRate=directionalCadence(speed,velocity,yaw);return {bodyClip,attack,rolling:rollPhase>=0};
  }
  return {update,bones,apply};
 }

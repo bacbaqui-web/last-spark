@@ -873,3 +873,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - `scripts/bake-side-locomotion.mjs` regenerates the clip data. Locomotion checks cover foot ordering throughout lateral playback as well as stop/step variants.
 - Drone bosses pursue around the player's current bearing, target a 14m horizontal distance, and maintain an 8m minimum within arena bounds. Distance checks cover overhead recovery, moving players, corners and catch-up.
 - Build, locomotion, running, third-person, jetpack, movement and chainsaw checks pass; lateral pose preview inspected in the browser.
+
+### Forward-only running and directional walking
+- Straight forward movement retains speed 10.8; lateral, backward and diagonal movement uses speed 5.4. A narrow forward angle blends speeds smoothly, while existing inertia and support-foot transitions remain active. Aiming retains speed 2.
+- Side/back strides use a slower walking cadence and separated lateral clips. Forward sprint is selected only near straight forward travel; cadence also drives first-person support-foot timing.
+- Running checks cover rotated headings, diagonal walking, reduced cadence, no sideways sprint and preserved aim speed. Locomotion, third-person, jetpack, collision checks and production build pass.
