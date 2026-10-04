@@ -1015,3 +1015,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Upright neutral idle
 - Grounded neutral idle restores the pelvis and spine to the straight rest stance instead of keeping weapon-source combat crouch/lean. Moving and active aim/draw/attack poses retain their lean.
 - Reviewed bow idle from the side; running preview, carry/grip and level-gaze checks plus build pass.
+
+### Heavy minigun carry and walking
+- Minigun neutral stance straightens the torso with a small backward lean; carry grip moves lower/right with the muzzle angled down. Firing raises it to the existing aim mount.
+- Equipped minigun caps ordinary movement at 4.2 before speed upgrades (normal 10.8); aiming remains at 2. TPSWalk replaces sprint and the editor uses the same reduced speed. Jet boost remains a separate movement ability.
+- Carry, collision/movement and jetpack checks pass; minigun preview confirms walking rather than sprint.
