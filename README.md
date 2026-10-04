@@ -860,3 +860,10 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Braking landing sides now derive from the actual hip positions; this rig has left-leg positive local X, opposite to the prior hard-coded assumption.
 - Side stops use the trailing foot as support. Landing and swing targets maintain separation from that support, and a final correction moves only the free foot if directional blending crosses the legs.
 - Locomotion checks verify left/right foot ordering throughout strafe and stop sequences, landing separation, retained support contacts and cancellation.
+
+### Authored support-foot transition states (replaces procedural placement)
+- Removed `foot-plant.js` and `locomotion-feet.js`: no runtime ankle targets, leg separation IK or generated braking trajectories are applied to player locomotion.
+- `step-locomotion.js` selects StopLeft/StopRight and StepLeft/StepRight by support foot. Lateral input can wait for the opposite support foot, bounded to 0.16 seconds. Stop/resume, jump, boost and reset clear pending states appropriately.
+- These variants sample existing TPSStopRun and StrafeLeft segments, mirrored for the opposite side. Weapon upper-body poses remain layered separately; the existing Sprint_Loop is preserved.
+- Input direction and authored step transition are coordinated with movement inertia. First-person movement uses its own gait phase when no third-person pose is sampled.
+- Locomotion checks now validate state selection, bounded waits, cancellation, mirrored clip leg order and absence of runtime foot targets. Running, third-person, jetpack, collision, fire/knife and laser/bow checks pass.
