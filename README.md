@@ -831,3 +831,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - 달리기 원본 모션 위에 월드 좌표 발 접지 보정을 추가했습니다. 낮아지며 착지한 발을 지면 높이에 잠깐 고정하고 다리 IK로 몸 이동을 따라갑니다. 원본 발이 들리거나 관절 도달 범위를 벗어나면 해제하고 관절 변화량을 제한해 전환을 완만하게 합니다. 지형 높이를 발 위치에서 조회하며 점프/제트팩/칼 돌진/모션 미리보기에서는 해제합니다.
 - 골반에 보행 주기 기반 작은 상하 움직임과 접지 여유를 추가하고 목에서 전진 기울기를 일부 상쇄해 고개를 들도록 했습니다. 무기 파지 보정 전에 적용합니다.
 - 확인: verify-running의 반복 접지/고정 발 위치/점프 해제/방향 전환, verify-third-person, verify-jetpack 및 빌드 통과. 브라우저 달리기 자세 확인. 완전한 지형 적응 발목/발끝 롤링이 아닌 제한된 접지 보정입니다.
+
+### Running stance and flight
+- Foot planting now follows explicit alternating stance windows in the source stride. Both anchors release during flight; swing feet are never captured solely because they are low.
+- Stance preserves the touchdown world position, with smooth push-off and reach-limited correction. Source ankle rotation is retained; forced flat ankles and constant pelvis lowering are removed.
+- Flight adds a small pelvis rise. `node scripts/verify-running.mjs` checks held world contacts, both-foot release, directional continuity and jump release.

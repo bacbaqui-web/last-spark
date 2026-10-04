@@ -21,14 +21,16 @@ for(let i=0;i<180;i++){
  previous=thigh;
 }
 console.log('PASS: synchronized body stride, bounded cadence and smooth directional running');
-avatar=createRobot();view=createThirdPersonView(avatar,['pistol']);let contacts=0,held=0,lastContacts=[null,null];
+avatar=createRobot();view=createThirdPersonView(avatar,['pistol']);let contacts=0,held=0,flightFrames=0,lockedFrames=0,lastContacts=[null,null];
 for(let i=0;i<240;i++){
  view.pose({position:new THREE.Vector3(0,1.7,-i*.18),yaw:0,pitch:0,weapon:'pistol',speed:10.8,velocity:new THREE.Vector3(0,0,-10.8),grounded:true,dt:1/60});
+ if(avatar.root.userData.runFlight){flightFrames++;assert(avatar.root.userData.footContacts.every(a=>a===null),'flight releases both feet');}
  avatar.root.userData.footContacts.forEach((anchor,index)=>{
-  if(anchor){contacts++;const foot=avatar.bones.find(b=>b.name===`foot_${index?'r':'l'}`).getWorldPosition(new THREE.Vector3());if(avatar.root.userData.footContactAges[index]>.05)assert(foot.distanceTo(new THREE.Vector3(...anchor))<.04,'settled contact foot remains at world anchor');if(lastContacts[index]&&new THREE.Vector3(...anchor).distanceTo(new THREE.Vector3(...lastContacts[index]))<1e-6)held++;}
+  if(anchor){contacts++;const foot=avatar.bones.find(b=>b.name===`foot_${index?'r':'l'}`).getWorldPosition(new THREE.Vector3());if(avatar.root.userData.footContactWeights[index]>.99){lockedFrames++;assert(foot.distanceTo(new THREE.Vector3(...anchor))<.04,'full stance keeps foot at its world anchor');}if(lastContacts[index]&&new THREE.Vector3(...anchor).distanceTo(new THREE.Vector3(...lastContacts[index]))<1e-6)held++;}
   lastContacts[index]=anchor;
  });
 }
+assert(flightFrames>30&&lockedFrames>5,'running includes flight and firm support');
 assert(contacts>15&&held>5,'running repeatedly plants and holds feet');
 view.pose({position:new THREE.Vector3(0,3,-44),yaw:0,pitch:0,weapon:'pistol',speed:10.8,velocity:new THREE.Vector3(0,6,-10.8),grounded:false,dt:1/60});
 assert(avatar.root.userData.footContacts.every(a=>a===null),'jump releases contact anchors');
