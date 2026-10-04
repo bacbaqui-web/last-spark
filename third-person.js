@@ -59,9 +59,9 @@ export function createThirdPersonView(avatar,types){
    bowPoseBlend=state.motionPreview?(raised?1:0):THREE.MathUtils.damp(bowPoseBlend,raised?1:0,14,dt);
    const relax=releasing?THREE.MathUtils.smoothstep(releasePhase,0,1)*.42:0;
    // Rotate the torso as one block, then solve both arms from the new shoulders.
-   avatar.root.updateMatrixWorld(true);const waist=avatar.bones.find(b=>b.name==='spine_01'),desiredChest=avatar.root.getWorldQuaternion(new THREE.Quaternion()).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,-Math.PI/2*bowPoseBlend,0))),delta=desiredChest.multiply(shoulderFrame.getWorldQuaternion(new THREE.Quaternion()).invert());
+   avatar.root.updateMatrixWorld(true);const waist=avatar.bones.find(b=>b.name==='spine_01'),desiredChest=avatar.root.getWorldQuaternion(new THREE.Quaternion()).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(.16*(1-bowPoseBlend),-Math.PI/2*bowPoseBlend,0))),delta=desiredChest.multiply(shoulderFrame.getWorldQuaternion(new THREE.Quaternion()).invert());
    waist.quaternion.copy(waist.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(delta.multiply(waist.getWorldQuaternion(new THREE.Quaternion()))));avatar.root.updateMatrixWorld(true);avatar.lookForward?.(pitch);mountShoulders();
-   const bowHeading=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch*bowPoseBlend,yaw,0,'YXZ')).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI*75/180*(1-bowPoseBlend)-relax,0,Math.PI/2*(1-bowPoseBlend))));
+   const bowHeading=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch*bowPoseBlend,yaw,0,'YXZ')).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI*30/180*(1-bowPoseBlend)-relax,0,Math.PI/2*(1-bowPoseBlend))));
    const left=avatar.arms[0],shoulder=left.shoulder.getWorldPosition(new THREE.Vector3()),elbow=left.elbow.getWorldPosition(new THREE.Vector3()),reach=shoulder.distanceTo(elbow)+elbow.distanceTo(left.hand.getWorldPosition(new THREE.Vector3())),direction=v(0,-1,.04).lerp(v(0,-relax,-1),bowPoseBlend).normalize().applyQuaternion(heading),grip=shoulder.addScaledVector(direction,reach*.999999),leftPole=position.clone().add(v(-.5,-.4,.1).applyQuaternion(heading));
    armIK(left,grip,leftPole,.999999);avatar.root.updateMatrixWorld(true);
    const hand=left.hand;
