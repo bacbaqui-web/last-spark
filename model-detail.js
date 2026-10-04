@@ -40,16 +40,16 @@ export function decorateRobot(r,boss=false,type='trooper'){
  detailBatch(r.body,[[[.23,.035,.025],[0,.14,-.13],identity]]);
  const backpack=new THREE.Group();backpack.name='original-backpack';r.body.add(backpack);detailBatch(backpack,[[[.3,.32,.15],[0,.015,-.22],black]]);r.backpack=backpack;
  for(const [index,arm]of r.arms.entries()){
-  const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.13,24,16,0,Math.PI*2,0,Math.PI*.69),identity);shoulder.scale.set(1.05,.82,1.12);shoulder.position.y=.005;shoulder.userData.cosmetic=true;arm.shoulder.add(shoulder);
-  sculpt(arm.shoulder,.12,.18,.035,[0,-.145,.055]);
-  sculpt(arm.elbow,.135,.22,.045,[0,-.15,.05],identity);
+  const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.115,24,16,0,Math.PI*2,0,Math.PI*.69),identity);shoulder.scale.set(1.02,1,1.02);shoulder.position.y=.005;shoulder.userData.cosmetic=true;arm.shoulder.add(shoulder);
+  sculpt(arm.shoulder,.12,.18,.035,[0,-.145,.092]);
+  sculpt(arm.elbow,.135,.22,.045,[0,-.15,.088],identity);
   detailBatch(arm.elbow,[[[.08,.015,.008],[0,-.085,.096],black],[[.07,.015,.008],[0,-.12,.099],black]]);
-  const joint=new THREE.Mesh(new THREE.SphereGeometry(.062,10,8),black);joint.userData.cosmetic=true;arm.elbow.add(joint);
+  const joint=new THREE.Mesh(new THREE.SphereGeometry(.086,16,12),black);joint.userData.cosmetic=true;arm.elbow.add(joint);
  }
  for(const leg of r.legs){
-  sculpt(leg.hip,.145,.27,.04,[0,-.195,.065]);
+  sculpt(leg.hip,.145,.27,.04,[0,-.195,.109]);
   sculpt(leg.knee,.145,.12,.05,[0,-.025,.06],identity);
-  sculpt(leg.knee,.11,.26,.04,[0,-.23,.055]);
+  sculpt(leg.knee,.11,.26,.04,[0,-.23,.098]);
  }
  if(type==='sniper')detailBatch(helmet,[[[.06,.07,.07],[.14,.025,.16],indicator]]);
 }

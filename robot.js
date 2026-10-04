@@ -1,8 +1,9 @@
 import {panelGeometry,panelTexture,detailBatch,decorateRobot} from './model-detail.js';
 import * as THREE from 'three';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import rigData from './rig-data.json' with {type:'json'};
 const cubeGeometry=panelGeometry;
-const frameGeometry=new THREE.CylinderGeometry(.5,.45,1,10);
+const frameGeometry=new THREE.CapsuleGeometry(.5,1,8,20);
 const armor=new THREE.MeshStandardMaterial({color:0x928775,metalness:.3,roughness:.65});
 const bossArmor=new THREE.MeshStandardMaterial({color:0xad7852,metalness:.35,roughness:.65});
 const joints=new THREE.MeshStandardMaterial({color:0x223b44,metalness:.5,roughness:.7});
@@ -20,10 +21,10 @@ export function createRobot(boss=false,type='trooper',headScale=1){
  const byName=Object.fromEntries(bones.map(b=>[b.name,b])),mat=boss?bossArmor:armor,restGazeAxis=new THREE.Vector3(0,0,1).applyQuaternion(byName.Head.getWorldQuaternion(new THREE.Quaternion()).invert());
  // Rigid armor sections bind to actual animation bones in the rest pose.
  function bind(name,size,offset=[0,0,0],material=mat){const b=byName[name],pos=b.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(...offset));const m=block(motion,material,size,pos.toArray());motion.updateMatrixWorld(true);b.attach(m);return m;}
- function segment(name,end,width,depth){const b=byName[name],a=b.getWorldPosition(new THREE.Vector3()),z=byName[end].getWorldPosition(new THREE.Vector3()),delta=z.clone().sub(a);const m=block(motion,joints,[width*.78,delta.length()*.86,depth*.70],a.add(z).multiplyScalar(.5).toArray());m.geometry=frameGeometry;m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());motion.updateMatrixWorld(true);b.attach(m);}
+ function segment(name,end,width,depth){const b=byName[name],a=b.getWorldPosition(new THREE.Vector3()),z=byName[end].getWorldPosition(new THREE.Vector3()),delta=z.clone().sub(a);const m=block(motion,mat,[width,delta.length()*.48,depth],a.add(z).multiplyScalar(.5).toArray());m.geometry=frameGeometry;m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());motion.updateMatrixWorld(true);b.attach(m);}
  bind('pelvis',[.25,.16,.18],[0,0,0],joints);bind('spine_01',[.19,.18,.16],[0,.04,0],joints);bind('spine_03',[.32,.30,.20],[0,.015,0],joints);
  const head=bind('Head',[.30,.34,.26],[0,.10,0],joints);const visor=bind('Head',[.18,.035,.025],[0,.12,.145],glow);head.userData.weakPoint=visor.userData.weakPoint=true;
- for(const side of ['l','r']){if(!boss){segment('upperarm_'+side,'lowerarm_'+side,.125,.15);segment('lowerarm_'+side,'hand_'+side,.115,.14);bind('hand_'+side,[.13,.16,.13],[0,0,0],joints);}segment('thigh_'+side,'calf_'+side,.15,.18);segment('calf_'+side,'foot_'+side,.125,.15);bind('foot_'+side,[.16,.11,.29],[0,-.015,.055],joints);}
+ for(const side of ['l','r']){if(!boss){segment('upperarm_'+side,'lowerarm_'+side,.205,.205);segment('lowerarm_'+side,'hand_'+side,.195,.195);bind('hand_'+side,[.13,.16,.13],[0,0,0],joints);}segment('thigh_'+side,'calf_'+side,.235,.235);segment('calf_'+side,'foot_'+side,.22,.22);const foot=bind('foot_'+side,[.18,.105,.235],[0,-.005,.04],mat);foot.geometry=new RoundedBoxGeometry(1,1,1,5,.28);foot.userData.cosmetic=true;}
  // Gun is mounted in the right-hand rest frame; animated aim points it forward.
  const weapon=new THREE.Group();byName.hand_r.add(weapon);weapon.position.set(0,.08,.025);block(weapon,joints,[.14,.16,.39],[0,.04,.09]);block(weapon,mat,[.16,.065,.28],[0,.14,.08]);const muzzle=new THREE.Group();muzzle.position.set(0,.045,.3);weapon.add(muzzle);
  const muzzleFlash=new THREE.Mesh(new THREE.ConeGeometry(.085,.22,5),new THREE.MeshBasicMaterial({color:0xffd497}));muzzleFlash.rotation.x=Math.PI/2;muzzleFlash.position.z=.08;muzzleFlash.visible=false;muzzle.add(muzzleFlash);
