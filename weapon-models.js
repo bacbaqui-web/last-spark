@@ -71,7 +71,7 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   cylinder(.215,.025,[0,0,-.975],steel);
   // Separate barrel bores remain visible ahead of the face plate.
   const handle=(points,r,mat)=>root.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),20,r,8,false),mat));
-  handle([[0,.17,-.16],[0,.38,-.12],[0,.43,.05],[0,.40,.27],[0,.17,.32]],.036,black);
+  handle([[-.23,.17,.34],[-.23,.40,.34],[-.17,.43,.34],[.17,.43,.34],[.23,.40,.34],[.23,.17,.34]],.036,black);root.userData.supportGrip=[-.23,.40,.34];root.userData.triggerGrip=[0,-.14,.63];
   handle([[0,.03,.41],[0,-.03,.60],[0,-.25,.67],[0,-.39,.56],[0,-.30,.39]],.045,rubber);
   const grip=box([.10,.24,.105],[-.19,-.22,-.14],rubber);grip.rotation.x=-.17;
   const parts=[[[.19,.025,.34],[0,.216,.07],black],[[.06,.045,.1],[0,.24,.25],steel],[[.08,.03,.06],[0,.26,.25],black],[[.13,.16,.22],[.20,-.04,.18],black]];
