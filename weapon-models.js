@@ -184,7 +184,7 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   const dial=new THREE.Mesh(new THREE.CylinderGeometry(.043,.043,.06,16),black);dial.rotation.z=Math.PI/2;dial.position.set(.09,.33,-.025);root.add(dial);
   // Deployed bipod, attached to the underside of the handguard.
   for(const side of[-1,1]){const leg=box([.033,.40,.035],[side*.13,-.30,-.69],black);leg.rotation.z=side*.42;box([.14,.028,.10],[side*.215,-.49,-.69],rubber);for(let i=0;i<6;i++)parts.push([[.012,.017,.038],[side*(.065+i*.026),-.15-i*.055,-.69],steel]);}
-  detailBatch(root,parts);root.scale.setScalar(.66);root.userData.muzzle=[0,.028,-1.93];
+  detailBatch(root,parts);root.scale.setScalar(.66);root.userData.scopeEye=[0,.33,.35];root.userData.muzzle=[0,.028,-1.93];
  }
  if(type==='rocket'){
   const olive=new THREE.MeshStandardMaterial({color:0x666c43,metalness:.35,roughness:.7,map:panelTexture});
