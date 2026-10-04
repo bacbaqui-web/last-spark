@@ -985,3 +985,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Forward lean rotates the abdomen at the waist in character coordinates, carrying the chest above it while the face stays level.
 - Motion-editor running uses the gameplay sprint and one explicit frame phase for legs, lift and twist. Moving knife carry no longer loops an unrelated idle upper-body clip.
 - Verified repeated preview frame sampling for knife/gun, weapon carry and gaze, editor persistence, plus a side-view browser review. The older third-person-motion test still expects the retired M2MSwordSlash label.
+
+### Connected waist hinge
+- Removed independent upward/world-position correction at the waist socket. The abdomen stays attached to the animated pelvis and receives lean through rotation only.
+- Run-preview checks now cover the pelvis-to-waist socket across every stride phase; repeated-frame, weapon carry and gaze checks pass. Reviewed the raised stride pose in the editor.
