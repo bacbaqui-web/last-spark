@@ -855,3 +855,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Ground deceleration keeps a short momentum slide and drives a predicted braking step: preserve the current support point, swing the opposite foot toward the stopping point, compress the pelvis and settle back to idle. New input, jump, boost, attacks and teleports cancel the step.
 - `locomotion-feet.js` adds this procedural layer to existing authored animation; it is not a full motion-matching database or a neural animation system. Forward `Sprint_Loop` remains the baseline.
 - `node scripts/verify-locomotion-feet.mjs` checks actual directional support positions, braking support, opposite-foot landing, bounded slide, resume/jump cancellation and the game's second zero-delta pose pass. Running, collision, third-person and jetpack checks pass; browser previews inspected strafe and braking poses.
+
+### Braking leg crossing correction
+- Braking landing sides now derive from the actual hip positions; this rig has left-leg positive local X, opposite to the prior hard-coded assumption.
+- Side stops use the trailing foot as support. Landing and swing targets maintain separation from that support, and a final correction moves only the free foot if directional blending crosses the legs.
+- Locomotion checks verify left/right foot ordering throughout strafe and stop sequences, landing separation, retained support contacts and cancellation.
