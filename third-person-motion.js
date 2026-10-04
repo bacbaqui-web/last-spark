@@ -56,7 +56,7 @@ export function createThirdPersonMotion(avatar){
    bodyClip='Sword_Dash';
   }
   else if(rollPhase>=0){bodyClip='JetBoost';}
-  else if(meleePhase>=0){apply('Melee_Hook',meleePhase);bodyClip='Melee_Hook';}
+  else if(meleePhase>=0){bodyClip='LeftJab';}
   else if(throwPhase>=0){apply('OverhandThrow',throwPhase,n=>upper.test(n));bodyClip='OverhandThrow';}
   const boosting=state.boostPhase>=0||rollPhase>=0,jetJump=state.jetJump>0;
   let leanX=0,leanZ=0;
