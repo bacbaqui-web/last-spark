@@ -904,3 +904,9 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - `overgrown-city.js` builds seeded ruined towers with empty window bays and exposed upper-floor frames, weathered masonry, ivy, grass clumps and perimeter trees. Clear gradient sky, light clouds, daylight fog and sunlight replace the dark arena atmosphere. Scenery is grouped separately from gameplay collision meshes; existing cover and movement geometry remain authoritative.
 - This is procedural game geometry inspired by the references, not imported photoreal meshes. Vegetation/window structures use instancing for bounded draw calls.
 - Weapon carry/second jump, jetpack, third-person, running, flame/knife, laser/bow, chainsaw and collision checks pass. Seeded scenery/finite robot-boss geometry checks and build pass. Browser render has no errors; reviewed screenshot saved under ignored work/overgrown-city-review.png.
+
+### Readable robot armor and reduced daylight exposure
+- Added beveled extruded breastplates, larger shoulder caps, colored armor panels and elbow conduits so modeling changes remain visible at gameplay distance.
+- Player armor uses saturated blue, infantry red, snipers yellow and large humanoid bosses orange accents. Black assassins retain red identification panels; drone hulls use red armor. Original rigs, head size and hit volumes remain.
+- Daylight exposure is reduced to 0.78, hemisphere intensity to 1.35 and sunlight to 2.1, keeping clear skies while reducing washed-out ground and walls.
+- Color/geometry, third-person, weapon carry and jetpack checks plus build pass. Contrast reviewed in browser; screenshot under work/robot-contrast-review.png.

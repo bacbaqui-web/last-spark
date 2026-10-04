@@ -17,6 +17,12 @@ export function decorateRobot(r,boss=false,type='trooper'){
  const backpack=new THREE.Group();backpack.name='original-backpack';r.body.add(backpack);detailBatch(backpack,[[[.3,.32,.19],[0,.015,-.24],black],[[.05,.21,.025],[-.09,.02,-.345]],[[.05,.21,.025],[.09,.02,-.345]],[[.08,.035,.03],[0,.14,-.35],indicator]]);r.backpack=backpack;
  // Layered weathered shell over a dark mechanical frame, with exposed pivots.
  const shell=new THREE.MeshStandardMaterial({color:boss?0x9b7152:type==='sniper'?0x707b69:0x9c8a70,metalness:.65,roughness:.62,map:panelTexture});
+ const identity=new THREE.MeshStandardMaterial({color:type==='player'?0x1465f4:boss?0xe99916:type==='sniper'?0xffc326:0xe92d24,metalness:.35,roughness:.42,emissive:type==='player'?0x062458:0x410604,emissiveIntensity:.18});r.identityMaterial=identity;
+ // Large color panels remain readable at gameplay distance, with a dark seam border.
+ detailBatch(helmet,[[[.27,.055,.26],[0,.18,-.015],identity],[[.08,.20,.035],[-.18,.02,.13],identity],[[.08,.20,.035],[.18,.02,.13],identity]]);
+ detailBatch(r.body,[[[.15,.18,.03],[-.105,.055,.213],identity],[[.15,.18,.03],[.105,.055,.213],identity],[[.23,.04,.045],[0,.17,-.16],identity]]);
+ const chestShape=new THREE.Shape();chestShape.moveTo(-.16,.12);chestShape.lineTo(-.12,.20);chestShape.lineTo(.12,.20);chestShape.lineTo(.16,.12);chestShape.lineTo(.13,-.09);chestShape.lineTo(0,-.15);chestShape.lineTo(-.13,-.09);chestShape.closePath();
+ const breastplate=new THREE.Mesh(new THREE.ExtrudeGeometry(chestShape,{depth:.045,bevelEnabled:true,bevelSize:.012,bevelThickness:.012,bevelSegments:2,steps:1}),shell);breastplate.position.z=.135;r.body.add(breastplate);
  const jointGeometry=new THREE.CylinderGeometry(.072,.072,.045,12),boltGeometry=new THREE.SphereGeometry(.012,6,4);
  function pivot(parent,pos,radius=1){const m=new THREE.Mesh(jointGeometry,black);m.rotation.z=Math.PI/2;m.position.set(...pos);m.scale.setScalar(radius);parent.add(m);const cap=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.048,10),steel);cap.rotation.z=Math.PI/2;cap.position.copy(m.position);cap.scale.setScalar(radius);parent.add(cap);}
  r.head.geometry=new RoundedBoxGeometry(1,1,1,3,.20);
@@ -29,12 +35,16 @@ export function decorateRobot(r,boss=false,type='trooper'){
  for(const [i,arm]of r.arms.entries()){
   const side=i===0?1:-1;pivot(arm.elbow,[side*.07,0,0]);pivot(arm.shoulder,[side*.075,0,0],1.25);
   const dome=new THREE.Mesh(new THREE.SphereGeometry(.115,12,8),shell);dome.scale.set(1,.65,1.15);dome.position.y=-.015;arm.shoulder.add(dome);
+  const cap=new THREE.Mesh(new THREE.SphereGeometry(.12,16,10,0,Math.PI*2,0,Math.PI*.55),identity);cap.position.y=.025;cap.scale.set(1,.65,1.15);arm.shoulder.add(cap);
+  detailBatch(arm.shoulder,[[[.17,.12,.035],[0,-.10,-.095],identity],[[.18,.025,.04],[0,-.17,-.095],black]]);
   detailBatch(arm.elbow,[[[.12,.20,.045],[0,-.10,.085],shell],[[.025,.20,.025],[-.06,-.1,.085],steel],[[.025,.20,.025],[.06,-.1,.085],steel]]);
+  const conduit=new THREE.Mesh(new THREE.TorusGeometry(.085,.014,6,12,Math.PI),steel);conduit.rotation.y=Math.PI/2;conduit.position.set(side*.085,-.07,0);arm.elbow.add(conduit);
   for(let j=0;j<3;j++)detailBatch(arm.elbow,[[[.09,.013,.015],[0,-.04-j*.045,.112],black]]);
  }
  for(const [i,leg]of r.legs.entries()){
   const side=i===0?1:-1;pivot(leg.hip,[side*.10,0,0],1.25);pivot(leg.knee,[side*.07,0,0],1.15);
   detailBatch(leg.hip,[[[.12,.24,.045],[0,-.15,.105],shell],[[.055,.25,.035],[side*.08,-.15,.025],black]]);
+  detailBatch(leg.knee,[[[.12,.045,.028],[0,-.09,.151],identity]]);
   detailBatch(leg.knee,[[[.14,.12,.07],[0,-.01,.12],shell],[[.09,.22,.05],[0,-.18,.10],shell],[[.025,.24,.025],[side*.07,-.17,.015],steel]]);
  }
  for(const arm of r.arms)if(!boss){detailBatch(arm.shoulder,[[[.21,.13,.23],[0,-.025,0]]]);detailBatch(arm.elbow,[[[.16,.09,.17],[0,-.02,0],black]]);}
