@@ -961,3 +961,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Remove doubled running bounce
 - Removed independently generated torso/head vertical offsets and forward head displacement, retaining the original sprint pelvis motion and reducing added waist yaw to 0.035 radians.
 - Fifteen-second running check verifies no extra torso/head translation or drift; directional running, weapon carry and gaze checks pass.
+
+### Isolate forward-running lower body
+- Forward ground movement retains pelvis and leg animation while stabilizing the upper-body attachment in player space, cancelling inherited pelvis bounce/rotation.
+- Removed extra waist twist. Weapon grip follows the stable chest; attack and jetpack actions retain their poses.
+- Ten-second forward movement check confirms a stationary torso with active running legs.
