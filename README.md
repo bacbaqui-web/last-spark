@@ -980,3 +980,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Removed the second animation mixer update from player posing so one stride sampler owns the skeleton.
 - Run twist derives from the shared stride phase instead of re-reading already-modified feet. Damped lift, twist and lean avoid abrupt changes.
 - Ten-second frame-to-frame torso check bounds position/rotation changes; running, grip, gaze and jetpack checks pass.
+
+### Waist hinge and deterministic run preview
+- Forward lean rotates the abdomen at the waist in character coordinates, carrying the chest above it while the face stays level.
+- Motion-editor running uses the gameplay sprint and one explicit frame phase for legs, lift and twist. Moving knife carry no longer loops an unrelated idle upper-body clip.
+- Verified repeated preview frame sampling for knife/gun, weapon carry and gaze, editor persistence, plus a side-view browser review. The older third-person-motion test still expects the retired M2MSwordSlash label.
