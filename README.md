@@ -910,3 +910,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Player armor uses saturated blue, infantry red, snipers yellow and large humanoid bosses orange accents. Black assassins retain red identification panels; drone hulls use red armor. Original rigs, head size and hit volumes remain.
 - Daylight exposure is reduced to 0.78, hemisphere intensity to 1.35 and sunlight to 2.1, keeping clear skies while reducing washed-out ground and walls.
 - Color/geometry, third-person, weapon carry and jetpack checks plus build pass. Contrast reviewed in browser; screenshot under work/robot-contrast-review.png.
+
+### Simplified robot silhouettes
+- Replaced stacked decorative armor, bolts, exposed pivot caps, conduits and helmet protrusions with one clean helmet, chest plate, shoulder shell and restrained limb panels. Existing blue/red/yellow identification colors remain.
+- Humanoid head scale is reduced a further 8%, including the helmet/visor attachments.
+- Third-person, weapon carry/boost/second jump and jetpack checks plus build pass. Simplified player/enemy silhouette inspected in browser.

@@ -11,45 +11,23 @@ for(const m of [steel,black,indicator])m.userData.sharedWeaponMaterial=true;
 // Bake small decorative parts per bone/material into one draw, without changing hit volumes.
 export function detailBatch(parent,parts){const groups=new Map();for(const [size,pos,material=steel]of parts){const geometry=panelGeometry.clone();geometry.scale(...size);geometry.translate(...pos);if(!groups.has(material))groups.set(material,[]);groups.get(material).push(geometry);}for(const [material,geometries]of groups){const geometry=mergeGeometries(geometries);for(const g of geometries)g.dispose();const mesh=new THREE.Mesh(geometry,material);mesh.userData.cosmetic=true;parent.add(mesh);}}
 export function decorateRobot(r,boss=false,type='trooper'){
- const scale=boss?1.15:1;const helmet=new THREE.Group();helmet.position.copy(r.head.position);helmet.quaternion.copy(r.head.quaternion);r.head.parent.add(helmet);
- detailBatch(helmet,[[[.42,.065,.34],[0,.14,0],black],[[.065,.12,.10],[-.2,0,.04]],[[.065,.12,.10],[.2,0,.04]],[[.24,.045,.08],[0,-.11,.15]],[[.035,.22,.035],[.18,.23,-.1],black]]);
- detailBatch(r.body,[[[.30*scale,.16,.055],[0,.13,.17]],[[.12,.19,.08],[-.17,-.08,.16],black],[[.12,.19,.08],[.17,-.08,.16],black]]);
- const backpack=new THREE.Group();backpack.name='original-backpack';r.body.add(backpack);detailBatch(backpack,[[[.3,.32,.19],[0,.015,-.24],black],[[.05,.21,.025],[-.09,.02,-.345]],[[.05,.21,.025],[.09,.02,-.345]],[[.08,.035,.03],[0,.14,-.35],indicator]]);r.backpack=backpack;
- // Layered weathered shell over a dark mechanical frame, with exposed pivots.
- const shell=new THREE.MeshStandardMaterial({color:boss?0x9b7152:type==='sniper'?0x707b69:0x9c8a70,metalness:.65,roughness:.62,map:panelTexture});
- const identity=new THREE.MeshStandardMaterial({color:type==='player'?0x1465f4:boss?0xe99916:type==='sniper'?0xffc326:0xe92d24,metalness:.35,roughness:.42,emissive:type==='player'?0x062458:0x410604,emissiveIntensity:.18});r.identityMaterial=identity;
- // Large color panels remain readable at gameplay distance, with a dark seam border.
- detailBatch(helmet,[[[.27,.055,.26],[0,.18,-.015],identity],[[.08,.20,.035],[-.18,.02,.13],identity],[[.08,.20,.035],[.18,.02,.13],identity]]);
- detailBatch(r.body,[[[.15,.18,.03],[-.105,.055,.213],identity],[[.15,.18,.03],[.105,.055,.213],identity],[[.23,.04,.045],[0,.17,-.16],identity]]);
- const chestShape=new THREE.Shape();chestShape.moveTo(-.16,.12);chestShape.lineTo(-.12,.20);chestShape.lineTo(.12,.20);chestShape.lineTo(.16,.12);chestShape.lineTo(.13,-.09);chestShape.lineTo(0,-.15);chestShape.lineTo(-.13,-.09);chestShape.closePath();
- const breastplate=new THREE.Mesh(new THREE.ExtrudeGeometry(chestShape,{depth:.045,bevelEnabled:true,bevelSize:.012,bevelThickness:.012,bevelSegments:2,steps:1}),shell);breastplate.position.z=.135;r.body.add(breastplate);
- const jointGeometry=new THREE.CylinderGeometry(.072,.072,.045,12),boltGeometry=new THREE.SphereGeometry(.012,6,4);
- function pivot(parent,pos,radius=1){const m=new THREE.Mesh(jointGeometry,black);m.rotation.z=Math.PI/2;m.position.set(...pos);m.scale.setScalar(radius);parent.add(m);const cap=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.048,10),steel);cap.rotation.z=Math.PI/2;cap.position.copy(m.position);cap.scale.setScalar(radius);parent.add(cap);}
- r.head.geometry=new RoundedBoxGeometry(1,1,1,3,.20);
- const crown=new THREE.Mesh(new THREE.SphereGeometry(.18,16,10,0,Math.PI*2,0,Math.PI/2),shell);crown.scale.set(1,.8,.88);crown.position.set(0,.105,-.015);helmet.add(crown);
- for(const x of[-.06,.06]){const piston=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.18,8),steel);piston.position.set(x,-.02,.025);r.neck.add(piston);}
-
- detailBatch(helmet,[[[.26,.07,.24],[0,.16,-.02],shell],[[.08,.25,.25],[-.16,.015,0],shell],[[.08,.25,.25],[.16,.015,0],shell],[[.22,.10,.09],[0,-.12,.12],black],[[.09,.055,.03],[-.07,.035,.18],indicator],[[.035,.14,.04],[0,-.055,.18],steel]]);
- detailBatch(r.body,[[[.28,.22,.055],[0,.05,.17],shell],[[.055,.28,.06],[-.18,.025,.12],shell],[[.055,.28,.06],[.18,.025,.12],shell],[[.13,.075,.07],[0,-.16,.12],black]]);
- for(const x of[-.10,.10]){const b=new THREE.Mesh(boltGeometry,steel);b.position.set(x,.12,.21);r.body.add(b);}
- for(const [i,arm]of r.arms.entries()){
-  const side=i===0?1:-1;pivot(arm.elbow,[side*.07,0,0]);pivot(arm.shoulder,[side*.075,0,0],1.25);
-  const dome=new THREE.Mesh(new THREE.SphereGeometry(.115,12,8),shell);dome.scale.set(1,.65,1.15);dome.position.y=-.015;arm.shoulder.add(dome);
-  const cap=new THREE.Mesh(new THREE.SphereGeometry(.12,16,10,0,Math.PI*2,0,Math.PI*.55),identity);cap.position.y=.025;cap.scale.set(1,.65,1.15);arm.shoulder.add(cap);
-  detailBatch(arm.shoulder,[[[.17,.12,.035],[0,-.10,-.095],identity],[[.18,.025,.04],[0,-.17,-.095],black]]);
-  detailBatch(arm.elbow,[[[.12,.20,.045],[0,-.10,.085],shell],[[.025,.20,.025],[-.06,-.1,.085],steel],[[.025,.20,.025],[.06,-.1,.085],steel]]);
-  const conduit=new THREE.Mesh(new THREE.TorusGeometry(.085,.014,6,12,Math.PI),steel);conduit.rotation.y=Math.PI/2;conduit.position.set(side*.085,-.07,0);arm.elbow.add(conduit);
-  for(let j=0;j<3;j++)detailBatch(arm.elbow,[[[.09,.013,.015],[0,-.04-j*.045,.112],black]]);
+ const shell=new THREE.MeshStandardMaterial({color:boss?0x9b7152:0x958975,metalness:.55,roughness:.6,map:panelTexture});
+ const identity=new THREE.MeshStandardMaterial({color:type==='player'?0x1465f4:boss?0xe99916:type==='sniper'?0xffc326:0xe92d24,metalness:.3,roughness:.45});r.identityMaterial=identity;
+ // One clean helmet, chest plate and shoulder shell; no stacked ornament layers.
+ r.head.geometry=new RoundedBoxGeometry(1,1,1,3,.18);
+ const helmet=new THREE.Group();helmet.name='clean-helmet';helmet.position.copy(r.head.position);helmet.quaternion.copy(r.head.quaternion);r.head.parent.add(helmet);
+ detailBatch(helmet,[[[.28,.035,.26],[0,.16,-.015],identity],[[.24,.045,.045],[0,-.11,.15],black]]);
+ detailBatch(r.body,[[[.29,.25,.045],[0,.04,.15],shell],[[.26,.035,.02],[0,.14,.181],identity],[[.23,.035,.025],[0,.14,-.16],identity]]);
+ const backpack=new THREE.Group();backpack.name='original-backpack';r.body.add(backpack);detailBatch(backpack,[[[.3,.32,.15],[0,.015,-.22],black]]);r.backpack=backpack;
+ for(const arm of r.arms){
+  detailBatch(arm.shoulder,[[[.18,.12,.19],[0,-.015,0],identity]]);
+  detailBatch(arm.elbow,[[[.12,.20,.035],[0,-.11,.078],shell]]);
  }
- for(const [i,leg]of r.legs.entries()){
-  const side=i===0?1:-1;pivot(leg.hip,[side*.10,0,0],1.25);pivot(leg.knee,[side*.07,0,0],1.15);
-  detailBatch(leg.hip,[[[.12,.24,.045],[0,-.15,.105],shell],[[.055,.25,.035],[side*.08,-.15,.025],black]]);
-  detailBatch(leg.knee,[[[.12,.045,.028],[0,-.09,.151],identity]]);
-  detailBatch(leg.knee,[[[.14,.12,.07],[0,-.01,.12],shell],[[.09,.22,.05],[0,-.18,.10],shell],[[.025,.24,.025],[side*.07,-.17,.015],steel]]);
+ for(const leg of r.legs){
+  detailBatch(leg.hip,[[[.12,.22,.025],[0,-.16,.10],shell]]);
+  detailBatch(leg.knee,[[[.14,.10,.045],[0,-.015,.105],shell]]);
  }
- for(const arm of r.arms)if(!boss){detailBatch(arm.shoulder,[[[.21,.13,.23],[0,-.025,0]]]);detailBatch(arm.elbow,[[[.16,.09,.17],[0,-.02,0],black]]);}
- for(const leg of r.legs)detailBatch(leg.knee,[[[.18,.14,.08],[0,-.03,.095]],[[.045,.22,.035],[-.07,-.17,.085],black],[[.045,.22,.035],[.07,-.17,.085],black]]);
- if(type==='sniper'){detailBatch(helmet,[[[.1,.12,.18],[.18,.02,.12],black],[[.04,.12,.025],[-.14,.02,.17],indicator]]);detailBatch(r.blaster,[[[.10,.10,.33],[0,.2,.1],black],[[.11,.05,.05],[0,.24,.29]],[[.09,.06,.18],[0,-.1,.3]]]);}
+ if(type==='sniper')detailBatch(helmet,[[[.06,.07,.07],[.14,.025,.16],indicator]]);
 }
 export function decorateArena(scene,platforms,mats){
  const root=new THREE.Group();root.name='arena-panel-detail';scene.add(root);const groups=new Map();const add=(mat,size,pos)=>{if(!groups.has(mat))groups.set(mat,[]);const matrix=new THREE.Matrix4().compose(new THREE.Vector3(...pos),new THREE.Quaternion(),new THREE.Vector3(...size));groups.get(mat).push(matrix);};
