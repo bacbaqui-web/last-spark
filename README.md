@@ -957,3 +957,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Restore upper-body translation baselines every frame before pose layers, preventing breathing/run offsets from accumulating.
 - Gun breathing amplitude is reduced to 1.5mm in bone space; heavy gun idle also freezes the upper-body source animation.
 - Twenty-second idle translation check, weapon carry and running checks pass.
+
+### Remove doubled running bounce
+- Removed independently generated torso/head vertical offsets and forward head displacement, retaining the original sprint pelvis motion and reducing added waist yaw to 0.035 radians.
+- Fifteen-second running check verifies no extra torso/head translation or drift; directional running, weapon carry and gaze checks pass.

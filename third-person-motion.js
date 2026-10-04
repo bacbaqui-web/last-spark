@@ -69,7 +69,7 @@ export function createThirdPersonMotion(avatar){
    const gait=(strideClock/clips.TPSRun.duration)%1,pulse=Math.sin(gait*Math.PI*4),run=grounded&&moving;
    // Frozen carry pose with deliberate waist twist and vertically coupled breathing/stride.
    apply('TPSAimIdle',0,n=>/^(spine|neck|Head)/.test(n));
-   if(run){bones.spine_01.rotateX(.065);bones.spine_01.rotateY(Math.sin(gait*Math.PI*2)*.075);bones.spine_01.position.y+=pulse*.025;bones.Head.position.y-=pulse*.012;bones.Head.position.z+=.018;}
+   if(run){bones.spine_01.rotateX(.045);bones.spine_01.rotateY(Math.sin(gait*Math.PI*2)*.035);}
    else if(grounded){bones.spine_01.position.y+=Math.sin(clock*1.8)*.0015;}
   }
   // Aim bends the chest and neck, instead of rotating both arm targets around the eye.
