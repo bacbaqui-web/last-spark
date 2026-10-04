@@ -841,3 +841,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Full support uses weight 1 at a fixed world-space touchdown point on the ground. Reach correction moves the pelvis instead of weakening the planted foot; push-off blends leg rotations smoothly back to the source stride.
 - Pelvis bounce follows two sine cycles per stride (compression at support, rise in flight), with alternating upper-body counter-rotation. Head and arms inherit torso motion.
 - Running checks now compare actual consecutive planted-foot positions (2 mm tolerance), plus pelvis bounce and both directions of torso rotation.
+
+### Running recovery and cadence
+- Running cadence increases by 25% while walking cadence stays unchanged. Lower-body interpolation responds faster so heel recovery is not flattened by smoothing.
+- Swing feet recover higher (up to 24 cm added lift) with a rearward-then-forward arc. Pelvis bounce amplitude increases and the torso leans further forward; stance locking remains intact.

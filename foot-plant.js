@@ -16,7 +16,7 @@ export function createFootPlant(avatar){
   const half=phase%.5,flight=running&&(half>=end||half<start);
   if(enabled){
    avatar.root.updateMatrixWorld(true);
-   const lift=running?-.065*Math.cos((phase-.065)*Math.PI*4):0;
+   const lift=running?-.095*Math.cos((phase-.065)*Math.PI*4):0;
    avatar.root.userData.runPelvisOffset=lift*blend;
    bones.pelvis.position.add(new THREE.Vector3(0,lift*blend,0).applyQuaternion(bones.pelvis.parent.getWorldQuaternion(new THREE.Quaternion()).invert()));
    const twist=running?-.10*Math.sin(phase*Math.PI*2):0;
@@ -24,12 +24,31 @@ export function createFootPlant(avatar){
    const up=new THREE.Vector3(0,1,0).applyQuaternion(torso.parent.getWorldQuaternion(new THREE.Quaternion()).invert());
    torso.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(up,twist*blend));
    avatar.root.userData.runTorsoTwist=twist*blend;
+   avatar.motion.rotation.x+=running?.065*blend:0;
    bones.neck_01.rotateX(-avatar.motion.rotation.x*.8-.05*blend);
   }
   avatar.root.updateMatrixWorld(true);
   for(const f of feet){
    f.weight=0;const local=(phase-f.index*.5+1)%1,stance=enabled&&local>=start&&local<end;
-   if(!stance){f.anchor=null;f.age=0;f.inStance=false;continue;}
+   if(!stance){
+    f.anchor=null;f.age=0;f.inStance=false;
+    if(enabled&&running&&local>=end){
+     // Recover the heel up behind the body, then drive the bent knee forward.
+     const swing=(local-end)/(1-end),envelope=Math.sin(Math.PI*swing)**2;
+     const raw=f.foot.getWorldPosition(new THREE.Vector3());
+     const direction=(state.velocity||new THREE.Vector3()).clone().setY(0).normalize();
+     const target=raw.clone().addScaledVector(direction,-.14*Math.sin(2*Math.PI*swing)*blend);
+     target.y+=.24*envelope*blend;
+     const hip=f.hip.getWorldPosition(new THREE.Vector3()),pole=f.knee.getWorldPosition(new THREE.Vector3());
+     const ankle=f.foot.getWorldQuaternion(new THREE.Quaternion());
+     armIK({shoulder:f.hip,elbow:f.knee,hand:f.foot},target,pole);
+     f.foot.quaternion.copy(f.foot.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(ankle));
+     avatar.root.updateMatrixWorld(true);
+     f.swingLift=.24*envelope*blend;
+    }else f.swingLift=0;
+    continue;
+   }
+   f.swingLift=0;
    const raw=f.foot.getWorldPosition(new THREE.Vector3());
    if(!f.inStance){f.anchor=raw.clone();f.anchor.y=(state.sampleGround?.(raw.x,raw.z)??state.position.y-1.7)+.082;f.age=0;}
    f.inStance=true;f.age+=dt;
@@ -58,6 +77,7 @@ export function createFootPlant(avatar){
   avatar.root.userData.footContactAges=feet.map(f=>f.anchor?f.age:0);
   avatar.root.userData.footContacts=feet.map(f=>f.anchor?f.anchor.toArray():null);
   avatar.root.userData.footContactWeights=feet.map(f=>f.weight);
+  avatar.root.userData.runSwingLifts=feet.map(f=>f.swingLift);
   avatar.root.userData.runFlight=enabled&&flight;
  };
 }
