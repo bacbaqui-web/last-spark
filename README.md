@@ -998,3 +998,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Enlarged the integrated twin fuel tank module from 0.85 to 1.65 scale, retaining its jetpack mounting and hose connection.
 - Replaced floating rifle-width side fittings with dedicated narrow receiver fittings. Right hand now holds the actual rear pistol grip at the authored model socket.
 - Reviewed front/rear editor views; idle/run/hold grip checks and existing carry/jetpack checks pass.
+
+### Mirrored running shoulder sockets
+- During gun locomotion both shoulders attach at mirrored positions on the visible torso, removing the rifle animation's forward-shifted right shoulder. Arm IK solves the grips from these sockets.
+- Restore original local sockets outside locomotion so the correction does not leak into idle/attack poses. Gun/minigun/flame stride symmetry, carry/grip, preview determinism and gaze checks pass.

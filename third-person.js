@@ -10,19 +10,24 @@ import {armIK} from './sword-combat.js';
 const v=(x,y,z)=>new THREE.Vector3(x,y,z);
 export function createThirdPersonView(avatar,types){
  const camera=new THREE.PerspectiveCamera(78,1,.08,150),models={},motion=createThirdPersonMotion(avatar);let bodyInitialized=false,firePose=0,fireHold=0,poseWeapon='',heavyAim=0;
+ // Mount both shoulders symmetrically on the visible torso, independent of rifle clavicle animation.
+ const shoulderLocalRest=avatar.arms.map(a=>a.shoulder.position.clone());avatar.root.updateMatrixWorld(true);const shoulderFrame=avatar.body.children.find(o=>o.isMesh&&!o.userData.cosmetic)||avatar.body,shoulderRest=avatar.arms.map(a=>shoulderFrame.worldToLocal(a.shoulder.getWorldPosition(new THREE.Vector3()))),shoulderSocket=v((Math.abs(shoulderRest[0].x)+Math.abs(shoulderRest[1].x))/2,(shoulderRest[0].y+shoulderRest[1].y)/2,(shoulderRest[0].z+shoulderRest[1].z)/2);
  motion.apply('TPSAimIdle',0);avatar.root.updateMatrixWorld(true);const carryChest=avatar.bones.find(b=>b.name==='spine_03'),carryRestPosition=avatar.root.worldToLocal(carryChest.getWorldPosition(new THREE.Vector3())),carryRestRotation=avatar.root.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(carryChest.getWorldQuaternion(new THREE.Quaternion()));motion.apply('Sword_Idle',0);avatar.root.updateMatrixWorld(true);const knifeMount=avatar.arms[1].hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(new THREE.Quaternion().setFromUnitVectors(v(0,0,-1),v(-.45,.35,1).normalize()));
  for(const type of types){const model=createWeaponModel(type);model.scale.multiplyScalar((type==='rocket'?1.45:1)/1.17);model.visible=false;const muzzleFlash=new THREE.Mesh(new THREE.ConeGeometry(.07,.2,5),new THREE.MeshBasicMaterial({color:0xffeaa1}));muzzleFlash.rotation.x=-Math.PI/2;muzzleFlash.position.fromArray(model.userData.muzzle);muzzleFlash.visible=false;model.add(muzzleFlash);model.userData.viewFlash=muzzleFlash;if(type==='rapid'){muzzleFlash.scale.set(3.7,4.8,3.7);model.userData.fireLight=decorateMinigunFlash(muzzleFlash);}avatar.arms[type==='bow'?0:1].hand.add(model);model.traverse(o=>{if(o.isMesh)o.castShadow=true;});models[type]=model;}
  if(avatar.backpack)avatar.backpack.visible=false;
  const jetpack=createJetpack(avatar),equipment=createHeavyEquipment(avatar,jetpack);
  const customMotion=createCustomMotion(avatar,models),modelScales=Object.fromEntries(Object.entries(models).map(([k,m])=>[k,m.scale.clone()]));
  function pose(state){
-  customMotion(null);for(const [k,m]of Object.entries(models))m.scale.copy(modelScales[k]);
+  customMotion(null);for(let i=0;i<2;i++)avatar.arms[i].shoulder.position.copy(shoulderLocalRest[i]);for(const [k,m]of Object.entries(models))m.scale.copy(modelScales[k]);
   const {position,yaw,pitch,weapon,speed=0,velocity=v(0,0,0),knifePhase=-1,knifeCombo=1,knifeGuard=false,knifeBlock=0,knifeRush=false,bowDrawing=false,bowCharge=0,chainsawBlend=0,time=0,dt=0,flash=false,laserHeat=0,firing=false,adsBlend=0,rollPhase=-1,rollDirection,knifeDirection,throwPhase=-1}=state;
   let bodyYaw=yaw+Math.PI;
   if(knifePhase>=0&&knifeDirection?.lengthSq()>.01)bodyYaw=Math.atan2(knifeDirection.x,knifeDirection.z);
   avatar.root.position.copy(position).add(v(0,-1.7,0));const turn=Math.atan2(Math.sin(bodyYaw-avatar.root.rotation.y),Math.cos(bodyYaw-avatar.root.rotation.y));avatar.root.rotation.set(0,bodyInitialized?avatar.root.rotation.y+turn*(1-Math.exp(-dt*24)):bodyYaw,0);bodyInitialized=true;avatar.blaster.visible=false;
   // One pose sampler owns the player skeleton; do not mix a second stride clock.
   const result=motion.update(dt,{...state,velocity});avatar.root.updateMatrixWorld(true);
+  if(speed>.7&&state.grounded!==false&&!['knife','bow'].includes(weapon)&&knifePhase<0&&throwPhase<0){
+   for(let i=0;i<2;i++){const shoulder=avatar.arms[i].shoulder,target=shoulderFrame.localToWorld(v(Math.sign(shoulderRest[i].x)*shoulderSocket.x,shoulderSocket.y,shoulderSocket.z));shoulder.position.copy(shoulder.parent.worldToLocal(target));shoulder.updateWorldMatrix(false,true);}
+  }
   for(const [type,model]of Object.entries(models))model.visible=type===weapon;
   const model=models[weapon];if(!model)return;
   if(poseWeapon!==weapon){poseWeapon=weapon;firePose=0;fireHold=0;}
