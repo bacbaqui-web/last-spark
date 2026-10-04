@@ -202,7 +202,7 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   barrel(.061,.065,[-.40,-.025,.235],rubber);barrel(.038,.008,[-.40,-.025,.274],black);
   box([.025,.105,.145],[-.427,-.04,-.11],black);
   const glass=new THREE.MeshStandardMaterial({color:0x456a66,metalness:.8,roughness:.18});box([.027,.076,.10],[-.442,-.04,-.11],glass);
-  box([.11,.24,.11],[-.30,-.29,.10],black);box([.10,.19,.09],[.16,-.23,-.06],black);
+  box([.11,.24,.11],[-.30,-.29,.10],black);box([.10,.20,.09],[-.49,-.23,.10],black);box([.20,.045,.09],[-.40,-.14,.10],olive);
   const sightAssembly=new THREE.Group();sightAssembly.name='launcher-command-unit';for(const part of root.children.slice(sightStart))sightAssembly.add(part);root.add(sightAssembly);root.userData.sightAssembly=sightAssembly;
   const parts=[[[.14,.10,.31],[0,-.17,.13],rubber],[[.08,.025,.18],[0,.28,-.18],black],[[.035,.035,.09],[-.29,-.19,.12],yellow]];
   for(const x of[-.20,.20])for(const z of[-.62,.13])parts.push([[.025,.10,.07],[x,.06,z],black]);

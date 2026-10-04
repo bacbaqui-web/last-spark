@@ -66,9 +66,9 @@ export function createThirdPersonView(avatar,types){
     // weapons and raised shoulder weapons use different anchors.
     const heavy=['rapid','flame','chainsaw','rail'].includes(weapon),reach=weapon==='chainsaw'?chainsawBlend*.15:0;
     const aim=THREE.MathUtils.clamp(Math.max(adsBlend,firePose),0,1);
-    const weaponHeading=heading.clone();if(weapon!=='rocket')weaponHeading.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(THREE.MathUtils.lerp(weapon==='rapid'?-.38:heavy?-.16:-.30,0,aim),THREE.MathUtils.lerp(heavy?.34:.32,0,aim),THREE.MathUtils.lerp(heavy?-.10:-.05,0,aim))));
+    const weaponHeading=heading.clone();if(weapon==='rocket')weaponHeading.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-.24*(1-aim),0,0)));if(weapon!=='rocket')weaponHeading.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(THREE.MathUtils.lerp(weapon==='rapid'?-.38:heavy?-.16:-.30,0,aim),THREE.MathUtils.lerp(heavy?.34:.32,0,aim),THREE.MathUtils.lerp(heavy?-.10:-.05,0,aim))));
     const trigger=weapon==='rocket'?v(-.30,-.29,.10):weapon==='chainsaw'?v(.12,-.09,.50):weapon==='rapid'?v(0,-.14,.63):weapon==='flame'?v(...model.userData.triggerGrip):weapon==='laser'?v(0,-.31,.12):['pistol','shotgun','sniper'].includes(weapon)?v(0,weapon==='pistol'?-.33:-.25,weapon==='pistol'?.20:.22):v(0,-.2,.12);
-    const canonical=position.clone().add(v(THREE.MathUtils.lerp(weapon==='rapid'?.40:weapon==='flame'?.34:heavy?.12:.16,heavy?.32:.18,aim),THREE.MathUtils.lerp(weapon==='rapid'?-.78:heavy?-.59:-.46,heavy?-.49:-.27,aim),THREE.MathUtils.lerp(weapon==='rapid'?-.25:heavy?-.40:-.24,heavy?-.43:-.38,aim)-reach).applyQuaternion(heading)),anchor=weapon==='rocket'?avatar.arms[1].shoulder.getWorldPosition(new THREE.Vector3()).add(v(.03,.14,-.16).applyQuaternion(heading)).add(v(-.30,-.29,.10).multiplyScalar(model.scale.x).applyQuaternion(heading)):canonical;
+    const canonical=position.clone().add(v(THREE.MathUtils.lerp(weapon==='rapid'?.40:weapon==='flame'?.34:heavy?.12:.16,heavy?.32:.18,aim),THREE.MathUtils.lerp(weapon==='rapid'?-.78:heavy?-.59:-.46,heavy?-.49:-.27,aim),THREE.MathUtils.lerp(weapon==='rapid'?-.25:heavy?-.40:-.24,heavy?-.43:-.38,aim)-reach).applyQuaternion(heading)),anchor=weapon==='rocket'?avatar.arms[1].shoulder.getWorldPosition(new THREE.Vector3()).add(v(.03,.105,-.08).applyQuaternion(heading)).add(v(-.30,-.29,.10).multiplyScalar(model.scale.x).applyQuaternion(weaponHeading)):canonical;
     // Carry follows the animated chest, including pelvis bounce and torso twist.
     // Raising the weapon blends out that carry motion into a steady shoulder aim.
     if(weapon!=='rocket'){
@@ -82,7 +82,7 @@ export function createThirdPersonView(avatar,types){
     hand.quaternion.copy(hand.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(weaponHeading));hand.updateWorldMatrix(false,true);
     // Model origin is the receiver; the trigger hand holds the actual grip below it.
     model.quaternion.copy(hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(weaponHeading));model.position.copy(trigger.multiplyScalar(-model.scale.x).applyQuaternion(model.quaternion));model.userData.gripRotation=model.quaternion.clone();model.userData.gripPosition=model.position.clone();model.updateWorldMatrix(true,true);
-    const support=weapon==='rocket'?v(.16,-.23,-.06):weapon==='chainsaw'?v(-.16,.22,.05):weapon==='rapid'?v(-.19,-.22,-.14):weapon==='flame'?v(-.06,-.19,-.24):weapon==='laser'?v(-.06,-.17,-.53):v(-.045,-.08,-.43);
+    const support=weapon==='rocket'?v(-.49,-.23,.10):weapon==='chainsaw'?v(-.16,.22,.05):weapon==='rapid'?v(-.19,-.22,-.14):weapon==='flame'?v(-.06,-.19,-.24):weapon==='laser'?v(-.06,-.17,-.53):v(-.045,-.08,-.43);
     const target=model.localToWorld(support),leftPole=avatar.root.localToWorld(v(.45,1.1,.05));armIK(avatar.arms[0],target,leftPole);
    }else{model.quaternion.copy(model.userData.gripRotation||new THREE.Quaternion());model.position.copy(model.userData.gripPosition||v(0,0,0));}
   }

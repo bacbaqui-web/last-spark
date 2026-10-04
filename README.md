@@ -1024,3 +1024,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Smaller photon cannon
 - Reduced the photon cannon by an additional 25 percent in all model views. Charge vent glow, emitter and grip coordinates remain model-relative.
 - Weapon carry and third-person gameplay checks pass; production build verified.
+
+### Shoulder-carried launcher command grips
+- Both hands grip handles below the left-side command screen; moved the support handle from the tube's right side onto the command unit.
+- Launcher carry mounts to the right shoulder with about 14 degrees downward muzzle tilt; aim raises toward the sight line.
+- Idle/run both-hand grip and downward-direction checks, existing carry/third-person checks and production build pass.
