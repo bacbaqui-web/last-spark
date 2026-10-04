@@ -239,7 +239,7 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   for(const x of[-.09,.09]){const bolt=new THREE.Mesh(new THREE.CylinderGeometry(.014,.014,.014,8),steel);bolt.rotation.z=Math.PI/2;bolt.position.set(x,-.04,.14);root.add(bolt);}
   // Dedicated fittings touch this narrow receiver; rifle-width fittings float beside it.
   for(const side of [-1,1])parts.push([[.018,.09,.12],[side*.095,-.02,.14],steel],[[.012,.028,.08],[side*.108,-.035,.14],black]);
-  detailBatch(root,parts);root.scale.setScalar(.8);root.userData.muzzle=[0,.025,-1.23];root.userData.triggerGrip=[0,-.20,.24];
+  detailBatch(root,parts);root.scale.setScalar(.8);root.userData.muzzle=[0,.025,-1.23];root.userData.triggerGrip=[0,-.20,.24];root.userData.carrySupportGrip=[-.20,.20,.24];path([[-.20,.025,.12],[-.20,.20,.12],[-.20,.20,.24],[-.20,.20,.34],[-.20,.025,.34]],.025,black);
  }
  if(type==='laser'){
   // Offset open-frame energy rifle, with a visible reactor and twin cooling hoses.
