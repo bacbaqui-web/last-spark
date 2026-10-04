@@ -32,16 +32,12 @@ export function decorateRobot(r,boss=false,type='trooper'){
  // Egg-shaped helmet narrows smoothly toward the chin.
  r.head.geometry=new THREE.SphereGeometry(.5,28,20);const hp=r.head.geometry.attributes.position;for(let i=0;i<hp.count;i++){const y=hp.getY(i),t=THREE.MathUtils.smoothstep(y,-.5,.12),width=.74+.26*t;hp.setX(i,hp.getX(i)*width);hp.setZ(i,hp.getZ(i)*(.84+.16*t));}r.head.geometry.computeVertexNormals();r.head.userData.cosmetic=true;
  const helmet=new THREE.Group();helmet.name='tapered-helmet';helmet.position.copy(r.head.position);helmet.quaternion.copy(r.head.quaternion);r.head.parent.add(helmet);
- sculpt(helmet,.19,.14,.024,[0,.085,.087],identity,.85);
- for(const side of[-1,1]){const cheek=sculpt(helmet,.055,.135,.018,[side*.084,-.055,.085],shell,.65);cheek.rotation.y=side*.30;}
- // Two angled pectoral shells and a narrow abdomen leave space to bend at the waist.
- for(const side of[-1,1]){const chest=sculpt(r.body,.17,.25,.055,[side*.09,.045,.095],identity,.72);chest.rotation.y=side*.16;}
- plate(r.bones.find(b=>b.name==='spine_01'),[[-.065,.09],[.065,.09],[.055,-.06],[0,-.10],[-.055,-.06]],.028,[0,.04,.09]);
+ // A smooth head and torso keep only the eyes and clavicle bridge.
+ for(const side of[-1,1]){const collar=sculpt(r.body,.15,.045,.022,[side*.085,.17,.06],shell,.9);collar.rotation.z=side*-.12;}
  detailBatch(r.body,[[[.23,.035,.025],[0,.14,-.13],identity]]);
  const backpack=new THREE.Group();backpack.name='original-backpack';r.body.add(backpack);detailBatch(backpack,[[[.3,.32,.15],[0,.015,-.22],black]]);r.backpack=backpack;
  for(const [index,arm]of r.arms.entries()){
-  const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.10,24,16,0,Math.PI*2,0,Math.PI*.69),identity);shoulder.scale.set(1.02,1,1.02);shoulder.position.y=.005;shoulder.userData.cosmetic=true;arm.shoulder.add(shoulder);
-  sculpt(arm.shoulder,.12,.18,.035,[0,-.145,.076]);
+  const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.10,24,16),identity);shoulder.scale.set(1.02,1,1.02);shoulder.position.y=.005;shoulder.userData.cosmetic=true;arm.shoulder.add(shoulder);
   sculpt(arm.elbow,.135,.22,.045,[0,-.15,.073],identity);
   detailBatch(arm.elbow,[[[.08,.015,.008],[0,-.085,.096],black],[[.07,.015,.008],[0,-.12,.099],black]]);
   const joint=new THREE.Mesh(new THREE.SphereGeometry(.088,20,14),black);joint.userData.cosmetic=true;arm.elbow.add(joint);

@@ -934,3 +934,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Slimmer limbs, ball joints and oval helmet
 - Arm and leg diameters are reduced about 15%; spherical elbow and knee joints close the gaps through bending poses.
 - The helmet is an egg-shaped surface that narrows toward the chin. A raised helmet and rounded neck column expose a longer neck while retaining forward gaze.
+
+### Clean round shoulders and close back-mounted jetpack
+- Removed forehead/cheek shells, chest/abdomen plates and projecting upper-arm armor. Full spherical shoulders and restrained clavicle bridges preserve the smooth body and eye strip.
+- Jetpack size is reduced another 20% and its mount follows the actual torso shell frame, keeping it close to the back through torso lean.
+- Ordinary weapons rest further back and to the right; raised aiming posture remains. Weapon carry, jetpack and forward gaze checks pass.
