@@ -920,3 +920,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Narrow cylindrical limb frames and exposed joints support tapered, beveled chest and limb armor; rounded shoulder shells and a compact helmet preserve a clean silhouette and team colors.
 - The player leans slightly at the waist while the head compensates to look forward. Enemy gaze and player aim retain their intended direction through animation and rotated headings.
 - Gaze, running, third-person, weapon carry/boost/second jump and jetpack checks plus build pass. Gameplay silhouette reviewed in browser; screenshot under work/tapered-robot-review.png.
+
+### Sculpted convex armor surfaces
+- Chest, upper arms, forearms, knee guards and leg armor use closed custom meshes with convex surfaces, tapered borders and thickness instead of flat panels.
+- Shoulder caps wrap further around the joint with smoother rounded surfaces; restrained forearm grooves add detail without extra protruding ornaments.
+- Forward gaze and weapon carry/boost/second-jump checks pass; browser render reviewed under work/curved-robot-review.png.
