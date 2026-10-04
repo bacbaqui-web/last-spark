@@ -1029,3 +1029,5 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Both hands grip handles below the left-side command screen; moved the support handle from the tube's right side onto the command unit.
 - Launcher carry mounts to the right shoulder with about 14 degrees downward muzzle tilt; aim raises toward the sight line.
 - Idle/run both-hand grip and downward-direction checks, existing carry/third-person checks and production build pass.
+
+- 활 3인칭 자세: 대기·이동에서는 활을 약 75° 아래로 기울이고 왼팔을 편 상태로 유지합니다. 당길 때 가슴을 오른쪽으로 90° 돌리고 왼팔을 앞으로 뻗으며, 오른손의 충전 떨림을 활시위에 반영합니다. 발사하면 당긴 오른손이 뒤·위로 튕기고 왼팔과 활은 아래로 내려갑니다.

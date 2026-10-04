@@ -9,7 +9,7 @@ import {createCustomMotion} from './motion-settings.js';
 import {armIK} from './sword-combat.js';
 const v=(x,y,z)=>new THREE.Vector3(x,y,z);
 export function createThirdPersonView(avatar,types){
- const camera=new THREE.PerspectiveCamera(78,1,.08,150),models={},motion=createThirdPersonMotion(avatar);let bodyInitialized=false,firePose=0,fireHold=0,poseWeapon='',heavyAim=0,bowPoseBlend=0;
+ const camera=new THREE.PerspectiveCamera(78,1,.08,150),models={},motion=createThirdPersonMotion(avatar);let bodyInitialized=false,firePose=0,fireHold=0,poseWeapon='',heavyAim=0,bowPoseBlend=0,bowReleasePull=.84;
  // Mount both shoulders symmetrically on the visible torso, independent of rifle clavicle animation.
  const shoulderLocalRest=avatar.arms.map(a=>a.shoulder.position.clone());avatar.root.updateMatrixWorld(true);const shoulderFrame=avatar.body.children.find(o=>o.isMesh&&!o.userData.cosmetic)||avatar.body,shoulderRest=avatar.arms.map(a=>shoulderFrame.worldToLocal(a.shoulder.getWorldPosition(new THREE.Vector3()))),shoulderSocket=v((Math.abs(shoulderRest[0].x)+Math.abs(shoulderRest[1].x))/2,(shoulderRest[0].y+shoulderRest[1].y)/2,(shoulderRest[0].z+shoulderRest[1].z)/2);
  motion.apply('TPSAimIdle',0);avatar.root.updateMatrixWorld(true);const carryChest=avatar.bones.find(b=>b.name==='spine_03'),carryRestPosition=avatar.root.worldToLocal(carryChest.getWorldPosition(new THREE.Vector3())),carryRestRotation=avatar.root.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(carryChest.getWorldQuaternion(new THREE.Quaternion()));motion.apply('Sword_Idle',0);avatar.root.updateMatrixWorld(true);const knifeMount=avatar.arms[1].hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(new THREE.Quaternion().setFromUnitVectors(v(0,0,-1),v(-.45,.35,1).normalize()));
@@ -48,17 +48,22 @@ export function createThirdPersonView(avatar,types){
    }
   }
   else if(weapon==='bow'){
-   // One mount for draw and release; carry lowers and rolls the same bow sideways.
-   const releasing=state.bowMotionClip==='BowRelease',raised=bowDrawing||releasing;
+   const releasing=state.bowMotionClip==='BowRelease',releasePhase=THREE.MathUtils.clamp(state.bowMotionPhase||0,0,1),raised=bowDrawing||releasing;
    bowPoseBlend=state.motionPreview?(raised?1:0):THREE.MathUtils.damp(bowPoseBlend,raised?1:0,14,dt);
-   const bowHeading=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch*bowPoseBlend,yaw,0,'YXZ')).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-.18*(1-bowPoseBlend),0,Math.PI/2*(1-bowPoseBlend))));
-   const offset=v(-.10,-.55,-.40).lerp(v(.12,-.24,-.55),bowPoseBlend),grip=position.clone().add(offset.applyQuaternion(heading)),leftPole=avatar.root.localToWorld(v(.5,1.25,.12));
-   armIK(avatar.arms[0],grip,leftPole);avatar.root.updateMatrixWorld(true);
-   const hand=avatar.arms[0].hand;
+   const relax=releasing?THREE.MathUtils.smoothstep(releasePhase,0,1)*.42:0;
+   // Rotate the torso as one block, then solve both arms from the new shoulders.
+   avatar.root.updateMatrixWorld(true);const waist=avatar.bones.find(b=>b.name==='spine_01'),desiredChest=avatar.root.getWorldQuaternion(new THREE.Quaternion()).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,-Math.PI/2*bowPoseBlend,0))),delta=desiredChest.multiply(shoulderFrame.getWorldQuaternion(new THREE.Quaternion()).invert());
+   waist.quaternion.copy(waist.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(delta.multiply(waist.getWorldQuaternion(new THREE.Quaternion()))));avatar.root.updateMatrixWorld(true);avatar.lookForward?.(pitch);
+   const bowHeading=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch*bowPoseBlend,yaw,0,'YXZ')).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI*75/180*(1-bowPoseBlend)-relax,0,Math.PI/2*(1-bowPoseBlend))));
+   const left=avatar.arms[0],shoulder=left.shoulder.getWorldPosition(new THREE.Vector3()),elbow=left.elbow.getWorldPosition(new THREE.Vector3()),reach=shoulder.distanceTo(elbow)+elbow.distanceTo(left.hand.getWorldPosition(new THREE.Vector3())),direction=v(0,-1,.04).lerp(v(0,-relax,-1),bowPoseBlend).normalize().applyQuaternion(heading),grip=shoulder.addScaledVector(direction,reach*.999999),leftPole=position.clone().add(v(-.5,-.4,.1).applyQuaternion(heading));
+   armIK(left,grip,leftPole,.999999);avatar.root.updateMatrixWorld(true);
+   const hand=left.hand;
    model.quaternion.copy(hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(bowHeading));model.position.copy(v(0,0,.43).multiplyScalar(model.scale.x).applyQuaternion(model.quaternion));model.updateWorldMatrix(true,true);
-   const draw=bowDrawing?.14+.45*Math.min(1,bowCharge/2.2):.14,nock=model.localToWorld(v(0,0,draw)),rightPole=position.clone().add(v(.48,-.25,.08).applyQuaternion(heading));
+   const charge=Math.min(1,bowCharge/2.2);if(bowDrawing)bowReleasePull=.14+.70*charge;const strain=bowDrawing?charge*.004:0,draw=bowDrawing?bowReleasePull:releasing?bowReleasePull:.14,nock=model.localToWorld(v(0,0,draw)),rightPole=position.clone().add(v(.50,-.12,.20).applyQuaternion(heading));
+   if(bowDrawing)nock.add(v(Math.sin(time*51)*strain,Math.sin(time*67)*strain,Math.sin(time*43)*strain).applyQuaternion(heading));
+   if(releasing){const kick=Math.sin(Math.min(1,releasePhase/.65)*Math.PI/2);nock.add(v(.04,.17,.36).multiplyScalar(kick).applyQuaternion(heading));}
    armIK(avatar.arms[1],nock,rightPole);avatar.root.updateMatrixWorld(true);
-   const pull=bowDrawing?model.worldToLocal(avatar.arms[1].hand.getWorldPosition(new THREE.Vector3())):v(0,0,.14),pos=model.userData.string.geometry.attributes.position;pull.x=0;pull.y=0;pos.setXYZ(1,pull.x,pull.y,pull.z);pos.needsUpdate=true;model.userData.string.geometry.computeBoundingSphere();model.userData.nockedArrow.visible=bowDrawing;model.userData.nockedArrow.position.copy(pull).sub(v(0,0,.14));model.userData.nockedArrow.quaternion.identity();for(const limb of model.userData.limbs)limb.rotation.x=limb.userData.side*Math.min(1,bowCharge/2.2)*.08;
+   const pull=bowDrawing?model.worldToLocal(avatar.arms[1].hand.getWorldPosition(new THREE.Vector3())):v(0,0,.14),pos=model.userData.string.geometry.attributes.position;pos.setXYZ(1,pull.x,pull.y,pull.z);pos.needsUpdate=true;model.userData.string.geometry.computeBoundingSphere();model.userData.nockedArrow.visible=bowDrawing;model.userData.nockedArrow.position.copy(pull).sub(v(0,0,.14));model.userData.nockedArrow.quaternion.identity();for(const limb of model.userData.limbs)limb.rotation.x=limb.userData.side*Math.min(1,bowCharge/2.2)*.08;
   }else{
    const hand=avatar.arms[1].hand;
    if((!result.attack||state.boostPhase>=0||state.jetJump>0||rollPhase>=0)&&throwPhase<0){
