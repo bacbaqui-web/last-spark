@@ -343,5 +343,14 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
  }
  if(type==='sword'){box([.13,.38,.13],[0,0,0]);box([.6,.1,.2],[0,.24,0],metal);box([.28,2.5,.085],[0,1.54,0],metal);box([.035,2.43,.10],[.155,1.53,0],color);box([.2,.12,.2],[0,-.25,0],color);const tip=new THREE.Mesh(new THREE.ConeGeometry(.16,.3,4),metal);tip.position.set(0,2.94,0);root.add(tip);root.userData.grip=[0,0,0];}
 
+ if(['pistol','rapid','shotgun','sniper','flame','laser'].includes(type)){
+  const wide=['rapid','flame'].includes(type),x=wide?.22:.125,parts=[];
+  for(const side of[-1,1]){
+   for(const z of[-.12,.08,.28])parts.push([[.016,.022,.022],[side*x,.025,z],metal]);
+   for(let i=0;i<4;i++)parts.push([[.012,.035,.018],[side*(x+.006),.025,.14+i*.035],brass]);
+   parts.push([[.018,.11,.15],[side*x,-.035,.08],metal],[[.022,.018,.10],[side*(x+.012),-.02,.08],dark]);
+  }
+  detailBatch(root,parts);
+ }
  root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return root;
 }

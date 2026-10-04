@@ -897,3 +897,10 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Shared heavy-weapon aim close-up
 - Flamethrower right-click now shares the minigun's close third-person camera offset and left-edge blur, retaining the lower heavy-weapon grip.
 - Camera equality/close-up checks, third-person and flame combat checks, and production build pass.
+
+### Mechanical robot detail and sunlit overgrown ruins
+- Jet-assisted second jump now preserves third-person weapon carry/shoulder blend and solves both grips, matching the boost fix. First-person presentation remains independent.
+- Humanoid robots use weathered warm metal, rounded helmet shells, layered armor, exposed joint caps, neck pistons, bolts and cooling vents. Drone frames/fan housings, spider joints and gun receiver fittings gain detail while existing rigs and hit volumes remain unchanged.
+- `overgrown-city.js` builds seeded ruined towers with empty window bays and exposed upper-floor frames, weathered masonry, ivy, grass clumps and perimeter trees. Clear gradient sky, light clouds, daylight fog and sunlight replace the dark arena atmosphere. Scenery is grouped separately from gameplay collision meshes; existing cover and movement geometry remain authoritative.
+- This is procedural game geometry inspired by the references, not imported photoreal meshes. Vegetation/window structures use instancing for bounded draw calls.
+- Weapon carry/second jump, jetpack, third-person, running, flame/knife, laser/bow, chainsaw and collision checks pass. Seeded scenery/finite robot-boss geometry checks and build pass. Browser render has no errors; reviewed screenshot saved under ignored work/overgrown-city-review.png.

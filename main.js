@@ -14,14 +14,14 @@ import * as THREE from 'three';
 import {createRobot,animateRobot,robotFired,animateDeath,disposeRobot,swordFired,createSpider} from './robot.js';
 import {attachEnemyAI,updateEnemyAI,steerEnemy,chooseCover,coverRoute} from './enemy-ai.js';
 const $=id=>document.getElementById(id),canvas=$('game');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x10232b);scene.fog=new THREE.Fog(0x10232b,28,85);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xb7d9e4);scene.fog=new THREE.Fog(0xc9d9cc,45,135);
 const camera=new THREE.PerspectiveCamera(78,innerWidth/innerHeight,.08,150);camera.rotation.order='YXZ';scene.add(camera);
-scene.add(new THREE.HemisphereLight(0xa8e6ef,0x263135,2));const sun=new THREE.DirectionalLight(0xffdfb2,2.8);sun.position.set(18,32,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-45;sun.shadow.camera.right=45;sun.shadow.camera.top=45;sun.shadow.camera.bottom=-45;scene.add(sun);
-const mats={floor:new THREE.MeshStandardMaterial({color:0x233e44,roughness:.9}),wall:new THREE.MeshStandardMaterial({color:0x38565e,roughness:.8}),dark:new THREE.MeshStandardMaterial({color:0x14272e,metalness:.6,roughness:.5}),lime:new THREE.MeshStandardMaterial({color:0xb9f56b,emissive:0x669b21,emissiveIntensity:.6}),red:new THREE.MeshStandardMaterial({color:0xef614b,emissive:0x9f2418,emissiveIntensity:.4})};
+scene.add(new THREE.HemisphereLight(0xd6eeff,0x626c41,2.3));const sun=new THREE.DirectionalLight(0xffe6b4,3.2);sun.position.set(18,32,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-45;sun.shadow.camera.right=45;sun.shadow.camera.top=45;sun.shadow.camera.bottom=-45;scene.add(sun);
+const mats={floor:new THREE.MeshStandardMaterial({color:0x777b66,roughness:.9}),wall:new THREE.MeshStandardMaterial({color:0x9a9582,roughness:.8}),dark:new THREE.MeshStandardMaterial({color:0x535c50,metalness:.6,roughness:.5}),lime:new THREE.MeshStandardMaterial({color:0xb9f56b,emissive:0x669b21,emissiveIntensity:.6}),red:new THREE.MeshStandardMaterial({color:0xef614b,emissive:0x9f2418,emissiveIntensity:.4})};
 mats.wall.map=mats.dark.map=panelTexture;
 function box(w,h,d,mat,x,y,z,parent=scene){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
-box(86,1,86,mats.floor,0,-.5,0);const grid=new THREE.GridHelper(86,43,0x48636a,0x304b52);grid.position.y=.015;scene.add(grid);
+box(86,1,86,mats.floor,0,-.5,0);const grid=new THREE.GridHelper(86,43,0x767a65,0x6b715d);grid.position.y=.015;scene.add(grid);
 const platforms=[];function platform(x,z,w,d,h){box(w,h,d,mats.wall,x,h/2,z);box(w+.08,.1,d+.08,mats.dark,x,h+.05,z);box(w,.07,.13,mats.lime,x,h+.12,z+d/2);platforms.push({x,z,w,d,h});}
 // Alternating high cover and low vaultable barriers leave lanes through the arena.
 for(const [x,z,w,d,h]of[[-28,-12,4,3,2.8],[-26,4,3,6,2.6],[-23,23,6,2.5,2.8],[-14,27,3,5,1.3],[0,26,5,2.5,2.8],[12,25,3,5,1.4],[27,20,6,3,2.7],[29,7,3,6,2.8],[28,-7,5,2.5,1.3],[27,-27,6,3,2.8],[12,-30,3,5,2.6],[-10,-29,5,3,2.7],[-27,-28,4,4,1.4],[-1,3,3,5,2.7]])platform(x,z,w,d,h);
@@ -31,7 +31,7 @@ const sniperPerches=[];
 for(const [x,z]of [[-34,-34],[34,-34],[-34,34],[34,34]]){platform(x,z,3,3,8);sniperPerches.push({x,z,h:8});}
 for(const [x,z,w,d,base,h]of [[-15,-9,2,1,2,1.8],[-10,-6,1,2,2,1.8],[10,3,2,1,3.5,1.8],[16,7,1,2,3.5,1.8],[-3,-20,2,1,5,1.8],[3,-18,1,2,5,1.8],[-10,14,1,2,2.5,1.8],[-6,17,2,1,2.5,1.8]]){box(w,h,d,mats.wall,x,base+h/2,z);platforms.push({x,z,w,d,h:base+h,base});}
 for(let i=0;i<4;i++){const a=i*Math.PI/2;box(i%2?1:86,7,i%2?86:1,mats.wall,Math.sin(a)*43,3.5,Math.cos(a)*43);}
-for(let i=0;i<22;i++){const a=i/22*Math.PI*2,x=Math.sin(a)*48,z=Math.cos(a)*48;box(3,10+Math.random()*20,4,mats.dark,x,5,z);}
+
 for(const [x,z]of[[-26,-26],[26,-26],[-26,26],[26,26]]){box(1,8,1,mats.dark,x,4,z);box(1.1,.5,1.1,mats.lime,x,8,z);const l=new THREE.PointLight(0xb9f56b,10,15);l.position.set(x,7,z);scene.add(l);}
 decorateArena(scene,platforms,mats);
 const groundPlatforms=platforms.filter(p=>!p.base);

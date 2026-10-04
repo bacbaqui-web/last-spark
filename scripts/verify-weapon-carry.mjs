@@ -19,3 +19,9 @@ for(let i=0;i<15;i++)view.pose({...sample,speed:30,velocity:new THREE.Vector3(0,
 assert(model.getWorldPosition(new THREE.Vector3()).y>beforeBoost.y-.22,'third-person boost keeps raised gun instead of dropping it');
 assert(model.localToWorld(new THREE.Vector3(0,-.33,.20)).distanceTo(hand.getWorldPosition(new THREE.Vector3()))<.001,'boost retains trigger-hand grip');
 console.log('PASS: third-person boost retains weapon carry and shoulder state');
+for(let i=0;i<45;i++)view.pose({...sample,firing:true});
+const beforeJump=model.getWorldPosition(new THREE.Vector3()).y;
+for(let i=0;i<15;i++)view.pose({...sample,grounded:false,jetJump:.32-i/60,firing:false});
+assert(model.getWorldPosition(new THREE.Vector3()).y>beforeJump-.22,'second jump retains raised third-person grip');
+assert(model.localToWorld(new THREE.Vector3(0,-.33,.20)).distanceTo(hand.getWorldPosition(new THREE.Vector3()))<.001,'second jump keeps gun attached to hand');
+console.log('PASS: jet-assisted second jump retains weapon grip');
