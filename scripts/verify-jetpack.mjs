@@ -14,3 +14,15 @@ view.jetpack.update({boostPhase:.4,boostDirection:new THREE.Vector3(1,0,0),weapo
 view.jetpack.update({jetJump:.2,weapon:'pistol'});const upAxis=new THREE.Vector3(0,1,0).applyQuaternion(view.jetpack.exhaust.children[0].quaternion);assert(upAxis.y<-.99,'second jump exhaust points downward');
 settle({boostPhase:-1,jetJump:0,speed:0});assert(Math.abs(avatar.motion.rotation.z)<.001,'lean resets after boost');
 console.log('PASS: fixed boost feet, directional torso lean, first/second jump separation, directional exhaust, recovery');
+assert(!avatar.backpack.visible,'original player backpack removed');
+assert.equal(view.jetpack.root.scale.x,.65,'compact jetpack scale');
+for(const weapon of ['rapid','flame','pistol']){
+ settle({weapon,boostPhase:-1,jetJump:0,speed:0});
+ assert.equal(view.jetpack.root.userData.variant,weapon==='pistol'?'standard':weapon,'jetpack changes variant with weapon');
+ for(const [type,module]of Object.entries(view.equipment.packs)){
+  assert.equal(module.parent,view.jetpack.root,'supply module is part of jetpack');
+  assert.equal(module.visible,type===weapon,'only equipped module visible');
+ }
+ assert.equal(view.equipment.root.visible,weapon!=='pistol','connection only visible for heavy weapons');
+}
+console.log('PASS: removed original bag, compact jetpack, integrated ammo/fuel variants and switching cleanup');

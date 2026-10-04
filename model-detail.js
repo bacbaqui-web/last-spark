@@ -12,7 +12,8 @@ export function detailBatch(parent,parts){const groups=new Map();for(const [size
 export function decorateRobot(r,boss=false,type='trooper'){
  const scale=boss?1.15:1;const helmet=new THREE.Group();helmet.position.copy(r.head.position);helmet.quaternion.copy(r.head.quaternion);r.head.parent.add(helmet);
  detailBatch(helmet,[[[.42,.065,.34],[0,.14,0],black],[[.065,.12,.10],[-.2,0,.04]],[[.065,.12,.10],[.2,0,.04]],[[.24,.045,.08],[0,-.11,.15]],[[.035,.22,.035],[.18,.23,-.1],black]]);
- detailBatch(r.body,[[[.30*scale,.16,.055],[0,.13,.17]],[[.12,.19,.08],[-.17,-.08,.16],black],[[.12,.19,.08],[.17,-.08,.16],black],[[.3,.32,.19],[0,.015,-.24],black],[[.05,.21,.025],[-.09,.02,-.345]],[[.05,.21,.025],[.09,.02,-.345]],[[.08,.035,.03],[0,.14,-.35],indicator]]);
+ detailBatch(r.body,[[[.30*scale,.16,.055],[0,.13,.17]],[[.12,.19,.08],[-.17,-.08,.16],black],[[.12,.19,.08],[.17,-.08,.16],black]]);
+ const backpack=new THREE.Group();backpack.name='original-backpack';r.body.add(backpack);detailBatch(backpack,[[[.3,.32,.19],[0,.015,-.24],black],[[.05,.21,.025],[-.09,.02,-.345]],[[.05,.21,.025],[.09,.02,-.345]],[[.08,.035,.03],[0,.14,-.35],indicator]]);r.backpack=backpack;
  for(const arm of r.arms)if(!boss){detailBatch(arm.shoulder,[[[.21,.13,.23],[0,-.025,0]]]);detailBatch(arm.elbow,[[[.16,.09,.17],[0,-.02,0],black]]);}
  for(const leg of r.legs)detailBatch(leg.knee,[[[.18,.14,.08],[0,-.03,.095]],[[.045,.22,.035],[-.07,-.17,.085],black],[[.045,.22,.035],[.07,-.17,.085],black]]);
  if(type==='sniper'){detailBatch(helmet,[[[.1,.12,.18],[.18,.02,.12],black],[[.04,.12,.025],[-.14,.02,.17],indicator]]);detailBatch(r.blaster,[[[.10,.10,.33],[0,.2,.1],black],[[.11,.05,.05],[0,.24,.29]],[[.09,.06,.18],[0,-.1,.3]]]);}

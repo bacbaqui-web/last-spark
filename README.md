@@ -888,3 +888,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - All travel directions now use the preferred Sprint_Loop with the same speed and cadence. Removed lateral step waiting and directional walk selection; stopping steps and movement inertia remain.
 - Third-person jet boosts continue to solve both weapon grips and retain the current raised/carry blend. First-person weapon-lowering presentation remains separate; jetpack lean and frozen boost feet remain active.
 - Directional sprint, stopping, weapon attachment/boost grip, third-person and jetpack checks pass.
+
+### Compact weapon-adaptive jetpack
+- The player's original decorative backpack is hidden; enemy backpacks remain unchanged. The default jetpack is reduced to 65% and sits close to the torso.
+- Minigun ammunition and flamethrower fuel modules now mount directly inside the jetpack assembly, replacing its center shell rather than adding a separate backpack. Supply belt/hose connections follow the integrated module; thrusters remain shared.
+- Jetpack checks cover scale, old bag removal, module parent/visibility, weapon switching and exhaust. Third-person, weapon carry and build checks pass; fuel variant inspected in browser.
