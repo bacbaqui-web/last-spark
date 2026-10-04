@@ -355,5 +355,6 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   detailBatch(root,parts);
  }
  if(['pistol','rapid','shotgun','sniper','laser','rocket','rail','flame'].includes(type))root.scale.multiplyScalar(.8);
+ if(type==='rail')root.scale.multiplyScalar(.75);
  root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return root;
 }

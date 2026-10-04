@@ -1020,3 +1020,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Minigun neutral stance straightens the torso with a small backward lean; carry grip moves lower/right with the muzzle angled down. Firing raises it to the existing aim mount.
 - Equipped minigun caps ordinary movement at 4.2 before speed upgrades (normal 10.8); aiming remains at 2. TPSWalk replaces sprint and the editor uses the same reduced speed. Jet boost remains a separate movement ability.
 - Carry, collision/movement and jetpack checks pass; minigun preview confirms walking rather than sprint.
+
+### Smaller photon cannon
+- Reduced the photon cannon by an additional 25 percent in all model views. Charge vent glow, emitter and grip coordinates remain model-relative.
+- Weapon carry and third-person gameplay checks pass; production build verified.
