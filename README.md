@@ -952,3 +952,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Ordinary gun idle freezes the standing leg pose and adds only subtle upper-body breathing.
 - Running keeps a steady carry pose with waist yaw and stride-synchronized vertical torso movement; the head has smaller vertical movement and retains a level forward-facing orientation without roll.
 - Removed passive whole-body velocity tilt; jetpack directional lean remains.
+
+### Bounded subtle idle breathing
+- Restore upper-body translation baselines every frame before pose layers, preventing breathing/run offsets from accumulating.
+- Gun breathing amplitude is reduced to 1.5mm in bone space; heavy gun idle also freezes the upper-body source animation.
+- Twenty-second idle translation check, weapon carry and running checks pass.

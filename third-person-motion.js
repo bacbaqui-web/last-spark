@@ -25,7 +25,9 @@ export function createThirdPersonMotion(avatar){
    else{const p=new THREE.Vector3().fromArray(values);if(mirror)p.x=-p.x;b.position.copy(p);}
   }
  }
+ const restPositions=new Map(avatar.bones.filter(b=>/^(spine|neck|Head)/.test(b.name)).map(b=>[b.name,b.position.clone()]));
  function update(dt,state){
+  for(const [name,position]of restPositions)bones[name].position.copy(position);
   clock+=dt;const {weapon,speed=0,velocity,yaw,pitch=0,grounded=true,knifePhase=-1,rollPhase=-1,meleePhase=-1,throwPhase=-1,bowMotionClip='BowIdle',bowMotionPhase=0,bowDrawing=false,bowCharge=0,flash=false}=state;
   strideRate=THREE.MathUtils.damp(strideRate,directionalCadence(speed,velocity,yaw),8,dt);strideClock+=dt*strideRate;
   if(grounded&&!wasGrounded)landAge=0;if(!grounded&&wasGrounded)airAge=0;wasGrounded=grounded;airAge+=dt;landAge+=dt;
@@ -33,7 +35,7 @@ export function createThirdPersonMotion(avatar){
   const gun=['pistol','shotgun','sniper','laser'].includes(weapon),moving=speed>.7;walkBlend=THREE.MathUtils.damp(walkBlend,moving?1:0,10,dt);if(moving!==wasMoving){transitionKind=moving?'TPSStartRun':'TPSStopRun';transitionAge=0;}wasMoving=moving;transitionAge+=dt;
   let bodyClip=weapon==='knife'?'Sword_Idle':weapon==='bow'?(bowDrawing?(bowCharge>=2.2?'M2MBowHold':'M2MBowLoad'):bowMotionClip==='BowRelease'?'M2MBowRelease':'M2MBowIdle'):['rapid','rocket','rail','chainsaw','flame'].includes(weapon)?'Idle_Rail_Loop':'TPSAimIdle';
   const phase=bodyClip==='M2MBowLoad'?Math.min(1,bowCharge/2.2):bodyClip==='M2MBowRelease'?bowMotionPhase:(clock%(clips[bodyClip]?.duration||1))/(clips[bodyClip]?.duration||1);
-  apply(bodyClip,gun?0:phase,n=>upper.test(n)||speed<.2&&lower.test(n));
+  apply(bodyClip,!['knife','bow'].includes(weapon)?0:phase,n=>upper.test(n)||speed<.2&&lower.test(n));
   if(grounded&&speed<.2)apply('TPSAimIdle',0,n=>lower.test(n));
 
   if(gun&&Math.abs(pitch)>.01)apply(pitch>0?'TPSAimUp':'TPSAimDown',0,n=>upper.test(n),Math.min(.65,Math.abs(pitch)/1.2));
@@ -63,12 +65,12 @@ export function createThirdPersonMotion(avatar){
    for(const side of ['l','r']){bones['thigh_'+side].rotateX(-local.z*.18);bones['thigh_'+side].rotateZ(local.x*.15);bones['calf_'+side].rotateX(.12);}
    bodyClip=jetJump?'JetJump':'JetBoost';
   }
-  if(!boosting&&!jetJump&&knifePhase<0&&meleePhase<0&&throwPhase<0&&gun){
+  if(!boosting&&!jetJump&&knifePhase<0&&meleePhase<0&&throwPhase<0&&!['knife','bow'].includes(weapon)){
    const gait=(strideClock/clips.TPSRun.duration)%1,pulse=Math.sin(gait*Math.PI*4),run=grounded&&moving;
    // Frozen carry pose with deliberate waist twist and vertically coupled breathing/stride.
    apply('TPSAimIdle',0,n=>/^(spine|neck|Head)/.test(n));
    if(run){bones.spine_01.rotateX(.065);bones.spine_01.rotateY(Math.sin(gait*Math.PI*2)*.075);bones.spine_01.position.y+=pulse*.025;bones.Head.position.y-=pulse*.012;bones.Head.position.z+=.018;}
-   else if(grounded){bones.spine_01.position.y+=Math.sin(clock*2.2)*.006;}
+   else if(grounded){bones.spine_01.position.y+=Math.sin(clock*1.8)*.0015;}
   }
   // Aim bends the chest and neck, instead of rotating both arm targets around the eye.
   if(rollPhase<0){bones.spine_02.rotateX(THREE.MathUtils.clamp(pitch,-1.1,1.1)*.3);bones.spine_03.rotateX(THREE.MathUtils.clamp(pitch,-1.1,1.1)*.35);}
