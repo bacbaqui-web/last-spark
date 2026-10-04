@@ -2,6 +2,7 @@ import {panelGeometry,panelTexture,detailBatch,decorateRobot} from './model-deta
 import * as THREE from 'three';
 import rigData from './rig-data.json' with {type:'json'};
 const cubeGeometry=panelGeometry;
+const frameGeometry=new THREE.CylinderGeometry(.5,.45,1,10);
 const armor=new THREE.MeshStandardMaterial({color:0x928775,metalness:.3,roughness:.65});
 const bossArmor=new THREE.MeshStandardMaterial({color:0xad7852,metalness:.35,roughness:.65});
 const joints=new THREE.MeshStandardMaterial({color:0x223b44,metalness:.5,roughness:.7});
@@ -16,12 +17,12 @@ export function createRobot(boss=false,type='trooper',headScale=1){
  const root=new THREE.Group(),motion=new THREE.Group();root.add(motion);root.name=boss?'destroyer':'trooper';
  const bones=rigData.nodes.map(n=>{const b=new THREE.Bone();b.name=n.name;if(n.translation)b.position.fromArray(n.translation);if(n.rotation)b.quaternion.fromArray(n.rotation);if(n.scale)b.scale.fromArray(n.scale);return b;});
  rigData.nodes.forEach((n,i)=>(n.children||[]).forEach(c=>bones[i].add(bones[c])));motion.add(bones[64]);motion.updateMatrixWorld(true);
- const byName=Object.fromEntries(bones.map(b=>[b.name,b])),mat=boss?bossArmor:armor;
+ const byName=Object.fromEntries(bones.map(b=>[b.name,b])),mat=boss?bossArmor:armor,restGazeAxis=new THREE.Vector3(0,0,1).applyQuaternion(byName.Head.getWorldQuaternion(new THREE.Quaternion()).invert());
  // Rigid armor sections bind to actual animation bones in the rest pose.
  function bind(name,size,offset=[0,0,0],material=mat){const b=byName[name],pos=b.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(...offset));const m=block(motion,material,size,pos.toArray());motion.updateMatrixWorld(true);b.attach(m);return m;}
- function segment(name,end,width,depth){const b=byName[name],a=b.getWorldPosition(new THREE.Vector3()),z=byName[end].getWorldPosition(new THREE.Vector3()),delta=z.clone().sub(a);const m=block(motion,mat,[width,delta.length()*.86,depth],a.add(z).multiplyScalar(.5).toArray());m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());motion.updateMatrixWorld(true);b.attach(m);}
- bind('pelvis',[.29,.18,.22]);bind('spine_01',[.25,.18,.2],[0,.04,0],joints);bind('spine_03',[.4,.34,.25],[0,.015,0]);bind('spine_03',[.085,.11,.035],[0,.015,.145],glow);
- const head=bind('Head',[.36,.35,.3],[0,.10,0]);const visor=bind('Head',[.30,.055,.035],[0,.12,.165],glow);head.userData.weakPoint=visor.userData.weakPoint=true;
+ function segment(name,end,width,depth){const b=byName[name],a=b.getWorldPosition(new THREE.Vector3()),z=byName[end].getWorldPosition(new THREE.Vector3()),delta=z.clone().sub(a);const m=block(motion,joints,[width*.78,delta.length()*.86,depth*.70],a.add(z).multiplyScalar(.5).toArray());m.geometry=frameGeometry;m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());motion.updateMatrixWorld(true);b.attach(m);}
+ bind('pelvis',[.25,.16,.18],[0,0,0],joints);bind('spine_01',[.19,.18,.16],[0,.04,0],joints);bind('spine_03',[.32,.30,.20],[0,.015,0],joints);
+ const head=bind('Head',[.30,.34,.26],[0,.10,0],joints);const visor=bind('Head',[.18,.035,.025],[0,.12,.145],glow);head.userData.weakPoint=visor.userData.weakPoint=true;
  for(const side of ['l','r']){if(!boss){segment('upperarm_'+side,'lowerarm_'+side,.125,.15);segment('lowerarm_'+side,'hand_'+side,.115,.14);bind('hand_'+side,[.13,.16,.13],[0,0,0],joints);}segment('thigh_'+side,'calf_'+side,.15,.18);segment('calf_'+side,'foot_'+side,.125,.15);bind('foot_'+side,[.16,.11,.29],[0,-.015,.055],joints);}
  // Gun is mounted in the right-hand rest frame; animated aim points it forward.
  const weapon=new THREE.Group();byName.hand_r.add(weapon);weapon.position.set(0,.08,.025);block(weapon,joints,[.14,.16,.39],[0,.04,.09]);block(weapon,mat,[.16,.065,.28],[0,.14,.08]);const muzzle=new THREE.Group();muzzle.position.set(0,.045,.3);weapon.add(muzzle);
@@ -38,7 +39,11 @@ export function createRobot(boss=false,type='trooper',headScale=1){
  for(const clip of clips){const c=clip.clone();if(clip.name.startsWith('Pistol_')||clip.name.startsWith('Hit_')||clip.name.startsWith('Sword_'))c.tracks=c.tracks.filter(t=>upper.test(t.name));if(['Idle_Loop','Walk_Loop','Jog_Fwd_Loop','Sprint_Loop'].includes(c.name)){const u=c.clone();u.name=c.name+'_Upper';u.tracks=u.tracks.filter(t=>upper.test(t.name));actions[u.name]=mixer.clipAction(u);c.tracks=c.tracks.filter(t=>!upper.test(t.name));}actions[c.name]=mixer.clipAction(c);}
  const r={root,motion,body:byName.spine_03,neck:byName.neck_01,head,arms:['l','r'].map(s=>({shoulder:byName['upperarm_'+s],elbow:byName['lowerarm_'+s],hand:byName['hand_'+s]})),legs:['l','r'].map(s=>({hip:byName['thigh_'+s],knee:byName['calf_'+s]})),aimEmitter,missileMuzzles,hitMeshes,bones,skeleton:new THREE.Skeleton(bones),mixer,actions,blaster:weapon,muzzle,muzzleFlash,walkBlend:0,aimBlend:0,recoil:0,flashTime:0,hitCooldown:0};
  for(const name of ['Idle_Loop','Walk_Loop','Jog_Fwd_Loop','Sprint_Loop','Pistol_Aim_Neutral','Pistol_Aim_Up','Pistol_Aim_Down'])actions[name].play().setEffectiveWeight(name==='Idle_Loop'?1:0);
- for(const name of ['Idle_Loop','Walk_Loop','Jog_Fwd_Loop','Sprint_Loop'])actions[name+'_Upper'].play().setEffectiveWeight(name==='Idle_Loop'?1:0);mixer.stopAllAction();actions.Pistol_Aim_Neutral.reset().play().setEffectiveWeight(1);mixer.update(.05);motion.updateMatrixWorld(true);weapon.quaternion.copy(byName.hand_r.getWorldQuaternion(new THREE.Quaternion())).invert();mixer.stopAllAction();for(const name of ['Idle_Loop','Walk_Loop','Jog_Fwd_Loop','Sprint_Loop','Pistol_Aim_Neutral','Pistol_Aim_Up','Pistol_Aim_Down'])actions[name].reset().play().setEffectiveWeight(name==='Idle_Loop'?1:0);for(const name of ['Idle_Loop','Walk_Loop','Jog_Fwd_Loop','Sprint_Loop'])actions[name+'_Upper'].reset().play().setEffectiveWeight(name==='Idle_Loop'?1:0);mixer.update(0);decorateRobot(r,boss,type);if(type==='player'){visor.material=glow.clone();visor.material.color.setHex(0x36a0ff);}byName.Head.scale.multiplyScalar(headScale*.92);root.updateMatrixWorld(true);return r;
+ for(const name of ['Idle_Loop','Walk_Loop','Jog_Fwd_Loop','Sprint_Loop'])actions[name+'_Upper'].play().setEffectiveWeight(name==='Idle_Loop'?1:0);mixer.stopAllAction();actions.Pistol_Aim_Neutral.reset().play().setEffectiveWeight(1);mixer.update(.05);motion.updateMatrixWorld(true);weapon.quaternion.copy(byName.hand_r.getWorldQuaternion(new THREE.Quaternion())).invert();mixer.stopAllAction();for(const name of ['Idle_Loop','Walk_Loop','Jog_Fwd_Loop','Sprint_Loop','Pistol_Aim_Neutral','Pistol_Aim_Up','Pistol_Aim_Down'])actions[name].reset().play().setEffectiveWeight(name==='Idle_Loop'?1:0);for(const name of ['Idle_Loop','Walk_Loop','Jog_Fwd_Loop','Sprint_Loop'])actions[name+'_Upper'].reset().play().setEffectiveWeight(name==='Idle_Loop'?1:0);mixer.update(0);
+ // Local gaze axis is derived from the helmet's original forward-facing frame.
+ motion.updateMatrixWorld(true);const gazeAxis=restGazeAxis;
+ r.lookForward=(pitch=0)=>{root.updateMatrixWorld(true);const headBone=byName.Head,q=headBone.getWorldQuaternion(new THREE.Quaternion()),current=gazeAxis.clone().applyQuaternion(q),target=new THREE.Vector3(0,Math.sin(pitch),Math.cos(pitch)).applyQuaternion(root.getWorldQuaternion(new THREE.Quaternion())),world=new THREE.Quaternion().setFromUnitVectors(current.normalize(),target.normalize()).multiply(q);headBone.quaternion.copy(headBone.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(world));headBone.updateWorldMatrix(false,true);};r.gazeAxis=gazeAxis;
+ decorateRobot(r,boss,type);if(type==='player'){visor.material=glow.clone();visor.material.color.setHex(0x36a0ff);}byName.Head.scale.multiplyScalar(headScale*.92);root.updateMatrixWorld(true);return r;
 }
 export function animateRobot(r,dt,{speed=0,aim=0,elevation=0,hit=0,velocityX,velocityZ,yaw=0,rolling=false,rollTime=0,stopping=false,sword=false,swinging=false,swordElapsed=0}={}){
  if(r.spider){r.phase+=speed*dt*4.5;for(const leg of r.legs){const phase=r.phase+leg.index*Math.PI*.7+(leg.side>0?Math.PI:0);leg.hip.rotation.y=Math.sin(phase)*.45;leg.hip.position.y=.35+Math.max(0,Math.cos(phase))*.10*Math.min(speed/4,1);leg.knee.rotation.z=leg.side*(.2+Math.sin(phase)*.15);}r.motion.position.y=Math.sin(r.phase*2)*.018;return;}
@@ -66,6 +71,7 @@ export function animateRobot(r,dt,{speed=0,aim=0,elevation=0,hit=0,velocityX,vel
  const localForward=velocityX===undefined?speed:Math.sin(yaw)*velocityX+Math.cos(yaw)*velocityZ;
  r.motion.rotation.x=damp(r.motion.rotation.x,(rolling?0:-(Math.sign(localForward)||1)*r.brakeBlend*.23+(Math.sign(localForward)||1)*Math.min(speed/6,1)*.09));
  if(r.brakeBlend>.01&&!rolling)for(const leg of r.legs)leg.knee.rotateX(r.brakeBlend*.22);
+ r.lookForward?.(elevation);
  r.recoil=damp(r.recoil,0,18);r.flashTime-=dt;r.muzzleFlash.visible=r.flashTime>0;
 }
 function oneShot(r,name){const a=r.actions[name];a.reset().setLoop(THREE.LoopOnce,1).setEffectiveWeight(1).play();a.clampWhenFinished=false;}

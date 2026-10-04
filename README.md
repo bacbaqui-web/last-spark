@@ -915,3 +915,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Replaced stacked decorative armor, bolts, exposed pivot caps, conduits and helmet protrusions with one clean helmet, chest plate, shoulder shell and restrained limb panels. Existing blue/red/yellow identification colors remain.
 - Humanoid head scale is reduced a further 8%, including the helmet/visor attachments.
 - Third-person, weapon carry/boost/second jump and jetpack checks plus build pass. Simplified player/enemy silhouette inspected in browser.
+
+### Flexible armored robot shape and forward gaze
+- Narrow cylindrical limb frames and exposed joints support tapered, beveled chest and limb armor; rounded shoulder shells and a compact helmet preserve a clean silhouette and team colors.
+- The player leans slightly at the waist while the head compensates to look forward. Enemy gaze and player aim retain their intended direction through animation and rotated headings.
+- Gaze, running, third-person, weapon carry/boost/second jump and jetpack checks plus build pass. Gameplay silhouette reviewed in browser; screenshot under work/tapered-robot-review.png.

@@ -13,19 +13,31 @@ export function detailBatch(parent,parts){const groups=new Map();for(const [size
 export function decorateRobot(r,boss=false,type='trooper'){
  const shell=new THREE.MeshStandardMaterial({color:boss?0x9b7152:0x958975,metalness:.55,roughness:.6,map:panelTexture});
  const identity=new THREE.MeshStandardMaterial({color:type==='player'?0x1465f4:boss?0xe99916:type==='sniper'?0xffc326:0xe92d24,metalness:.3,roughness:.45});r.identityMaterial=identity;
- // One clean helmet, chest plate and shoulder shell; no stacked ornament layers.
- r.head.geometry=new RoundedBoxGeometry(1,1,1,3,.18);
- const helmet=new THREE.Group();helmet.name='clean-helmet';helmet.position.copy(r.head.position);helmet.quaternion.copy(r.head.quaternion);r.head.parent.add(helmet);
- detailBatch(helmet,[[[.28,.035,.26],[0,.16,-.015],identity],[[.24,.045,.045],[0,-.11,.15],black]]);
- detailBatch(r.body,[[[.29,.25,.045],[0,.04,.15],shell],[[.26,.035,.02],[0,.14,.181],identity],[[.23,.035,.025],[0,.14,-.16],identity]]);
+ // Tapered armor follows the limb, with open gaps over the flexible dark frame.
+ function plate(parent,points,depth,pos,material=shell){
+  const shape=new THREE.Shape();points.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();
+  const mesh=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth,bevelEnabled:true,bevelSize:.008,bevelThickness:.006,bevelSegments:2,steps:1}),material);mesh.position.set(...pos);mesh.castShadow=true;mesh.userData.cosmetic=true;parent.add(mesh);return mesh;
+ }
+ r.head.geometry=new RoundedBoxGeometry(1,1,1,3,.20);
+ const helmet=new THREE.Group();helmet.name='tapered-helmet';helmet.position.copy(r.head.position);helmet.quaternion.copy(r.head.quaternion);r.head.parent.add(helmet);
+ plate(helmet,[[-.13,.15],[-.08,.18],[.08,.18],[.13,.15],[.10,.055],[-.10,.055]],.055,[0,0,.06],identity);
+ for(const side of[-1,1]){const cheek=plate(helmet,[[-.045,.09],[.025,.12],[.045,-.05],[.025,-.12],[-.025,-.105]],.035,[side*.11,-.025,.11],shell);cheek.rotation.y=side*.22;}
+ detailBatch(helmet,[[[.12,.035,.045],[0,-.105,.13],black]]);
+ // Two angled pectoral shells and a narrow abdomen leave space to bend at the waist.
+ for(const side of[-1,1]){const chest=plate(r.body,[[-.075,.13],[.065,.16],[.095,.04],[.065,-.08],[-.055,-.06]],.045,[side*.09,.015,.105],identity);chest.rotation.y=side*.16;}
+ plate(r.bones.find(b=>b.name==='spine_01'),[[-.065,.09],[.065,.09],[.055,-.06],[0,-.10],[-.055,-.06]],.028,[0,.04,.09]);
+ detailBatch(r.body,[[[.23,.035,.025],[0,.14,-.13],identity]]);
  const backpack=new THREE.Group();backpack.name='original-backpack';r.body.add(backpack);detailBatch(backpack,[[[.3,.32,.15],[0,.015,-.22],black]]);r.backpack=backpack;
- for(const arm of r.arms){
-  detailBatch(arm.shoulder,[[[.18,.12,.19],[0,-.015,0],identity]]);
-  detailBatch(arm.elbow,[[[.12,.20,.035],[0,-.11,.078],shell]]);
+ for(const [index,arm]of r.arms.entries()){
+  const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.115,16,10,0,Math.PI*2,0,Math.PI*.66),identity);shoulder.scale.set(1,.78,1.04);shoulder.position.y=-.01;shoulder.userData.cosmetic=true;arm.shoulder.add(shoulder);
+  plate(arm.shoulder,[[-.055,-.055],[.055,-.055],[.055,-.19],[.025,-.23],[-.04,-.21]],.024,[0,0,.065]);
+  plate(arm.elbow,[[-.06,-.06],[.06,-.055],[.045,-.23],[-.04,-.25]],.03,[0,0,.06],identity);
+  const joint=new THREE.Mesh(new THREE.SphereGeometry(.062,10,8),black);joint.userData.cosmetic=true;arm.elbow.add(joint);
  }
  for(const leg of r.legs){
-  detailBatch(leg.hip,[[[.12,.22,.025],[0,-.16,.10],shell]]);
-  detailBatch(leg.knee,[[[.14,.10,.045],[0,-.015,.105],shell]]);
+  plate(leg.hip,[[-.065,-.07],[.065,-.06],[.055,-.27],[0,-.32],[-.05,-.27]],.025,[0,0,.075]);
+  plate(leg.knee,[[-.065,.035],[.065,.035],[.06,-.04],[0,-.085],[-.06,-.04]],.032,[0,0,.07],identity);
+  plate(leg.knee,[[-.045,-.11],[.045,-.11],[.035,-.33],[-.025,-.35]],.023,[0,0,.06]);
  }
  if(type==='sniper')detailBatch(helmet,[[[.06,.07,.07],[.14,.025,.16],indicator]]);
 }
