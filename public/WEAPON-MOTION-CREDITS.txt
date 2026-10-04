@@ -43,3 +43,8 @@ License: https://github.com/Mesh2Motion/mesh2motion-app/blob/main/LICENSE-CC0.MD
 Bow clips: Bow, Bow Pull Back, Bow Pull Hold, Bow Release (human-addon-animations).
 Sword clip: Sword_Regular_C (human-base-animations; Quaternius animation content).
 Retargeted whole-body tracks; bow grip IK aligns hands, string and arrow to aim.
+
+Punch_Cross (third-person gun bash):
+Quaternius Universal Animation Library [Standard].
+https://quaternius.com/packs/universalanimationlibrary.html
+CC0 1.0 Universal. Source cross punch with gameplay contact timing and extended recovery.

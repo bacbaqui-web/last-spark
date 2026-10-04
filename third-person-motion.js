@@ -56,7 +56,11 @@ export function createThirdPersonMotion(avatar){
    bodyClip='Sword_Dash';
   }
   else if(rollPhase>=0){bodyClip='JetBoost';}
-  else if(meleePhase>=0){bodyClip='LeftJab';}
+  else if(meleePhase>=0){
+   // CC0 cross: quick wind-up to contact, then retain the source follow-through.
+   const contact=1/6,phase=meleePhase<contact?meleePhase/contact*.4:.4+(meleePhase-contact)/(1-contact)*.6;
+   apply('Punch_Cross',phase);bodyClip='Punch_Cross';
+  }
   else if(throwPhase>=0){apply('OverhandThrow',throwPhase,n=>upper.test(n));bodyClip='OverhandThrow';}
   const boosting=state.boostPhase>=0||rollPhase>=0,jetJump=state.jetJump>0;
   let leanX=0,leanZ=0;
