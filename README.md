@@ -970,3 +970,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Final forward upper-body pose lock
 - Lock every torso, arm, hand, neck and head bone in player-relative space after animation, weapon IK and saved custom pose overrides. Cancel inherited pelvis motion and preserve the weapon mount.
 - Release the lock for firing, aiming, attacks, jumps and boosts. Eight-second full-upper-body stability check passes.
+
+### Coordinated forward run lift and restrained weapon follow
+- Forward running now has a bounded two-step sinusoidal whole-body lift up to 4.4cm, with the upper body rising 30% more and leaning forward at the waist.
+- Foot front/back positions drive alternating waist and larger torso yaw. Head gaze remains level; carry transfers only 25% of chest movement/rotation to the weapon while arm IK maintains grip.
+- Removed final forward upper-body freeze. Running, gaze, weapon grip, boost and jetpack checks pass.

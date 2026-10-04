@@ -6,8 +6,8 @@ const avatar=createRobot(),view=createThirdPersonView(avatar,['pistol']);
 const chest=avatar.bones.find(b=>b.name==='spine_03'),sample={position:new THREE.Vector3(0,1.7,0),yaw:0,pitch:0,weapon:'pistol',speed:10.8,velocity:new THREE.Vector3(0,0,-10.8),grounded:true,dt:1/60};
 const heights=[],chestHeights=[];
 for(let i=0;i<150;i++){view.pose(sample);if(i>30){heights.push(view.models.pistol.getWorldPosition(new THREE.Vector3()).y);chestHeights.push(chest.getWorldPosition(new THREE.Vector3()).y);}}
-assert(Math.max(...heights)-Math.min(...heights)<.002,'forward carry stays steady above the running pelvis');
-assert(Math.max(...chestHeights)-Math.min(...chestHeights)<.002,'forward chest stays steady');
+assert(Math.max(...heights)-Math.min(...heights)>.003,'forward carry follows a restrained portion of body lift');
+assert(Math.max(...chestHeights)-Math.min(...chestHeights)>.025,'forward chest follows body lift');
 const carryMean=heights.reduce((a,b)=>a+b,0)/heights.length;
 for(let i=0;i<45;i++)view.pose({...sample,firing:true,flash:i%3===0});
 const firingHeight=view.models.pistol.getWorldPosition(new THREE.Vector3()).y;

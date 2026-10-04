@@ -16,8 +16,6 @@ export function createThirdPersonView(avatar,types){
  if(avatar.backpack)avatar.backpack.visible=false;
  const jetpack=createJetpack(avatar),equipment=createHeavyEquipment(avatar,jetpack);
  const customMotion=createCustomMotion(avatar,models),modelScales=Object.fromEntries(Object.entries(models).map(([k,m])=>[k,m.scale.clone()]));
- let fixedForwardPose=null;
- const upperBones=avatar.bones.filter(b=>/^(spine|neck|Head|clavicle|upperarm|lowerarm|hand)/.test(b.name)).sort((a,b)=>{const depth=o=>{let d=0;while(o.parent){d++;o=o.parent;}return d;};return depth(a)-depth(b);});
  function pose(state){
   customMotion(null);for(const [k,m]of Object.entries(models))m.scale.copy(modelScales[k]);
   const {position,yaw,pitch,weapon,speed=0,velocity=v(0,0,0),knifePhase=-1,knifeCombo=1,knifeGuard=false,knifeBlock=0,knifeRush=false,bowDrawing=false,bowCharge=0,chainsawBlend=0,time=0,dt=0,flash=false,laserHeat=0,firing=false,adsBlend=0,rollPhase=-1,rollDirection,knifeDirection,throwPhase=-1}=state;
@@ -67,7 +65,7 @@ export function createThirdPersonView(avatar,types){
     if(weapon!=='rocket'){
      const bodyRotation=avatar.root.getWorldQuaternion(new THREE.Quaternion()),restChest=avatar.root.localToWorld(carryRestPosition.clone()),chest=carryChest.getWorldPosition(new THREE.Vector3()),delta=carryChest.getWorldQuaternion(new THREE.Quaternion()).multiply(bodyRotation.clone().multiply(carryRestRotation).invert());
      const carried=canonical.clone().sub(restChest).applyQuaternion(delta).add(chest);
-     anchor.lerp(carried,1-aim);weaponHeading.slerp(delta.clone().multiply(weaponHeading),1-aim);
+     const influence=avatar.root.userData.forwardRunPose?.25:1;anchor.lerp(carried,(1-aim)*influence);weaponHeading.slerp(delta.clone().multiply(weaponHeading),(1-aim)*influence);
     }
     if(['pistol','shotgun','sniper'].includes(weapon)){const stock=v(0,weapon==='sniper'?-.08:-.05,weapon==='sniper'?.81:.79),shoulder=avatar.arms[1].shoulder.getWorldPosition(new THREE.Vector3()).add(v(0,.035,0).applyQuaternion(heading)),mounted=shoulder.add(trigger.clone().sub(stock).multiplyScalar(model.scale.x).applyQuaternion(weaponHeading));anchor.lerp(mounted,aim);}
     if(firing&&flash&&!['laser','chainsaw','flame'].includes(weapon))anchor.add(v(0,0,.025).applyQuaternion(heading));
@@ -80,14 +78,6 @@ export function createThirdPersonView(avatar,types){
    }else{model.quaternion.copy(model.userData.gripRotation||new THREE.Quaternion());model.position.copy(model.userData.gripPosition||v(0,0,0));}
   }
   const customized=state.boostPhase>=0||state.jetJump>0?false:customMotion(state);if(customized&&weapon==='bow'&&bowDrawing){const pull=model.worldToLocal(avatar.arms[1].hand.getWorldPosition(new THREE.Vector3())),pos=model.userData.string.geometry.attributes.position;pos.setXYZ(1,pull.x,pull.y,pull.z);pos.needsUpdate=true;model.userData.string.geometry.computeBoundingSphere();model.userData.nockedArrow.position.copy(pull).sub(v(0,0,.14));const direction=v(0,0,-.43).sub(pull).normalize();model.userData.nockedArrow.quaternion.setFromUnitVectors(v(0,0,-1),direction);}
-  // Final stabilization must run after animation, grip IK and custom pose overrides.
-  const freezeUpper=state.grounded!==false&&speed>.7&&velocity.dot(v(-Math.sin(yaw),0,-Math.cos(yaw)))>speed*.5&&!result.attack&&throwPhase<0&&!firing&&adsBlend<.01&&!bowDrawing;
-  if(freezeUpper){
-   const key=weapon+':'+pitch.toFixed(3);avatar.root.updateMatrixWorld(true);
-   if(!fixedForwardPose||fixedForwardPose.key!==key){const rootRotation=avatar.root.getWorldQuaternion(new THREE.Quaternion());fixedForwardPose={key,bones:upperBones.map(b=>({b,p:avatar.root.worldToLocal(b.getWorldPosition(new THREE.Vector3())),q:rootRotation.clone().invert().multiply(b.getWorldQuaternion(new THREE.Quaternion()))})),weaponPosition:model.position.clone(),weaponRotation:model.quaternion.clone()};}
-   for(const {b,p,q}of fixedForwardPose.bones){b.position.copy(b.parent.worldToLocal(avatar.root.localToWorld(p.clone())));b.quaternion.copy(b.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(avatar.root.getWorldQuaternion(new THREE.Quaternion()).multiply(q)));b.updateWorldMatrix(false,true);}
-   model.position.copy(fixedForwardPose.weaponPosition);model.quaternion.copy(fixedForwardPose.weaponRotation);
-  }else fixedForwardPose=null;
   if(weapon==='chainsaw')for(const tooth of model.userData.chainTeeth)tooth.position.z=tooth.userData.baseZ+((time*8)%1)*.065*chainsawBlend;
   jetpack.update({...state,weapon});equipment.update(weapon,model,time);
   model.userData.viewFlash.visible=flash&&!['knife','bow','chainsaw','laser','flame'].includes(weapon);if(weapon==='laser')for(const [i,ring]of model.userData.chargeRings.entries()){const lit=firing&&i<=Math.min(4,Math.floor(laserHeat+1e-7));ring.material.color.setHex(lit?0x65e8ff:0x37424c);ring.material.emissiveIntensity=lit?2.5:.08;}if(weapon==='rapid'){model.userData.rotor.rotation.z=time*(firing?45:0);model.userData.viewFlash.quaternion.setFromEuler(new THREE.Euler(-Math.PI/2,0,0)).multiply(new THREE.Quaternion().setFromAxisAngle(v(0,1,0),time*91));model.userData.viewFlash.scale.setScalar(3.8+Math.sin(time*113)*.8);model.userData.fireLight.intensity=flash?8:0;}avatar.root.updateMatrixWorld(true);
