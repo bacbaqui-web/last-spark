@@ -237,7 +237,9 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   parts.push([[.12,.026,.20],[0,-.105,.09],steel],[[.12,.026,.21],[0,-.30,.10],black],[[.12,.20,.025],[0,-.20,.005],black],[[.025,.09,.025],[0,-.18,.105],steel],[[.10,.055,.085],[0,-.36,.29],steel]);
   path([[0,-.36,.30],[-.10,-.44,.22],[-.17,-.45,-.02],[-.18,-.38,-.26],[-.13,-.25,-.33]],.018,rubber);
   for(const x of[-.09,.09]){const bolt=new THREE.Mesh(new THREE.CylinderGeometry(.014,.014,.014,8),steel);bolt.rotation.z=Math.PI/2;bolt.position.set(x,-.04,.14);root.add(bolt);}
-  detailBatch(root,parts);root.scale.setScalar(.8);root.userData.muzzle=[0,.025,-1.23];
+  // Dedicated fittings touch this narrow receiver; rifle-width fittings float beside it.
+  for(const side of [-1,1])parts.push([[.018,.09,.12],[side*.095,-.02,.14],steel],[[.012,.028,.08],[side*.108,-.035,.14],black]);
+  detailBatch(root,parts);root.scale.setScalar(.8);root.userData.muzzle=[0,.025,-1.23];root.userData.triggerGrip=[0,-.20,.24];
  }
  if(type==='laser'){
   // Offset open-frame energy rifle, with a visible reactor and twin cooling hoses.
@@ -343,7 +345,7 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
  }
  if(type==='sword'){box([.13,.38,.13],[0,0,0]);box([.6,.1,.2],[0,.24,0],metal);box([.28,2.5,.085],[0,1.54,0],metal);box([.035,2.43,.10],[.155,1.53,0],color);box([.2,.12,.2],[0,-.25,0],color);const tip=new THREE.Mesh(new THREE.ConeGeometry(.16,.3,4),metal);tip.position.set(0,2.94,0);root.add(tip);root.userData.grip=[0,0,0];}
 
- if(['pistol','rapid','shotgun','sniper','flame','laser'].includes(type)){
+ if(['pistol','rapid','shotgun','sniper','laser'].includes(type)){
   const wide=['rapid','flame'].includes(type),x=wide?.22:.125,parts=[];
   for(const side of[-1,1]){
    for(const z of[-.12,.08,.28])parts.push([[.016,.022,.022],[side*x,.025,z],metal]);

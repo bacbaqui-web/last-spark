@@ -6,7 +6,7 @@ export function createHeavyEquipment(avatar,jetpack){
  const packs={},boxGeometry=new THREE.BoxGeometry(1,1,1),cylinder=new THREE.CylinderGeometry(1,1,1,8);
  function box(parent,size,pos,mat){const m=new THREE.Mesh(boxGeometry,mat);m.scale.set(...size);m.position.set(...pos);m.castShadow=true;parent.add(m);return m;}
  for(const type of ['rapid','flame']){
-  const pack=new THREE.Group();pack.name=type+'-jetpack-module';jetpack.root.add(pack);pack.scale.setScalar(.85);packs[type]=pack;
+  const pack=new THREE.Group();pack.name=type+'-jetpack-module';jetpack.root.add(pack);pack.scale.setScalar(type==='flame'?1.65:.85);packs[type]=pack;
   box(pack,[.50,.62,.12],[0,0,0],dark);
   if(type==='rapid'){
    box(pack,[.47,.66,.24],[0,.02,-.12],olive);box(pack,[.48,.09,.27],[0,.34,-.12],dark);

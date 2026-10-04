@@ -993,3 +993,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Gun carry follows pelvis
 - Gun forward locomotion now inherits the pelvis orientation at the connected waist socket instead of counter-rotating the torso into a world-fixed pose.
 - Preserved the preferred knife run, level gaze, restrained weapon follow and fixed waist connection. Preview determinism, carry/grip and gaze checks pass.
+
+### Flamethrower fit and fuel pack
+- Enlarged the integrated twin fuel tank module from 0.85 to 1.65 scale, retaining its jetpack mounting and hose connection.
+- Replaced floating rifle-width side fittings with dedicated narrow receiver fittings. Right hand now holds the actual rear pistol grip at the authored model socket.
+- Reviewed front/rear editor views; idle/run/hold grip checks and existing carry/jetpack checks pass.
