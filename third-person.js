@@ -1,3 +1,4 @@
+import {createFootPlant} from './foot-plant.js';
 import {decorateMinigunFlash} from './minigun-fire.js';
 import {createJetpack} from './jetpack.js';
 import {createHeavyEquipment} from './heavy-equipment.js';
@@ -10,7 +11,7 @@ import {armIK} from './sword-combat.js';
 import {animateRobot} from './robot.js';
 const v=(x,y,z)=>new THREE.Vector3(x,y,z);
 export function createThirdPersonView(avatar,types){
- const camera=new THREE.PerspectiveCamera(78,1,.08,150),models={},motion=createThirdPersonMotion(avatar);let bodyInitialized=false,firePose=0,fireHold=0,poseWeapon='',minigunAim=0;
+ const camera=new THREE.PerspectiveCamera(78,1,.08,150),models={},motion=createThirdPersonMotion(avatar),plantFeet=createFootPlant(avatar);let bodyInitialized=false,firePose=0,fireHold=0,poseWeapon='',minigunAim=0;
  motion.apply('Sword_Idle',0);avatar.root.updateMatrixWorld(true);const knifeMount=avatar.arms[1].hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(new THREE.Quaternion().setFromUnitVectors(v(0,0,-1),v(-.45,.35,1).normalize()));
  for(const type of types){const model=createWeaponModel(type);model.scale.multiplyScalar((type==='rocket'?1.45:1)/1.17);model.visible=false;const muzzleFlash=new THREE.Mesh(new THREE.ConeGeometry(.07,.2,5),new THREE.MeshBasicMaterial({color:0xffeaa1}));muzzleFlash.rotation.x=-Math.PI/2;muzzleFlash.position.fromArray(model.userData.muzzle);muzzleFlash.visible=false;model.add(muzzleFlash);model.userData.viewFlash=muzzleFlash;if(type==='rapid'){muzzleFlash.scale.set(3.7,4.8,3.7);model.userData.fireLight=decorateMinigunFlash(muzzleFlash);}avatar.arms[type==='bow'?0:1].hand.add(model);model.traverse(o=>{if(o.isMesh)o.castShadow=true;});models[type]=model;}
  const equipment=createHeavyEquipment(avatar),jetpack=createJetpack(avatar);
@@ -23,7 +24,7 @@ export function createThirdPersonView(avatar,types){
   avatar.root.position.copy(position).add(v(0,-1.7,0));const turn=Math.atan2(Math.sin(bodyYaw-avatar.root.rotation.y),Math.cos(bodyYaw-avatar.root.rotation.y));avatar.root.rotation.set(0,bodyInitialized?avatar.root.rotation.y+turn*(1-Math.exp(-dt*24)):bodyYaw,0);bodyInitialized=true;avatar.blaster.visible=false;
   // Normalize animation speed to the stride's recorded pace, never the 30m/s dash speed.
   animateRobot(avatar,dt,{speed:Math.min(5,speed/9.8*4.5),aim:0,velocityX:velocity.x,velocityZ:velocity.z,yaw:bodyYaw});
-  const result=motion.update(dt,{...state,velocity});avatar.root.updateMatrixWorld(true);
+  const result=motion.update(dt,{...state,velocity});plantFeet({...state,position,velocity,knifePhase,rollPhase});avatar.root.updateMatrixWorld(true);
   for(const [type,model]of Object.entries(models))model.visible=type===weapon;
   const model=models[weapon];if(!model)return;
   if(poseWeapon!==weapon){poseWeapon=weapon;firePose=0;fireHold=0;}
