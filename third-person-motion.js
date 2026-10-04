@@ -11,7 +11,7 @@ const clips=Object.fromEntries(Object.entries({...data,...sideData}).map(([name,
 export function createThirdPersonMotion(avatar){
  const sprintClip=avatar.actions.Sprint_Loop.getClip();
  const motionClips={...clips,Sprint_Loop:{duration:sprintClip.duration,tracks:sprintClip.tracks.map(t=>({bone:t.name.split('.')[0],property:t.name.split('.')[1],sample:t.createInterpolant()}))}};
- const bones=Object.fromEntries(avatar.bones.map(b=>[b.name,b])),previous=new Map();let clock=0,strideClock=0,strideRate=.35,wasGrounded=true,airAge=0,landAge=1,lastWeapon='',shotKick=0,lastFlash=false,wasMoving=false,transitionKind='',transitionAge=1,walkBlend=0;const momentum=new THREE.Vector3();
+ const bones=Object.fromEntries(avatar.bones.map(b=>[b.name,b])),previous=new Map();let clock=0,strideClock=0,strideRate=.35,wasGrounded=true,airAge=0,landAge=1,lastWeapon='',shotKick=0,lastFlash=false,wasMoving=false,transitionKind='',transitionAge=1,walkBlend=0;const momentum=new THREE.Vector3();let runLift=0,runTwist=0,runPoseBlend=0;
  function apply(name,phase,mask=()=>true,weight=1){const clip=motionClips[name];if(!clip)return;for(const t of clip.tracks){const b=bones[t.bone];if(!b||!mask(t.bone))continue;const a=t.sample.evaluate(THREE.MathUtils.clamp(phase,0,1)*clip.duration);if(t.property==='quaternion')b.quaternion.slerp(new THREE.Quaternion().fromArray(a),weight);else b.position.lerp(new THREE.Vector3().fromArray(a),weight);}}
  function applyStep(name,phase){
   const stop=name.startsWith('Stop'),mirror=name.endsWith('Right');
@@ -81,13 +81,12 @@ export function createThirdPersonMotion(avatar){
   for(const b of avatar.bones){let old=previous.get(b.name);if(old){b.quaternion.copy(old.q.clone().slerp(b.quaternion,grounded&&speed>=3&&!attack&&lower.test(b.name)&&dt>0?1-Math.exp(-dt*36):alpha));b.position.copy(old.p.clone().lerp(b.position,alpha));}else old={q:new THREE.Quaternion(),p:new THREE.Vector3()};old.q.copy(b.quaternion);old.p.copy(b.position);previous.set(b.name,old);}
   const localMomentum=velocity.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-(yaw+Math.PI));momentum.lerp(localMomentum,1-Math.exp(-dt*8));avatar.motion.rotation.x=leanX;avatar.motion.rotation.z=leanZ;avatar.root.userData.locomotionAction=state.locomotion?.action?.name??null;avatar.root.userData.footContacts=[null,null];avatar.root.userData.sourceSprint=bodyClip.includes('Sprint_Loop');avatar.root.userData.motion=bodyClip;avatar.root.userData.sourceMotion=knifePhase>=0?'AuthoredDragonSlash':bodyClip;avatar.root.userData.stridePhase=(strideClock/clips.TPSRun.duration)%1;avatar.root.userData.strideRate=directionalCadence(speed,velocity,yaw);const forward=velocity.dot(new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)))>speed*.5;
   const forwardRun=grounded&&moving&&forward&&!attack&&throwPhase<0;
-  avatar.motion.position.y=0;avatar.root.userData.forwardRunPose=forwardRun;
+  const gait=(strideClock/clips.TPSRun.duration)%1;runPoseBlend=THREE.MathUtils.damp(runPoseBlend,forwardRun?1:0,10,dt);runLift=THREE.MathUtils.damp(runLift,forwardRun?(1-Math.cos(gait*Math.PI*4))*.022:0,18,dt);runTwist=THREE.MathUtils.damp(runTwist,forwardRun?Math.sin(gait*Math.PI*2)*.045:0,14,dt);avatar.motion.position.y=runLift;avatar.root.userData.forwardRunPose=forwardRun;
   if(forwardRun){
-   const gait=(strideClock/clips.TPSRun.duration)%1,lift=(1-Math.cos(gait*Math.PI*4))*.022;
+   const lift=runLift,twist=runTwist;
    avatar.motion.position.y=lift;avatar.root.updateMatrixWorld(true);
-   const left=avatar.root.worldToLocal(bones.foot_l.getWorldPosition(new THREE.Vector3())),right=avatar.root.worldToLocal(bones.foot_r.getWorldPosition(new THREE.Vector3())),twist=THREE.MathUtils.clamp((left.z-right.z)*.16,-.055,.055);
    bones.pelvis.rotateY(twist*.45);avatar.root.updateMatrixWorld(true);
-   const parent=bones.spine_01.parent,target=avatar.root.localToWorld(upperAnchor.p.clone().add(new THREE.Vector3(0,lift*1.3,0))),rotation=avatar.root.getWorldQuaternion(new THREE.Quaternion()).multiply(upperAnchor.q).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(.10,twist,0)));
+   const parent=bones.spine_01.parent,target=avatar.root.localToWorld(upperAnchor.p.clone().add(new THREE.Vector3(0,lift*1.3,0))),rotation=avatar.root.getWorldQuaternion(new THREE.Quaternion()).multiply(upperAnchor.q).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(.10*runPoseBlend,twist,0)));
    bones.spine_01.position.copy(parent.worldToLocal(target));bones.spine_01.quaternion.copy(parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(rotation));bones.spine_01.updateWorldMatrix(false,true);avatar.root.userData.upperBodyStabilized=false;
   }else avatar.root.userData.upperBodyStabilized=false;
   avatar.lookForward?.(pitch);return {bodyClip,attack,rolling:rollPhase>=0};

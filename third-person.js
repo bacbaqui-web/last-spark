@@ -7,7 +7,6 @@ import {createWeaponModel} from './weapon-models.js';
 import {createThirdPersonMotion} from './third-person-motion.js';
 import {createCustomMotion} from './motion-settings.js';
 import {armIK} from './sword-combat.js';
-import {animateRobot} from './robot.js';
 const v=(x,y,z)=>new THREE.Vector3(x,y,z);
 export function createThirdPersonView(avatar,types){
  const camera=new THREE.PerspectiveCamera(78,1,.08,150),models={},motion=createThirdPersonMotion(avatar);let bodyInitialized=false,firePose=0,fireHold=0,poseWeapon='',heavyAim=0;
@@ -22,8 +21,7 @@ export function createThirdPersonView(avatar,types){
   let bodyYaw=yaw+Math.PI;
   if(knifePhase>=0&&knifeDirection?.lengthSq()>.01)bodyYaw=Math.atan2(knifeDirection.x,knifeDirection.z);
   avatar.root.position.copy(position).add(v(0,-1.7,0));const turn=Math.atan2(Math.sin(bodyYaw-avatar.root.rotation.y),Math.cos(bodyYaw-avatar.root.rotation.y));avatar.root.rotation.set(0,bodyInitialized?avatar.root.rotation.y+turn*(1-Math.exp(-dt*24)):bodyYaw,0);bodyInitialized=true;avatar.blaster.visible=false;
-  // Normalize animation speed to the stride's recorded pace, never the 30m/s dash speed.
-  animateRobot(avatar,dt,{speed:Math.min(5,speed/9.8*4.5),aim:0,velocityX:velocity.x,velocityZ:velocity.z,yaw:bodyYaw});
+  // One pose sampler owns the player skeleton; do not mix a second stride clock.
   const result=motion.update(dt,{...state,velocity});avatar.root.updateMatrixWorld(true);
   for(const [type,model]of Object.entries(models))model.visible=type===weapon;
   const model=models[weapon];if(!model)return;

@@ -975,3 +975,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Forward running now has a bounded two-step sinusoidal whole-body lift up to 4.4cm, with the upper body rising 30% more and leaning forward at the waist.
 - Foot front/back positions drive alternating waist and larger torso yaw. Head gaze remains level; carry transfers only 25% of chest movement/rotation to the weapon while arm IK maintains grip.
 - Removed final forward upper-body freeze. Running, gaze, weapon grip, boost and jetpack checks pass.
+
+### Single-clock smooth player run
+- Removed the second animation mixer update from player posing so one stride sampler owns the skeleton.
+- Run twist derives from the shared stride phase instead of re-reading already-modified feet. Damped lift, twist and lean avoid abrupt changes.
+- Ten-second frame-to-frame torso check bounds position/rotation changes; running, grip, gaze and jetpack checks pass.
