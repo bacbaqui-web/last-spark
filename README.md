@@ -966,3 +966,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Forward ground movement retains pelvis and leg animation while stabilizing the upper-body attachment in player space, cancelling inherited pelvis bounce/rotation.
 - Removed extra waist twist. Weapon grip follows the stable chest; attack and jetpack actions retain their poses.
 - Ten-second forward movement check confirms a stationary torso with active running legs.
+
+### Final forward upper-body pose lock
+- Lock every torso, arm, hand, neck and head bone in player-relative space after animation, weapon IK and saved custom pose overrides. Cancel inherited pelvis motion and preserve the weapon mount.
+- Release the lock for firing, aiming, attacks, jumps and boosts. Eight-second full-upper-body stability check passes.
