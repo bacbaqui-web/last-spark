@@ -1002,3 +1002,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Mirrored running shoulder sockets
 - During gun locomotion both shoulders attach at mirrored positions on the visible torso, removing the rifle animation's forward-shifted right shoulder. Arm IK solves the grips from these sockets.
 - Restore original local sockets outside locomotion so the correction does not leak into idle/attack poses. Gun/minigun/flame stride symmetry, carry/grip, preview determinism and gaze checks pass.
+
+### Smaller firearm proportions
+- Reduced all eight firearm models by 20 percent in first/third-person and editor views; updated the first-person minigun scale override to match. Knife, bow, saw and enlarged fuel module retain their sizes.
+- Grip, muzzle and hose transforms use scaled model coordinates. Carry/jetpack and third-person gameplay checks plus production build pass.
