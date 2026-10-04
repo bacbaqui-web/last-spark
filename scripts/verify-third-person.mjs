@@ -25,7 +25,7 @@ source=source.replace("import {createRobot,animateRobot,robotFired,animateDeath,
 source=source.replace("import {createBoss,animateBoss,createScoutDrone,createAssassin} from './boss-models.js';",'const {createBoss,animateBoss,createScoutDrone,createAssassin}=BOSSES;');
 source=source.replace("import {panelTexture,decorateArena} from './model-detail.js';",'const {panelTexture,decorateArena}=DETAIL;');
 source=source.replace("import {createProgression,randomUpgradePair,applyUpgrade,buildSummary} from './progression.js';",'const {createProgression,randomUpgradePair,applyUpgrade,buildSummary}=PROGRESS;');
-source=source.replace("import {moveBladeBoss,tryBladeLeap} from './boss-navigation.js';",'const {moveBladeBoss,tryBladeLeap}=NAV;');
+source=source.replace("import {moveBladeBoss,tryBladeLeap,moveDroneBoss} from './boss-navigation.js';",'const {moveBladeBoss,tryBladeLeap,moveDroneBoss}=NAV;');
 source=source.replace("import {ADS_POSES,keepAimClear} from './weapon-view.js';",'const {ADS_POSES,keepAimClear}=VIEW;');
 source+=`reset(false);active=true;damageGrace=999;player.pos.set(30,1.7,30);camera.position.copy(player.pos);camera.rotation.set(0,0,0);weapon='knife';ammo=20;
 let prevented=0;const tab=repeat=>events.get('keydown')({code:'Tab',repeat,preventDefault(){prevented++;},stopPropagation(){}});tab(false);assert(thirdPerson&&active&&prevented===1,'Tab changes view without pausing');tab(true);assert(thirdPerson&&prevented===2,'held Tab does not bounce view');tab(false);assert(!thirdPerson&&active,'Tab returns to first person');tab(false);update(.016);assert(playerAvatar.root.visible&&!gun.visible&&!sword.visible,'world avatar replaces first-person gun');assert(thirdView.models.knife.visible,'equipped knife visible');

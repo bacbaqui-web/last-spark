@@ -4,7 +4,7 @@ import {movePlayerWithSlide} from './player-movement.js';
 import {createThirdPersonView} from './third-person.js';
 import {createWeaponMotion} from './weapon-motion.js';
 import {ADS_POSES,keepAimClear} from './weapon-view.js';
-import {moveBladeBoss,tryBladeLeap} from './boss-navigation.js';
+import {moveBladeBoss,tryBladeLeap,moveDroneBoss} from './boss-navigation.js';
 import {createProgression,randomUpgradePair,applyUpgrade,buildSummary} from './progression.js';
 import {panelTexture,decorateArena} from './model-detail.js';
 import {createBoss,animateBoss,createScoutDrone,createAssassin} from './boss-models.js';
@@ -284,7 +284,7 @@ function fireEnemyRifle(e){const pos=e.robot.muzzle.getWorldPosition(new THREE.V
 function updateSpecialBoss(e,dt){
  const p=e.group.position,to=player.pos.clone().sub(p),flat=to.clone().setY(0),distance=flat.length();e.stateTime=(e.stateTime||0)+dt;if(e.type==='drone'||e.bladeSwing>0)e.group.rotation.y=Math.atan2(flat.x,flat.z);e.group.updateMatrixWorld(true);
  if(e.type==='drone'){
-  const angle=e.stateTime*.32,goal=player.pos.clone().add(new THREE.Vector3(Math.sin(angle)*15,0,Math.cos(angle)*15));p.x=THREE.MathUtils.damp(p.x,THREE.MathUtils.clamp(goal.x,-36,36),.7*progression.enemy.speed,dt);p.z=THREE.MathUtils.damp(p.z,THREE.MathUtils.clamp(goal.z,-36,36),.7*progression.enemy.speed,dt);p.y=THREE.MathUtils.damp(p.y,Math.max(8,player.pos.y+5)+Math.sin(e.stateTime*1.4)*.6,2,dt);e.group.updateMatrixWorld(true);
+  moveDroneBoss(p,player.pos,dt,progression.enemy.speed);p.y=THREE.MathUtils.damp(p.y,Math.max(8,player.pos.y+5)+Math.sin(e.stateTime*1.4)*.6,2,dt);e.group.updateMatrixWorld(true);
   const start=e.robot.muzzle.getWorldPosition(new THREE.Vector3()),sight=player.pos.clone().sub(start);ray.set(start,sight.clone().normalize());ray.far=sight.length();const seen=!ray.intersectObjects(worldObstacles,false).length;
   e.bombClock=(e.bombClock||0)+dt*progression.enemy.attackRate;if(e.bombClock>4.5&&seen){launchRain(e);e.bombClock=0;}
   if(!seen)e.burstShots=0;if(e.attack<=0&&seen){fireEnemyRifle(e);e.burstShots=(e.burstShots||0)+1;if(e.burstShots>=3){e.burstShots=0;e.attack=1.4;}else e.attack=.16;}

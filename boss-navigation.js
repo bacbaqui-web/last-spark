@@ -22,3 +22,18 @@ export function tryBladeLeap(e,target,platforms,dt){
  const start=e.group.position.clone();for(let i=1;i<=24;i++){const t=i/24,point=start.clone().lerp(end,t);point.y+=Math.sin(t*Math.PI)*4;if(!clearRoute(point,point,obstaclesAt(platforms,point.y),BLADE_RADIUS))return;}
  e.bladeLeap={start,end,t:0};e.navTimer=0;
 }
+
+// Orbit from the current bearing so pursuit cannot cut across the player's head.
+export function moveDroneBoss(position,player,dt,speedScale=1){
+ if(dt<=0)return;
+ const minimum=8,preferred=14,offset=position.clone().sub(player).setY(0);
+ let angle=offset.lengthSq()>.01?Math.atan2(offset.x,offset.z):Math.atan2(-player.x,-player.z);
+ function ringPoint(radius,bearing){return new THREE.Vector3(player.x+Math.sin(bearing)*radius,position.y,player.z+Math.cos(bearing)*radius);}
+ function valid(p){return Math.abs(p.x)<=36&&Math.abs(p.z)<=36;}
+ function boundedRing(radius,bearing){const wanted=ringPoint(radius,bearing);if(valid(wanted))return wanted;for(let i=1;i<=32;i++)for(const side of[1,-1]){const candidate=ringPoint(radius,bearing+side*i*Math.PI/32);if(valid(candidate))return candidate;}return wanted;}
+ const goal=boundedRing(preferred,angle+.35);
+ position.x=THREE.MathUtils.damp(position.x,goal.x,.9*speedScale,dt);position.z=THREE.MathUtils.damp(position.z,goal.z,.9*speedScale,dt);
+ const current=position.clone().sub(player).setY(0);
+ if(current.length()<minimum){if(current.lengthSq()>.0001)angle=Math.atan2(current.x,current.z);const safe=boundedRing(minimum,angle);position.x=safe.x;position.z=safe.z;}
+ position.x=THREE.MathUtils.clamp(position.x,-36,36);position.z=THREE.MathUtils.clamp(position.z,-36,36);
+}

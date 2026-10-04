@@ -1,9 +1,10 @@
 import {sampleKnifeSlash} from './knife-motion.js';
 import * as THREE from 'three';
 import data from './third-person-motion-data.json' with {type:'json'};
+import sideData from './side-locomotion-data.json' with {type:'json'};
 const upper=/^(spine|neck|Head|clavicle|upperarm|lowerarm|hand)/;
 const lower=/^(root|pelvis|thigh|calf|foot)/;
-const clips=Object.fromEntries(Object.entries(data).map(([name,clip])=>[name,{duration:clip.duration,tracks:clip.tracks.map(t=>({bone:t.name.split('.')[0],property:t.name.split('.')[1],sample:new (t.type==='quaternion'?THREE.QuaternionKeyframeTrack:THREE.VectorKeyframeTrack)(t.name,t.times,t.values).createInterpolant()}))}]));
+const clips=Object.fromEntries(Object.entries({...data,...sideData}).map(([name,clip])=>[name,{duration:clip.duration,tracks:clip.tracks.map(t=>({bone:t.name.split('.')[0],property:t.name.split('.')[1],sample:new (t.type==='quaternion'?THREE.QuaternionKeyframeTrack:THREE.VectorKeyframeTrack)(t.name,t.times,t.values).createInterpolant()}))}]));
 // Gameplay owns translation. These layers preserve source torso/shoulder/hip rotations,
 // while weapon grips and aim receive small final corrections in third-person.js.
 export function createThirdPersonMotion(avatar){

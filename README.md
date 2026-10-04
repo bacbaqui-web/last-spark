@@ -867,3 +867,9 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - These variants sample existing TPSStopRun and StrafeLeft segments, mirrored for the opposite side. Weapon upper-body poses remain layered separately; the existing Sprint_Loop is preserved.
 - Input direction and authored step transition are coordinated with movement inertia. First-person movement uses its own gait phase when no third-person pose is sampled.
 - Locomotion checks now validate state selection, bounded waits, cancellation, mirrored clip leg order and absence of runtime foot targets. Running, third-person, jetpack, collision, fire/knife and laser/bow checks pass.
+
+### Separated lateral foot lanes and drone boss stand-off
+- Six lateral/diagonal clips now use pre-baked foot separation. Runtime still only samples authored keyframes; forward Sprint_Loop and support-foot transition selection remain intact.
+- `scripts/bake-side-locomotion.mjs` regenerates the clip data. Locomotion checks cover foot ordering throughout lateral playback as well as stop/step variants.
+- Drone bosses pursue around the player's current bearing, target a 14m horizontal distance, and maintain an 8m minimum within arena bounds. Distance checks cover overhead recovery, moving players, corners and catch-up.
+- Build, locomotion, running, third-person, jetpack, movement and chainsaw checks pass; lateral pose preview inspected in the browser.
