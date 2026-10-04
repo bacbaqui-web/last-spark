@@ -6,7 +6,7 @@ export const panelGeometry=new RoundedBoxGeometry(1,1,1,1,.065);
 panelGeometry.userData.sharedModelGeometry=true;
 const pixels=new Uint8Array(128*128*4);for(let y=0;y<128;y++)for(let x=0;x<128;x++){const seam=x%64<2||y%64<2,scuff=(x*17+y*43)%137<3,noise=((x*73+y*97)%13)-6,v=seam?185:scuff?208:242+noise,i=(y*128+x)*4;pixels[i]=pixels[i+1]=pixels[i+2]=v;pixels[i+3]=255;}
 export const panelTexture=new THREE.DataTexture(pixels,128,128);panelTexture.wrapS=panelTexture.wrapT=THREE.RepeatWrapping;panelTexture.magFilter=THREE.LinearFilter;panelTexture.needsUpdate=true;panelTexture.colorSpace=THREE.SRGBColorSpace;
-const steel=new THREE.MeshStandardMaterial({color:0xa59d88,metalness:.8,roughness:.35,map:panelTexture}),black=new THREE.MeshStandardMaterial({color:0x15191d,metalness:.6,roughness:.55}),indicator=new THREE.MeshBasicMaterial({color:0x82dbea});
+const steel=new THREE.MeshStandardMaterial({color:0xa59d88,metalness:.8,roughness:.35,map:panelTexture}),black=new THREE.MeshStandardMaterial({color:0x343b40,metalness:.6,roughness:.55}),indicator=new THREE.MeshBasicMaterial({color:0x82dbea});
 for(const m of [steel,black,indicator])m.userData.sharedWeaponMaterial=true;
 // Bake small decorative parts per bone/material into one draw, without changing hit volumes.
 export function detailBatch(parent,parts){const groups=new Map();for(const [size,pos,material=steel]of parts){const geometry=panelGeometry.clone();geometry.scale(...size);geometry.translate(...pos);if(!groups.has(material))groups.set(material,[]);groups.get(material).push(geometry);}for(const [material,geometries]of groups){const geometry=mergeGeometries(geometries);for(const g of geometries)g.dispose();const mesh=new THREE.Mesh(geometry,material);mesh.userData.cosmetic=true;parent.add(mesh);}}
@@ -33,7 +33,7 @@ export function decorateRobot(r,boss=false,type='trooper'){
  r.head.geometry=new THREE.SphereGeometry(.5,28,20);const hp=r.head.geometry.attributes.position;for(let i=0;i<hp.count;i++){const y=hp.getY(i),t=THREE.MathUtils.smoothstep(y,-.5,.12),width=.74+.26*t;hp.setX(i,hp.getX(i)*width);hp.setZ(i,hp.getZ(i)*(.84+.16*t));}r.head.geometry.computeVertexNormals();r.head.userData.cosmetic=true;
  const helmet=new THREE.Group();helmet.name='tapered-helmet';helmet.position.copy(r.head.position);helmet.quaternion.copy(r.head.quaternion);r.head.parent.add(helmet);
  // A smooth head and torso keep only the eyes and clavicle bridge.
- for(const side of[-1,1]){const collar=sculpt(r.body,.15,.045,.022,[side*.085,.17,.06],shell,.9);collar.rotation.z=side*-.12;}
+ const collar=new THREE.Mesh(new THREE.CylinderGeometry(.102,.135,.095,28,1,true,Math.PI*.28,Math.PI*1.44),shell);collar.name='neck-guard';collar.position.set(0,.20,0);collar.rotation.y=Math.PI;collar.material=shell.clone();collar.material.side=THREE.DoubleSide;collar.castShadow=true;collar.userData.cosmetic=true;r.body.add(collar);
  detailBatch(r.body,[[[.23,.035,.025],[0,.14,-.13],identity]]);
  const backpack=new THREE.Group();backpack.name='original-backpack';r.body.add(backpack);detailBatch(backpack,[[[.3,.32,.15],[0,.015,-.22],black]]);r.backpack=backpack;
  for(const [index,arm]of r.arms.entries()){

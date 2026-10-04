@@ -6,7 +6,7 @@ const cubeGeometry=panelGeometry;
 const frameGeometry=new THREE.CapsuleGeometry(.5,1,8,20);
 const armor=new THREE.MeshStandardMaterial({color:0x928775,metalness:.3,roughness:.65});
 const bossArmor=new THREE.MeshStandardMaterial({color:0xad7852,metalness:.35,roughness:.65});
-const joints=new THREE.MeshStandardMaterial({color:0x15191d,metalness:.5,roughness:.7});
+const joints=new THREE.MeshStandardMaterial({color:0x343b40,metalness:.5,roughness:.7});
 const trim=new THREE.MeshStandardMaterial({color:0xb9b4a5,metalness:.4,roughness:.5});
 const glow=new THREE.MeshBasicMaterial({color:0xff7851});
 armor.map=bossArmor.map=trim.map=panelTexture;
@@ -25,7 +25,7 @@ export function createRobot(boss=false,type='trooper',headScale=1){
  const pelvisShell=bind('pelvis',[.25,.16,.18],[0,0,0],joints);pelvisShell.geometry=new THREE.SphereGeometry(.5,20,16);pelvisShell.userData.cosmetic=true;bind('spine_01',[.19,.18,.16],[0,.04,0],joints);bind('spine_03',[.32,.30,.20],[0,.015,0],joints);
  const neckShell=bind('Head',[.105,.09,.105],[0,-.035,0],joints);neckShell.geometry=frameGeometry;
  const head=bind('Head',[.28,.36,.255],[0,.16,0],joints);const visor=bind('Head',[.18,.035,.025],[0,.18,.133],glow);head.userData.weakPoint=visor.userData.weakPoint=true;
- for(const side of ['l','r']){if(!boss){segment('upperarm_'+side,'lowerarm_'+side,.175,.175);segment('lowerarm_'+side,'hand_'+side,.17,.17);bind('hand_'+side,[.13,.16,.13],[0,0,0],joints);}segment('thigh_'+side,'calf_'+side,.20,.20);segment('calf_'+side,'foot_'+side,.19,.19);const foot=bind('foot_'+side,[.18,.105,.235],[0,-.005,.04],mat);foot.geometry=new RoundedBoxGeometry(1,1,1,5,.28);foot.userData.cosmetic=true;}
+ for(const side of ['l','r']){if(!boss){segment('upperarm_'+side,'lowerarm_'+side,.175,.175);segment('lowerarm_'+side,'hand_'+side,.17,.17);bind('hand_'+side,[.13,.16,.13],[0,0,0],joints);}segment('thigh_'+side,'calf_'+side,.20,.20);segment('calf_'+side,'foot_'+side,.19,.19);const foot=bind('foot_'+side,[.18,.105,.235],[0,-.005,.04],joints);foot.geometry=new RoundedBoxGeometry(1,1,1,5,.28);foot.userData.cosmetic=true;}
  // Gun is mounted in the right-hand rest frame; animated aim points it forward.
  const weapon=new THREE.Group();byName.hand_r.add(weapon);weapon.position.set(0,.08,.025);block(weapon,joints,[.14,.16,.39],[0,.04,.09]);block(weapon,mat,[.16,.065,.28],[0,.14,.08]);const muzzle=new THREE.Group();muzzle.position.set(0,.045,.3);weapon.add(muzzle);
  const muzzleFlash=new THREE.Mesh(new THREE.ConeGeometry(.085,.22,5),new THREE.MeshBasicMaterial({color:0xffd497}));muzzleFlash.rotation.x=Math.PI/2;muzzleFlash.position.z=.08;muzzleFlash.visible=false;muzzle.add(muzzleFlash);

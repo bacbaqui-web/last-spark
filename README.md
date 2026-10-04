@@ -943,3 +943,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Smooth black base body and earned armor
 - Removed default protruding forearm, thigh, knee and shin plates; rounded the pelvis shell. Limbs, shoulder joints and neck use near-black material.
 - Existing wave reward armor upgrades now add visible chest, forearm and knee shells in three stages. New games reset the player to the unarmored base body.
+
+### Charcoal chassis and neck protection
+- Replaced the clavicle-like strips with a low curved neck guard. Limb, neck, joint and foot materials share charcoal coloring instead of near-black.
+- Forward gaze and weapon carry/boost/second-jump checks pass.
