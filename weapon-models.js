@@ -203,12 +203,12 @@ export function createWeaponModel(type){const root=new THREE.Group();root.name='
   box([.025,.105,.145],[-.427,-.04,-.11],black);
   const glass=new THREE.MeshStandardMaterial({color:0x456a66,metalness:.8,roughness:.18});box([.027,.076,.10],[-.442,-.04,-.11],glass);
   box([.11,.24,.11],[-.30,-.29,.10],black);box([.10,.20,.09],[-.49,-.23,.10],black);box([.20,.045,.09],[-.40,-.14,.10],olive);
-  const sightAssembly=new THREE.Group();sightAssembly.name='launcher-command-unit';for(const part of root.children.slice(sightStart))sightAssembly.add(part);root.add(sightAssembly);root.userData.sightAssembly=sightAssembly;
-  const parts=[[[.14,.10,.31],[0,-.17,.13],rubber],[[.08,.025,.18],[0,.28,-.18],black],[[.035,.035,.09],[-.29,-.19,.12],yellow]];
+  const sightAssembly=new THREE.Group();sightAssembly.name='launcher-command-unit';sightAssembly.position.z=-.35;for(const part of root.children.slice(sightStart))sightAssembly.add(part);root.add(sightAssembly);root.userData.sightAssembly=sightAssembly;root.userData.triggerGrip=[-.30,-.29,-.25];root.userData.supportGrip=[-.49,-.23,-.25];root.userData.shoulderMount=[0,-.08,.20];
+  const parts=[[[.14,.10,.31],[0,-.17,.13],rubber],[[.08,.025,.18],[0,.28,-.18],black],[[.035,.035,.09],[-.29,-.19,-.23],yellow]];
   for(const x of[-.20,.20])for(const z of[-.62,.13])parts.push([[.025,.10,.07],[x,.06,z],black]);
-  for(let i=0;i<5;i++)parts.push([[.018,.018,.19],[-.425,-.13+i*.04,-.035],black]);
+  for(let i=0;i<5;i++)parts.push([[.018,.018,.19],[-.425,-.13+i*.04,-.385],black]);
   for(const z of[-1.04,-.96])parts.push([[.065,.045,.015],[.22,.10,z],yellow]);
-  for(const x of[-.34,-.20])parts.push([[.025,.025,.025],[x,.09,.12],metal]);
+  for(const x of[-.34,-.20])parts.push([[.025,.025,.025],[x,.09,-.23],metal]);
   detailBatch(root,parts);root.scale.setScalar(.75);root.userData.muzzle=[0,.06,-1.18];
  }
  if(type==='flame'){
