@@ -836,3 +836,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Foot planting now follows explicit alternating stance windows in the source stride. Both anchors release during flight; swing feet are never captured solely because they are low.
 - Stance preserves the touchdown world position, with smooth push-off and reach-limited correction. Source ankle rotation is retained; forced flat ankles and constant pelvis lowering are removed.
 - Flight adds a small pelvis rise. `node scripts/verify-running.mjs` checks held world contacts, both-foot release, directional continuity and jump release.
+
+### Running support and torso revision
+- Full support uses weight 1 at a fixed world-space touchdown point on the ground. Reach correction moves the pelvis instead of weakening the planted foot; push-off blends leg rotations smoothly back to the source stride.
+- Pelvis bounce follows two sine cycles per stride (compression at support, rise in flight), with alternating upper-body counter-rotation. Head and arms inherit torso motion.
+- Running checks now compare actual consecutive planted-foot positions (2 mm tolerance), plus pelvis bounce and both directions of torso rotation.
