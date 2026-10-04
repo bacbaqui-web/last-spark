@@ -1006,3 +1006,8 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 ### Smaller firearm proportions
 - Reduced all eight firearm models by 20 percent in first/third-person and editor views; updated the first-person minigun scale override to match. Knife, bow, saw and enlarged fuel module retain their sizes.
 - Grip, muzzle and hose transforms use scaled model coordinates. Carry/jetpack and third-person gameplay checks plus production build pass.
+
+### Unified bow carry and shot mount
+- Third-person idle/run hold the bow horizontally at waist height with the right hand at the string ready position.
+- Drawing raises the same mount toward the right arm; draw/hold/release share the same grip location and smoothly return to carry. Right-hand IK follows the nock through charging.
+- Front-view carry/draw review, draw/release grip coordinate comparison, bow combat and gun carry checks plus production build pass.
