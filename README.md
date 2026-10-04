@@ -893,3 +893,7 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - The player's original decorative backpack is hidden; enemy backpacks remain unchanged. The default jetpack is reduced to 65% and sits close to the torso.
 - Minigun ammunition and flamethrower fuel modules now mount directly inside the jetpack assembly, replacing its center shell rather than adding a separate backpack. Supply belt/hose connections follow the integrated module; thrusters remain shared.
 - Jetpack checks cover scale, old bag removal, module parent/visibility, weapon switching and exhaust. Third-person, weapon carry and build checks pass; fuel variant inspected in browser.
+
+### Shared heavy-weapon aim close-up
+- Flamethrower right-click now shares the minigun's close third-person camera offset and left-edge blur, retaining the lower heavy-weapon grip.
+- Camera equality/close-up checks, third-person and flame combat checks, and production build pass.
