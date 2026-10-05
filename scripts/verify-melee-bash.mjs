@@ -16,7 +16,10 @@ for(const weapon of ['pistol','shotgun','sniper','rapid','flame']){
   weaponHand.push(avatar.arms[1].hand.getWorldPosition(new THREE.Vector3()));
  }
  assert(poses[0].distanceTo(poses[1])>.5,'free left hand reaches gameplay contact');
- assert(weaponHand[0].distanceTo(weaponHand[1])<.3,'right weapon hand does not punch');
+ assert(weaponHand[1].z>weaponHand[0].z-.1,'right weapon hand retracts instead of punching forward');
+ view.pose({...state,meleePhase:1/6});
+ const socket=avatar.arms[1].shoulder.getWorldPosition(new THREE.Vector3());
+ assert(avatar.arms[1].hand.getWorldPosition(new THREE.Vector3()).distanceTo(socket.add(new THREE.Vector3(.035,-.42,.14)))<.02,'trigger hand tucks beside right flank');
  assert(poses[0].distanceTo(poses[3])<.001,'source returns to guard');
  assert(poses[1].distanceTo(poses[2])>.1,'follow-through continues after contact');
 }

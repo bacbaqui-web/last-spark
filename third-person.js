@@ -92,7 +92,15 @@ export function createThirdPersonView(avatar,types){
     if(['pistol','shotgun','sniper'].includes(weapon)){const stock=v(0,weapon==='sniper'?-.08:-.05,weapon==='sniper'?.81:.79),shoulder=avatar.arms[1].shoulder.getWorldPosition(new THREE.Vector3()).add(v(0,.035,0).applyQuaternion(heading)),mounted=shoulder.add(trigger.clone().sub(stock).multiplyScalar(model.getWorldScale(new THREE.Vector3()).x).applyQuaternion(weaponHeading));anchor.lerp(mounted,aim);}
     if(firing&&flash&&!['laser','chainsaw','flame'].includes(weapon))anchor.add(v(0,0,.025).applyQuaternion(heading));
     if(heavyCarry){const arm=avatar.arms[1],shoulder=arm.shoulder.getWorldPosition(new THREE.Vector3()),elbow=arm.elbow.getWorldPosition(new THREE.Vector3()),length=shoulder.distanceTo(elbow)+elbow.distanceTo(arm.hand.getWorldPosition(new THREE.Vector3())),hang=shoulder.add(v(.045,-1,.08).normalize().multiplyScalar(length*.999999).applyQuaternion(heading));anchor.lerp(hang,1-aim);}
-    const pole=avatar.root.localToWorld(v(-.45,1.1,.05));armIK(avatar.arms[1],anchor,pole,heavyCarry?THREE.MathUtils.lerp(.999999,.995,aim):.995);
+    const pole=avatar.root.localToWorld(v(-.45,1.1,.05));
+    if(state.meleePhase>=0){
+     const phase=THREE.MathUtils.clamp(state.meleePhase,0,1),tuck=THREE.MathUtils.smoothstep(phase,0,1/6)*(1-THREE.MathUtils.smoothstep(phase,.75,1)),shoulder=avatar.arms[1].shoulder.getWorldPosition(new THREE.Vector3());
+     // Keep the trigger hand below the right socket; elbow folds back along the flank.
+     anchor.lerp(shoulder.clone().add(v(.035,-.42,.14).applyQuaternion(heading)),tuck);
+     pole.lerp(shoulder.clone().add(v(.055,-.24,.30).applyQuaternion(heading)),tuck);
+     weaponHeading.slerp(heading.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-.15,0,0))),tuck);
+    }
+    armIK(avatar.arms[1],anchor,pole,heavyCarry?THREE.MathUtils.lerp(.999999,.995,aim):.995);
     hand.quaternion.copy(hand.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(weaponHeading));hand.updateWorldMatrix(false,true);
     // Model origin is the receiver; the trigger hand holds the actual grip below it.
     model.quaternion.copy(hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(weaponHeading));model.position.copy(trigger.multiplyScalar(-model.scale.x).applyQuaternion(model.quaternion));model.userData.gripRotation=model.quaternion.clone();model.userData.gripPosition=model.position.clone();model.updateWorldMatrix(true,true);
