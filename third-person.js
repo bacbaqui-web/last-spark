@@ -74,7 +74,7 @@ export function createThirdPersonView(avatar,types){
    const pull=bowDrawing?model.worldToLocal(avatar.arms[1].hand.getWorldPosition(new THREE.Vector3())):v(0,0,.14),pos=model.userData.string.geometry.attributes.position;pos.setXYZ(1,pull.x,pull.y,pull.z);pos.needsUpdate=true;model.userData.string.geometry.computeBoundingSphere();model.userData.nockedArrow.visible=bowDrawing;model.userData.nockedArrow.position.copy(pull).sub(v(0,0,.14));model.userData.nockedArrow.quaternion.identity();for(const limb of model.userData.limbs)limb.rotation.x=limb.userData.side*Math.min(1,bowCharge/2.2)*.08;
   }else{
    const hand=avatar.arms[1].hand;
-   if((!result.attack||state.boostPhase>=0||state.jetJump>0||rollPhase>=0)&&throwPhase<0){
+   if((!result.attack||state.meleePhase>=0||state.boostPhase>=0||state.jetJump>0||rollPhase>=0)&&throwPhase<0){
     // Grip correction is layered over the source chest/shoulder pose. Lowered heavy
     // weapons and raised shoulder weapons use different anchors.
     const heavy=['rapid','flame','chainsaw','rail'].includes(weapon),heavyCarry=['rapid','flame'].includes(weapon),reach=weapon==='chainsaw'?chainsawBlend*.15:0;
@@ -97,7 +97,7 @@ export function createThirdPersonView(avatar,types){
     // Model origin is the receiver; the trigger hand holds the actual grip below it.
     model.quaternion.copy(hand.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(weaponHeading));model.position.copy(trigger.multiplyScalar(-model.scale.x).applyQuaternion(model.quaternion));model.userData.gripRotation=model.quaternion.clone();model.userData.gripPosition=model.position.clone();model.updateWorldMatrix(true,true);
     const support=weapon==='rocket'?v(...model.userData.supportGrip):weapon==='chainsaw'?v(-.16,.22,.05):weapon==='rapid'?v(...model.userData.supportGrip):weapon==='flame'?v(...model.userData.carrySupportGrip).lerp(v(-.06,-.19,-.24),aim):weapon==='laser'?v(-.06,-.17,-.53):v(-.045,-.08,-.43);
-    const target=model.localToWorld(support),leftPole=avatar.root.localToWorld(v(.45,1.1,.05));armIK(avatar.arms[0],target,leftPole);
+    const target=model.localToWorld(support),leftPole=avatar.root.localToWorld(v(.45,1.1,.05));if(!(state.meleePhase>=0))armIK(avatar.arms[0],target,leftPole);
    }else{model.quaternion.copy(model.userData.gripRotation||new THREE.Quaternion());model.position.copy(model.userData.gripPosition||v(0,0,0));}
   }
   if(weapon==='sniper'&&firePose>.001&&!(state.meleePhase>=0)){

@@ -13,6 +13,16 @@ export function createThirdPersonMotion(avatar){
  const motionClips={...clips,Sprint_Loop:{duration:sprintClip.duration,tracks:sprintClip.tracks.map(t=>({bone:t.name.split('.')[0],property:t.name.split('.')[1],sample:t.createInterpolant()}))}};
  const bones=Object.fromEntries(avatar.bones.map(b=>[b.name,b])),previous=new Map();let clock=0,strideClock=0,strideRate=.35,wasGrounded=true,airAge=0,landAge=1,lastWeapon='',shotKick=0,lastFlash=false,wasMoving=false,transitionKind='',transitionAge=1,walkBlend=0;const momentum=new THREE.Vector3();let runLift=0,runTwist=0,runPoseBlend=0;
  function apply(name,phase,mask=()=>true,weight=1){const clip=motionClips[name];if(!clip)return;for(const t of clip.tracks){const b=bones[t.bone];if(!b||!mask(t.bone))continue;const a=t.sample.evaluate(THREE.MathUtils.clamp(phase,0,1)*clip.duration);if(t.property==='quaternion')b.quaternion.slerp(new THREE.Quaternion().fromArray(a),weight);else b.position.lerp(new THREE.Vector3().fromArray(a),weight);}}
+ function applyLeftCross(phase){
+  const clip=motionClips.Punch_Cross;
+  for(const t of clip.tracks){
+   const target=t.bone.replace(/_([lr])$/,(_,side)=>side==='l'?'_r':'_l'),bone=bones[target];if(!bone)continue;
+   const values=t.sample.evaluate(THREE.MathUtils.clamp(phase,0,1)*clip.duration);
+   // Reflect the entire source pose across the character's sagittal plane.
+   if(t.property==='quaternion'){const q=new THREE.Quaternion().fromArray(values);q.y=-q.y;q.z=-q.z;bone.quaternion.copy(q);}
+   else{const p=new THREE.Vector3().fromArray(values);p.x=-p.x;bone.position.copy(p);}
+  }
+ }
  function applyStep(name,phase){
   const stop=name.startsWith('Stop'),mirror=name.endsWith('Right');
   const clip=clips[stop?'TPSStopRun':'StrafeLeft'];
@@ -59,7 +69,7 @@ export function createThirdPersonMotion(avatar){
   else if(meleePhase>=0){
    // CC0 cross: quick wind-up to contact, then retain the source follow-through.
    const contact=1/6,phase=meleePhase<contact?meleePhase/contact*.4:.4+(meleePhase-contact)/(1-contact)*.6;
-   apply('Punch_Cross',phase);bodyClip='Punch_Cross';
+   applyLeftCross(phase);bodyClip='Punch_Cross_Left';
   }
   else if(throwPhase>=0){apply('OverhandThrow',throwPhase,n=>upper.test(n));bodyClip='OverhandThrow';}
   const boosting=state.boostPhase>=0||rollPhase>=0,jetJump=state.jetJump>0;
