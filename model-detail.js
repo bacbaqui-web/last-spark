@@ -50,4 +50,4 @@ export function decorateRobot(r,boss=false,type='trooper'){
  r.setArmorLevel=(level=0)=>{r.root.userData.armorLevel=Math.max(0,level);armorPieces.forEach((part,i)=>part.visible=level>=(i===4?1:i<2?2:3));};r.setArmorLevel(0);
  if(type==='sniper')detailBatch(helmet,[[[.06,.07,.07],[.14,.025,.16],indicator]]);
 }
-export function decorateArena(scene,platforms,mats){const ground=createUrbanGround(scene,platforms),city=createOvergrownCity(scene,platforms);city.userData.urbanGround=ground;return city;}
+export function decorateArena(scene,platforms,mats,options={}){const ground=createUrbanGround(scene,platforms,options),city=createOvergrownCity(scene,platforms,options);city.userData.urbanGround=ground;return city;}

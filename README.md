@@ -1051,3 +1051,15 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - Existing cover has ruined-house walls, window openings, exposed columns and rooftop debris. Cover collision volumes remain intact; the openings are visual rather than enterable interiors.
 - Distant scenery has 82 ruined buildings with side windows and exposed upper floors, 130 trees, distant green hills and about 23,000 grass tufts. Blue sky, brighter sunlight and longer fog distance make the skyline visible.
 - Validation: terrain ascent/descent at 30–144 FPS, existing player collision and combat regressions, browser rendering and production build.
+
+### Remote salvage campaign / 원격 회수 작전
+
+The default game now starts in the human operator's base, with a hangar, recovered-parts inventory and an Old City 07 mission briefing. This first playable campaign uses one avenue and one guardian encounter; the base is a management screen rather than a walkable human-character scene.
+
+- Choose one of multiple independently stored robots and two owned weapons. Weapons and available ammunition leave the stash on deployment. 1/2 selects the carried weapons; the infinite base gun is excluded from this mode.
+- Enter at the avenue's south end, encounter three groups of feral robots and defeat the guardian at the north end. F recovers the unlocked high-density core. Two interception groups appear on the return route. F at the entrance extracts early or after core recovery.
+- Battery drains while powered and more strongly while moving. Enemy batteries replenish 12 units. Installed jet modules enable a 6-unit dash and a 4-unit second jump. HUD shows battery, cargo and the movement-only return estimate (excluding combat, jumps and boosts).
+- Structure health starts at 100 and cannot heal in the field. Returned health persists. All enemy parts remain unidentified cargo until extraction; identification, repair, installation and removal happen at the base. Parts affect armor, speed/efficiency, damage, battery capacity and jet access. Carried scrap appears on the robot's back.
+- Equipped parts, weapons, ammunition and sortie cargo are lost with a destroyed robot. Secured stash and other robots survive. An identified spare part can assemble another basic frame; if all frames or usable starter weapon choices are lost, basic replacements prevent a dead end.
+- Campaign data is stored in this browser under `last-spark-salvage-v1`. A deployment marker forfeits the deployed robot on reload/reopen, preventing a refresh from avoiding loss. The base states this rule explicitly. Existing survival records remain separate. `?arena` retains the earlier survival mode for combat regression checks.
+- Validation: `npm run test:salvage` verifies inventory transfer, no field healing, road-sector/guardian/core/return interception integration, extraction, retained damage, frame/gear loss, reserve preservation, assembly, reload forfeiture and storage failures. Existing weapon and TPS regression scripts remain available.

@@ -1,7 +1,7 @@
 import {terraceHeight} from './urban-ground.js';
 import * as THREE from 'three';
 // Seeded cosmetic scenery: arena movement/cover volumes remain gameplay-owned.
-export function createOvergrownCity(scene,platforms){
+export function createOvergrownCity(scene,platforms,{avenue=false}={}){
  const root=new THREE.Group();root.name='sunlit-overgrown-city';scene.add(root);
  let seed=7319;const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
  const concrete=new THREE.MeshStandardMaterial({color:0x8b8775,roughness:.95}),broken=new THREE.MeshStandardMaterial({color:0x555e52,roughness:1}),glass=new THREE.MeshStandardMaterial({color:0x303f3c,roughness:.65,metalness:.25}),moss=new THREE.MeshStandardMaterial({color:0x61743d,roughness:1}),leaf=new THREE.MeshStandardMaterial({color:0x467044,roughness:1}),grass=new THREE.MeshStandardMaterial({color:0x7a914b,roughness:1,side:THREE.DoubleSide});
@@ -56,7 +56,7 @@ export function createOvergrownCity(scene,platforms){
  const tufts=[];for(let i=0;i<35000;i++){
   const x=random()*84-42,z=random()*84-42;
   if(platforms.some(p=>!p.walkable&&Math.abs(x-p.x)<p.w/2+.1&&Math.abs(z-p.z)<p.d/2+.1))continue;
-  if((Math.abs(x)<4.5||Math.abs(z)<4.5)&&random()<.97)continue;
+  if((avenue?Math.abs(x)<9:(Math.abs(x)<4.5||Math.abs(z)<4.5))&&random()<.97)continue;
   const clump=(Math.sin(x*.32)*Math.cos(z*.26)+1)/2;if(clump<.32&&random()<.8)continue;
   const size=.5+random()*.9;tufts.push({p:[x,terraceHeight(platforms,x,z)+.025,z],s:[size,size,size],r:random()*6.28});
  }

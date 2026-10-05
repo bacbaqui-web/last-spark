@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
-    "test:weapons": "node scripts/verify-fire-knife.mjs && node scripts/verify-laser-bow.mjs && node scripts/verify-chainsaw.mjs && node scripts/verify-third-person.mjs && node scripts/verify-player-movement.mjs && node scripts/verify-third-person-motion.mjs && node scripts/verify-motion-settings.mjs && node scripts/verify-pose-tools.mjs && node scripts/verify-frame-timeline.mjs"
+    "test:weapons": "node scripts/verify-fire-knife.mjs && node scripts/verify-laser-bow.mjs && node scripts/verify-chainsaw.mjs && node scripts/verify-third-person.mjs && node scripts/verify-player-movement.mjs && node scripts/verify-third-person-motion.mjs && node scripts/verify-motion-settings.mjs && node scripts/verify-pose-tools.mjs && node scripts/verify-frame-timeline.mjs",
+    "test:salvage": "node scripts/verify-salvage-campaign.mjs && node scripts/verify-salvage-runtime.mjs && node scripts/verify-player-movement.mjs && node scripts/verify-urban-ground.mjs"
   },
   "dependencies": {
     "three": "^0.180.0",

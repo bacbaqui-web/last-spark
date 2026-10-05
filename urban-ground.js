@@ -1,17 +1,17 @@
 import * as THREE from 'three';
-export function createUrbanGround(scene,platforms){
+export function createUrbanGround(scene,platforms,{avenue=false}={}){
  const root=new THREE.Group();root.name='broken-streets-and-terraces';scene.add(root);
  const asphalt=new THREE.MeshStandardMaterial({color:0x555b5c,roughness:1}),concrete=new THREE.MeshStandardMaterial({color:0xaaa695,roughness:1}),earth=new THREE.MeshStandardMaterial({color:0x788259,roughness:1}),paint=new THREE.MeshStandardMaterial({color:0xe4d5a1,roughness:1}),metal=new THREE.MeshStandardMaterial({color:0x535e64,roughness:.85});
  const geometry=new THREE.BoxGeometry(1,1,1);
  function part(mat,p,s,rotation=0){const m=new THREE.Mesh(geometry,mat);m.position.set(...p);m.scale.set(...s);m.rotation.y=rotation;m.receiveShadow=true;root.add(m);return m;}
- for(const axis of ['x','z']){
-  part(asphalt,[0,.026,0],axis==='x'?[260,.045,8.6]:[8.6,.045,260]);
+ for(const axis of (avenue?['z']:['x','z'])){
+  part(asphalt,[0,.026,0],axis==='x'?[260,.045,8.6]:[avenue?18:8.6,.045,260]);
   for(let n=-39;n<=39;n+=5){if(Math.abs(n)<7)continue;part(paint,axis==='x'?[n,.057,0]:[0,.057,n],axis==='x'?[2,.01,.12]:[.12,.01,2]);}
-  for(const side of[-1,1])for(let n=-40;n<41;n+=2){if(Math.abs(n)<5)continue;part(concrete,axis==='x'?[n,.11,side*4.7]:[side*4.7,.11,n],axis==='x'?[1.92,.22,.35]:[.35,.22,1.92]);}
+  for(const side of[-1,1])for(let n=-40;n<41;n+=2){if(Math.abs(n)<5)continue;part(concrete,axis==='x'?[n,.11,side*(avenue?9.5:4.7)]:[side*(avenue?9.5:4.7),.11,n],axis==='x'?[1.92,.22,.35]:[.35,.22,1.92]);}
  }
  for(const x of[-6,6])for(let i=0;i<7;i++)part(paint,[x,.061,-3+i], [.65,.01,.45]);
  // Shallow concentric steps form raised, traversable reclaimed plazas.
- for(const [x,z,w,d,levels]of[[-31,1,17,21,6],[28,-19,20,18,5],[24,28,17,13,4]])for(let i=0;i<levels;i++){
+ for(const [x,z,w,d,levels]of(avenue?[[16,7,8,13,3],[-16,-18,8,13,3]]:[[-31,1,17,21,6],[28,-19,20,18,5],[24,28,17,13,4]]))for(let i=0;i<levels;i++){
   const h=(i+1)*.18,tw=w-i*1.25,td=d-i*1.25,m=part(i===levels-1?earth:concrete,[x,h/2,z],[tw,h,td]);m.userData.worldObstacle=true;
   platforms.push({x,z,w:tw,d:td,h,walkable:true});
  }
