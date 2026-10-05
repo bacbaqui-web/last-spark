@@ -1044,3 +1044,10 @@ PointerEvent의 pointerdown/up은 마우스 버튼 조합 변경마다 발생하
 - TPS 근접 공격: Quaternius CC0 `Punch_Cross`의 몸통·어깨·팔 동작을 좌우 반전해 총을 든 오른손은 유지하고 오른팔과 총을 오른쪽 옆구리로 접어 둔 채 왼손으로 타격하며, 빠른 접촉 뒤 복귀 동작을 유지합니다.
 
 - 동작 세팅: 스페이스로 재생/정지하고, 파트를 선택하면 기본 모션을 유지한 채 현재 프레임을 바로 편집할 수 있습니다. 미니건 휴대 방향은 정면으로 맞췄습니다.
+
+### Detailed sunlit city arena
+
+- Crossroads now include lane markings, crosswalks, cracked asphalt, curbs, drains, street lamps and abandoned cars. Three raised plazas add 0.18m steps, with grounded stepping support and car cover collisions.
+- Existing cover has ruined-house walls, window openings, exposed columns and rooftop debris. Cover collision volumes remain intact; the openings are visual rather than enterable interiors.
+- Distant scenery has 82 ruined buildings with side windows and exposed upper floors, 130 trees, distant green hills and about 23,000 grass tufts. Blue sky, brighter sunlight and longer fog distance make the skyline visible.
+- Validation: terrain ascent/descent at 30–144 FPS, existing player collision and combat regressions, browser rendering and production build.

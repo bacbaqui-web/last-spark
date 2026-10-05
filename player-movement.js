@@ -10,10 +10,14 @@ function sweep(start,delta,b){let enter=-Infinity,exit=Infinity,normal=new THREE
 export function movePlayerWithSlide(start,desired,velocity,platforms,{dash=false,bounds=41.5}={}){
  const boxes=platforms.map(expanded);boxes.push({min:{x:-1000,y:-1000,z:-1000},max:{x:1000,y:HEIGHT,z:1000}});
  for(const a of['x','z'])for(const sign of[-1,1]){const b={min:{x:-1000,y:-1000,z:-1000},max:{x:1000,y:1000,z:1000}};if(sign<0)b.max[a]=-bounds;else b.min[a]=bounds;boxes.push(b);}
- const position=start.clone(),speed=velocity.clone(),contacts=[],path=[];let grounded=false;
+ const position=start.clone(),speed=velocity.clone(),contacts=[],path=[];let grounded=false,stepped=false;
+ // Only marked terrain terraces allow a small grounded step; cover remains solid.
+ const supported=start.y<=HEIGHT+SKIN+.002||platforms.some(p=>Math.abs(start.y-(p.h+HEIGHT+SKIN))<.01&&Math.abs(start.x-p.x)<p.w/2+RADIUS&&Math.abs(start.z-p.z)<p.d/2+RADIUS);
+ if(supported&&speed.y<=0&&speed.y>=-2){let floor=start.y-HEIGHT;for(const p of platforms)if(p.walkable&&p.h>floor&&p.h-(start.y-HEIGHT)<=.25&&Math.abs(desired.x-p.x)<p.w/2+RADIUS&&Math.abs(desired.z-p.z)<p.d/2+RADIUS)floor=Math.max(floor,p.h);if(floor>start.y-HEIGHT){position.y=floor+HEIGHT+SKIN;stepped=true;speed.y=0;}}
+
  // Repair an existing overlap rather than skipping its collider forever.
  for(let pass=0;pass<12;pass++){let best=null;for(const b of boxes){if(!inside(position,b))continue;for(const a of axes)for(const sign of[-1,1]){const distance=sign<0?position[a]-b.min[a]:b.max[a]-position[a];if(!best||distance<best.distance){const normal=new THREE.Vector3();normal[a]=sign;best={distance,normal};}}}if(!best)break;position.addScaledVector(best.normal,best.distance+SKIN);clip(speed,best.normal);contacts.push(best.normal);grounded||=best.normal.y>0;}
- let remaining=desired.clone().sub(start);path.push(position.clone());
+ let remaining=desired.clone().sub(start);if(stepped)remaining.y=0;path.push(position.clone());
  for(let pass=0;pass<6&&remaining.lengthSq()>EPS*EPS;pass++){
   let hit=null;for(const b of boxes){const candidate=sweep(position,remaining,b);if(candidate&&(!hit||candidate.time<hit.time))hit=candidate;}
   if(!hit){position.add(remaining);path.push(position.clone());remaining.set(0,0,0);break;}
