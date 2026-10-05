@@ -11,7 +11,7 @@ for(const weapon of ['pistol','shotgun','sniper','rapid','flame']){
   view.pose({...state,meleePhase:phase});
   assert.equal(avatar.root.userData.motion,'Punch_Cross_Left');
   assert(view.models[weapon].position.distanceTo(grip)<1e-6,'weapon stays in trigger hand');
-  
+
   poses.push(avatar.arms[0].hand.getWorldPosition(new THREE.Vector3()));
   weaponHand.push(avatar.arms[1].hand.getWorldPosition(new THREE.Vector3()));
  }
