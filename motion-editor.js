@@ -28,6 +28,21 @@ function status(message){$('status').textContent=message;}
 function mark(){dirty=true;$('save').textContent='저장 · 게임 적용'+' *';}
 function checkpoint(){undo.push(JSON.stringify(project));if(undo.length>50)undo.shift();redo=[];}
 function baseline(t){const s=actionState(weapon,action,t/actions[action].duration);for(let i=0;i<2;i++)view.pose(s);return capturePose(avatar,view.models[weapon]);}
+function ensureEditableFrame(){
+ playing=false;
+ let c=clip();const total=length(),n=frameAt(time,total),t=frameTime(n);
+ if(!c){
+  checkpoint();const indices=new Set([1,total,n]);const step=Math.max(1,Math.ceil(total/117));for(let f=1;f<=total;f+=step)indices.add(f);
+  const frames=[...indices].sort((a,b)=>a-b).map(f=>({t:frameTime(f),easing:'smooth',pose:baseline(frameTime(f)/ (total/FPS)*actions[action].duration)}));
+  c=project.clips[key()]={fps:FPS,totalFrames:total,duration:total/FPS,loop:!!actions[action].loop,enabled:true,followAim:true,footLock:$('footLock').checked,frames};mark();
+ }
+ let index=c.frames.findIndex(f=>Math.abs(f.t-t)<.001);
+ if(index<0){
+  if(c.frames.length>=120){status('키프레임은 최대 120개입니다. 기존 키를 선택하거나 삭제해주세요.');return false;}
+  checkpoint();time=t;drawPose();c.frames.push({t,easing:'smooth',pose:capturePose(avatar,view.models[weapon])});c.frames.sort((a,b)=>a.t-b.t);index=c.frames.findIndex(f=>Math.abs(f.t-t)<.001);mark();
+ }
+ frameIndex=index;time=t;return true;
+}
 function drawPose(){const c=clip(),duration=c?.duration||actions[action].duration;const phase=time/duration;baseline(phase*actions[action].duration);if(c)applyPose(avatar,view.models[weapon],samplePose({...c,loop:false},time));
  if(c?.footLock&& !['jump','roll'].includes(action))plantFeet(avatar);
  syncWeaponHandle();
@@ -37,7 +52,7 @@ function drawPose(){const c=clip(),duration=c?.duration||actions[action].duratio
  skeleton.updateMatrixWorld(true);$('scrub').max=length();$('scrub').value=frameAt(time,length());$('currentFrame').max=length();$('currentFrame').value=frameAt(time,length());$('timeLabel').textContent=length()+'F · '+(length()/FPS).toFixed(2)+'초';for(const b of $('frames').children)b.classList.toggle('selected',Number(b.dataset.frame)===frameAt(time,length()));if($('timelineCursor'))$('timelineCursor').style.left=(Math.min(100,time/frameTime(length())*100))+'%';
  const editable=!!c&&!playing&&Math.abs(time-selected().t)<.002;transform.visible=editable;transform.enabled=editable;if(editable)transform.attach(object());else transform.detach();
 }
-function refreshFields(){const o=object();if(!o)return;const values={p:o.position.toArray(),r:[o.rotation.x,o.rotation.y,o.rotation.z].map(THREE.MathUtils.radToDeg),s:o.scale.toArray()};for(const prop of Object.keys(fields))fields[prop].forEach((input,i)=>{if(document.activeElement!==input)input.value=values[prop][i].toFixed(prop==='r'?1:3);input.disabled=!clip()||playing||Math.abs(time-selected().t)>=.002;});}
+function refreshFields(){const o=object();if(!o)return;const values={p:o.position.toArray(),r:[o.rotation.x,o.rotation.y,o.rotation.z].map(THREE.MathUtils.radToDeg),s:o.scale.toArray()};for(const prop of Object.keys(fields))fields[prop].forEach((input,i)=>{if(document.activeElement!==input)input.value=values[prop][i].toFixed(prop==='r'?1:3);input.disabled=playing;});}
 function selectFrame(i){const c=clip();if(!c)return;playing=false;frameIndex=Math.max(0,Math.min(c.frames.length-1,i));time=selected().t;refresh();}
 function drawTimeline(){const c=clip(),track=$('keyTimeline');track.replaceChildren();if(!c)return;for(const [i,f]of c.frames.entries()){const marker=document.createElement('button');marker.className='keyMarker';marker.style.left=(f.t/frameTime(length())*100)+'%';marker.textContent='◆';marker.title=frameAt(f.t,length())+'프레임';marker.setAttribute('aria-label',frameAt(f.t,length())+'프레임 키로 이동');marker.classList.toggle('selected',i===frameIndex);marker.onclick=()=>selectFrame(i);track.append(marker);}const cursor=document.createElement('i');cursor.id='timelineCursor';cursor.style.left=(Math.min(100,time/frameTime(length())*100))+'%';track.append(cursor);}
 $('prevFrame').onclick=()=>selectFrame(frameIndex-1);$('nextFrame').onclick=()=>selectFrame(frameIndex+1);
@@ -56,8 +71,8 @@ $('easing').onchange=()=>{if(!selected())return;checkpoint();selected().easing=$
 $('frameTime').onchange=()=>{const c=clip(),n=Number($('frameTime').value),t=frameTime(n);if(!c||frameIndex===0||frameIndex===c.frames.length-1)return;if(!Number.isInteger(n)||n<1||n>length()||c.frames.some((f,i)=>i!==frameIndex&&Math.abs(f.t-t)<.001)){status('비어 있는 프레임 번호를 지정해주세요.');refresh();return;}checkpoint();const f=selected();f.t=t;c.frames.sort((a,b)=>a.t-b.t);frameIndex=c.frames.indexOf(f);time=t;mark();refresh();};
 function insertFrame(copy=false){const c=clip();if(!c)return;let n=frameAt(time,length());if(copy){n=frameAt(selected().t,length())+1;while(n<=length()&&c.frames.some(f=>frameAt(f.t,length())===n))n++;}if(n>length())return status('뒤에 비어 있는 프레임이 없습니다.');const t=frameTime(n),existing=c.frames.findIndex(f=>Math.abs(f.t-t)<.001);if(existing>=0){selectFrame(existing);return status('이미 키가 있는 프레임입니다. 자세를 바로 수정해주세요.');}if(c.frames.length>=120)return status('키프레임은 최대 120개입니다.');checkpoint();time=t;drawPose();const pose=copy?structuredClone(selected().pose):capturePose(avatar,view.models[weapon]);c.frames.push({t,easing:'smooth',pose});c.frames.sort((a,b)=>a.t-b.t);frameIndex=c.frames.findIndex(f=>f.t===t);time=t;playing=false;mark();refresh();status(n+'프레임에 전체 파트의 키 자세를 저장했습니다.');}
 $('addFrame').onclick=()=>insertFrame();$('copyFrame').onclick=()=>insertFrame(true);$('deleteFrame').onclick=()=>{const c=clip();if(!c||frameIndex===0||frameIndex===c.frames.length-1)return;checkpoint();c.frames.splice(frameIndex,1);frameIndex=Math.min(frameIndex,c.frames.length-1);time=selected().t;mark();refresh();};
-function editTransform(prop,index,input){if(!selected())return;if(input.value.trim()==='')return;const value=Number(input.value);if(!Number.isFinite(value)||Math.abs(value)>999||(prop==='s'&&(value<.01||value>10))){status('올바른 숫자를 입력해주세요. 크기는 0.01~10입니다.');refreshFields();return;}playing=false;time=selected().t;drawPose();const o=object(),current=prop==='r'?THREE.MathUtils.radToDeg(o.rotation[['x','y','z'][index]]):o[prop==='p'?'position':'scale'].getComponent(index);if(Math.abs(current-value)<.000001)return;const reference=editReference(avatar,view.models[weapon],o);if(!numberDrag)checkpoint();if(prop==='r')o.rotation[['x','y','z'][index]]=THREE.MathUtils.degToRad(value);else o[prop==='p'?'position':'scale'].setComponent(index,value);commitEdit(reference);refresh();}
-$('part').onchange=()=>{playing=false;if(clip())time=selected().t;refresh();};
+function editTransform(prop,index,input){if(input.value.trim()==='')return;const value=Number(input.value);if(!Number.isFinite(value)||Math.abs(value)>999||(prop==='s'&&(value<.01||value>10))){status('올바른 숫자를 입력해주세요. 크기는 0.01~10입니다.');refreshFields();return;}if(!ensureEditableFrame())return;drawPose();const o=object(),current=prop==='r'?THREE.MathUtils.radToDeg(o.rotation[['x','y','z'][index]]):o[prop==='p'?'position':'scale'].getComponent(index);if(Math.abs(current-value)<.000001)return;const reference=editReference(avatar,view.models[weapon],o);if(!numberDrag)checkpoint();if(prop==='r')o.rotation[['x','y','z'][index]]=THREE.MathUtils.degToRad(value);else o[prop==='p'?'position':'scale'].setComponent(index,value);commitEdit(reference);refresh();}
+$('part').onchange=()=>{ensureEditableFrame();refresh();};
 for(const button of document.querySelectorAll('[data-mode]'))button.onclick=()=>{transform.setMode(button.dataset.mode);for(const b of document.querySelectorAll('[data-mode]'))b.classList.toggle('selected',b===button);};
 $('local').onchange=()=>transform.setSpace($('local').checked?'local':'world');
 transform.addEventListener('dragging-changed',e=>{dragging=e.value;orbit.enabled=!e.value;if(e.value&&selected()){playing=false;time=selected().t;drawPose();checkpoint();editStart=editReference(avatar,view.models[weapon],object());}else{editStart=null;refresh();}});
@@ -66,6 +81,7 @@ let pointerStart;renderer.domElement.addEventListener('pointerdown',e=>{pointerS
 function seekFrame(n){playing=false;time=frameTime(Math.max(1,Math.min(length(),Math.round(n))));const index=clip()?.frames.findIndex(f=>Math.abs(f.t-time)<.001)??-1;if(index>=0)frameIndex=index;refresh();status(index>=0?'전체 파트의 키 자세를 편집합니다.':'중간 프레임입니다. 현재 프레임에 키 저장을 눌러 편집해주세요.');}
 $('scrub').oninput=()=>seekFrame(Number($('scrub').value));$('currentFrame').onchange=()=>seekFrame(Number($('currentFrame').value)||1);
 $('play').onclick=()=>{playing=!playing;if(playing&&time>=(clip()?.duration||actions[action].duration))time=0;refresh();};
+addEventListener('keydown',e=>{if(e.code!=='Space'||e.repeat||e.target.closest('input,textarea,select,[contenteditable="true"]'))return;e.preventDefault();$('play').onclick();});
 $('resetFrame').onclick=()=>{if(!selected())return;checkpoint();selected().pose=baseline(selected().t/clip().duration*actions[action].duration);mark();refresh();};
 $('resetClip').onclick=()=>{if(!clip()||!confirm('이 동작의 편집 모션을 지우고 기본 모션으로 복구하시겠습니까? 저장하면 게임에도 반영됩니다.'))return;checkpoint();delete project.clips[key()];frameIndex=0;time=0;playing=false;mark();refresh();};
 function history(from,to){if(!from.length)return;to.push(JSON.stringify(project));project=JSON.parse(from.pop());frameIndex=Math.min(frameIndex,(clip()?.frames.length||1)-1);time=Math.min(time,clip()?.duration||actions[action].duration);mark();refresh();}
