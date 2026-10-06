@@ -9,7 +9,7 @@ export const PARTS={
  weapon:{name:'무기 제어 회로',slot:'weapon',description:'무기 피해 +15%'},
  core:{name:'고밀도 발전 코어',slot:'reactor',description:'목표 핵심 모듈 · 배터리 +100 · 이동 소모 −30%'},
 };
-export const WEAPON_TYPES=['pistol','rapid','shotgun','sniper','rail','rocket','flame','bow','laser','knife','chainsaw'];
+export const WEAPON_TYPES=['pistol','rifle','rapid','shotgun','sniper','rail','rocket','flame','bow','laser','knife','chainsaw'];
 export function makeWeapon(type,id=`gun-${Date.now()}-${Math.random().toString(36).slice(2)}`,level=1){return {id,type,level:Math.max(1,Math.floor(level))};}
 const freshFrame=(id)=>({id,name:`FRAME ${String(id).padStart(2,'0')}`,hp:100,equipment:{},parts:[],weaponSlots:[makeWeapon('pistol',`starter-${id}`),null],loadout:['pistol']});
 export function freshCampaign(){return {version:1,inventoryVersion:2,nextId:3,selected:1,frames:[freshFrame(1),freshFrame(2)],stash:[],stashWeapons:[],stashEquipment:[],materials:0,weapons:WEAPON_TYPES,weaponStock:{pistol:2},ammo:{pistol:0},sorties:0,lastReport:null,deployed:null};}
@@ -58,3 +58,5 @@ export function tickBattery(run,dt,speed){if(!run||run.finished)return;run.time+
 export function lootPart(random=Math.random){const n=random();return n<.34?'repair':n<.54?'armor':n<.72?'drive':n<.86?'reactor':'weapon';}
 
 export function partDescription(p){const l=p.level||1;return {repair:`받는 피해 −${Math.round((1-.96**l)*100)}% · 배터리 +${10*l}`,armor:`받는 피해 −${Math.round((1-.88**l)*100)}% · 외장 장갑`,drive:`이동 속도 +${10*l}% · 이동 소모 −${Math.round((1-.85**l)*100)}%`,reactor:`배터리 용량 +${35*l}`,weapon:`무기 피해 +${15*l}%`,jet:`제트 대시 · 이단 점프 활성화${l>1?' · 배터리 +'+5*(l-1):''}`,core:`배터리 +${100*l} · 이동 소모 −${Math.round((1-.7**l)*100)}%`}[p.type];}
+
+export function lootWeapon(random=Math.random){return WEAPON_TYPES[Math.min(WEAPON_TYPES.length-1,Math.floor(random()*WEAPON_TYPES.length))];}
