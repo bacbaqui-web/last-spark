@@ -28,3 +28,5 @@
 #combatRing,.salvageMode #combatRing{height:240px}#combatRing svg{height:240px}
 #combatRing .ringHP{top:100px}#combatRing .ringBattery,#combatRing .ringAmmo{top:140px}
 #weaponSlots .slotBar{position:absolute;left:0;top:-80px;height:240px;width:130px}
+
+#weaponSlots .slotValue{grid-column:2}
