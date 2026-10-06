@@ -1,3 +1,4 @@
+import {createAtomicCityWorld} from './atomic-city-world.js';
 export {applyFrameVisual,framePreview} from './frame-preview.js';
 import * as THREE from 'three';
 import {createCampaign,PARTS,frameStats,makePart,lootPart,tickBattery,spendBattery} from './salvage-campaign.js';
@@ -6,6 +7,7 @@ export {createCampaign,PARTS,frameStats,makePart,lootPart,tickBattery,spendBatte
 import {createRoadRoute,updateAwareness} from './road-route.js';
 export {updateAwareness};
 export function createSalvageWorld(scene,platforms,box,mats){
+ if(typeof document!=='undefined')return createAtomicCityWorld(scene,platforms,mats);
  const route=createRoadRoute();platforms.bounds=route.bounds;
  const asphalt=new THREE.MeshStandardMaterial({color:0x626967,roughness:1}),paint=new THREE.MeshStandardMaterial({color:0xd8cfaa}),green=new THREE.MeshStandardMaterial({color:0x55734a,roughness:1}),trunk=new THREE.MeshStandardMaterial({color:0x675542,roughness:1});
  const ground=new THREE.Group();ground.name='long-bent-avenue';scene.add(ground);

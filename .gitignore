@@ -6,3 +6,9 @@ dist/
 .env.*
 !.env.example
 work/
+
+# Purchased Atomic Realm originals and extracted archives (local only)
+/asset/
+
+# Purchased models used by the local map; keep raw files out of public Git
+/public/atomic/

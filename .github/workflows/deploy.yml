@@ -23,6 +23,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Restore game runtime models from published game build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download city-runtime-20261006 --repo "${{ github.repository }}" --pattern last-spark-game.zip --dir "$RUNNER_TEMP/game-runtime"
+          unzip -q "$RUNNER_TEMP/game-runtime/last-spark-game.zip" 'atomic/*' -d public
       - run: npm run build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
