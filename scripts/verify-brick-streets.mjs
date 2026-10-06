@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {generateBrickBlock,validateBrickBlock,brickBuildingWidth} from '../brick-street-layout.js';
+import {generateBrickBlock,validateBrickBlock,brickBuildingWidth,treeCanopyMask} from '../brick-street-layout.js';
 for(let i=0;i<100;i++){const b=generateBrickBlock(i);assert.deepEqual(b,generateBrickBlock(i));assert.deepEqual(validateBrickBlock(b),b);const child=generateBrickBlock(i+200,b);assert.deepEqual(validateBrickBlock(child),child);assert.deepEqual(child.buildings.map(v=>[v.floors,v.columns,v.tone]),b.buildings.map(v=>[v.floors,v.columns,v.tone]));assert(b.vehicles.every(v=>Math.abs(v.z)<16));assert(b.buildings.every(v=>v.cells.filter(c=>c==='door').length===1));}assert.throws(()=>validateBrickBlock({version:2,seed:-1}));console.log('PASS 100 reproducible seeds, exact JSON restoration, inherited building structure, entrance placement and seam clearances');
 import * as T from 'three';
 import {buildBrickStreet,disposeBrickStreet} from '../brick-street-scene.js';
@@ -19,3 +19,5 @@ assert(holes>30&&joined>10&&openRoofs>10);console.log('PASS real facade openings
 let irregular=0;
 for(let seed=0;seed<6;seed++){const block=generateBrickBlock(seed),root=buildBrickStreet(block,library);root.updateMatrixWorld(true);const walls=root.children.filter(m=>[0x854b38,0x784333,0x92543c,0x6f3e31].includes(m.material.color.getHex()));for(const b of block.buildings)for(let f=1;f<b.floors;f++)for(let c=0;c<b.columns;c++){if(b.cells[f*b.columns+c]!=='collapsed'||c>0&&b.cells[f*b.columns+c-1]==='collapsed')continue;const z=b.z-brickBuildingWidth(b)/2+c*brickBuildingWidth(b)/b.columns+.27,ray=new T.Raycaster(),depths=[];for(let k=0;k<12;k++){ray.set(new T.Vector3(b.side*6.6,f*3.1+.6+k*.15,z),new T.Vector3(b.side,0,0));depths.push(ray.intersectObjects(walls)[0]?.distance||20);}if(Math.max(...depths)-Math.min(...depths)>1)irregular++;}disposeBrickStreet(root);}
 assert(irregular>5,'broken perimeter must vary along its height');console.log('PASS irregular fracture silhouettes along opening edges');
+
+const masks=new Set();for(let seed=0;seed<100;seed++){const mask=treeCanopyMask(seed);assert.equal(mask.length,12);assert.equal(new Set(mask).size,12);assert(mask.every(c=>c>=0&&c<16));assert.deepEqual(mask,treeCanopyMask(seed));masks.add(mask.join());}assert(masks.size>80);console.log("PASS reproducible 4x4 canopy masks with twelve occupied cells and varied silhouettes");

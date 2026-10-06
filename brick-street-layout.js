@@ -18,3 +18,5 @@ export function validateBrickBlock(b){if(!b||![2,3,4].includes(b.version)||!Numb
 export function hasBrickPassage(colliders,offset=0){const cols=27,rows=73,step=.5,heights=new Float32Array(cols*rows);for(let z=0;z<rows;z++)for(let x=0;x<cols;x++){const px=-6.5+x*step,pz=18-z*step+offset;let h=0;for(const p of colliders)if(Math.abs(px-p.x)<p.w/2+.35&&Math.abs(pz-p.z)<p.d/2+.35)h=Math.max(h,p.h);heights[z*cols+x]=h;}const start=13,seen=new Uint8Array(heights.length),queue=[start];seen[start]=1;for(let i=0;i<queue.length;i++){const index=queue[i],x=index%cols,z=Math.floor(index/cols);if(z===rows-1)return true;for(const [dx,dz]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,nz=z+dz;if(nx<0||nx>=cols||nz<0||nz>=rows)continue;const next=nz*cols+nx;if(seen[next]||heights[next]>3||heights[next]-heights[index]>1.35)continue;seen[next]=1;queue.push(next);}}return false;}
 
 export const brickBuildingWidth=b=>7.4+(b.index%3)*.2;
+
+export function treeCanopyMask(seed){const r=rng(seed),cells=Array.from({length:16},(_,i)=>i);for(let i=15;i>0;i--){const j=Math.floor(r()*(i+1));[cells[i],cells[j]]=[cells[j],cells[i]];}return cells.slice(0,12).sort((a,b)=>a-b);}
