@@ -4,9 +4,9 @@ export const SAVE_KEY='last-spark-salvage-v1';
 export const PARTS={
  repair:{name:'구조 안정화 모듈',slot:'repair',description:'받는 피해 −4% · 배터리 +10'},
  armor:{name:'경량 복합 장갑',slot:'armor',description:'받는 피해 −12% · 외장 장갑 추가'},
- drive:{name:'효율 구동 관절',slot:'drive',description:'이동 속도 +10% · 이동 배터리 소모 −15%'},
+ drive:{name:'효율 구동 관절',slot:'drive',description:'이동 속도 +5% · 이동 배터리 소모 −15%'},
  reactor:{name:'보조 축전기',slot:'reactor',description:'배터리 용량 +35'},
- weapon:{name:'무기 제어 회로',slot:'weapon',description:'무기 피해 +15%'},
+ weapon:{name:'무기 제어 회로',slot:'weapon',description:'무기 피해 +5%'},
  core:{name:'고밀도 발전 코어',slot:'reactor',description:'목표 핵심 모듈 · 배터리 +100 · 이동 소모 −30%'},
 };
 export const SALVAGE_DROPS={battery:.65,batteryCharge:4,module:.12,ammo:.30,equipment:.07,weapon:.04};
@@ -18,7 +18,7 @@ export function makeWeapon(type,id=`gun-${Date.now()}-${Math.random().toString(3
 function ensureWeaponPerk(w){if(w&&!WEAPON_PERKS[w.perk])w.perk=makeWeapon(w.type).perk;return w;}
 const freshFrame=(id)=>({id,name:`FRAME ${String(id).padStart(2,'0')}`,hp:100,equipment:{},parts:[],weaponSlots:[makeWeapon('rifle',`starter-${id}`),null],loadout:['rifle']});
 export function freshCampaign(){return {version:1,inventoryVersion:2,nextId:3,selected:1,frames:[freshFrame(1),freshFrame(2)],stash:[],stashWeapons:[],stashEquipment:[],materials:0,weapons:WEAPON_TYPES,weaponStock:{rifle:2},ammo:{rifle:240},sorties:0,lastReport:null,deployed:null};}
-export function frameStats(frame){const stats={damage:1,speed:1,damageTaken:1,battery:100,drain:1,jet:false,armor:0,visualParts:frame.parts.map(p=>({type:p.type,level:p.level||1}))};for(const part of frame.parts){const level=part.level||1;if(part.type==='repair'){stats.damageTaken*=.96**level;stats.battery+=10*level;}if(part.type==='armor'){stats.damageTaken*=.88**level;stats.armor++;}if(part.type==='drive'){stats.speed*=1+.1*level;stats.drain*=.85**level;}if(part.type==='reactor')stats.battery+=35*level;if(part.type==='core'){stats.battery+=100*level;stats.drain*=.7**level;}if(part.type==='weapon')stats.damage*=1+.15*level;}return applyEquipmentStats(stats,Object.values(frame.equipment||{}).filter(Boolean));}
+export function frameStats(frame){const stats={damage:1,speed:1,damageTaken:1,battery:100,drain:1,jet:false,armor:0,visualParts:frame.parts.map(p=>({type:p.type,level:p.level||1}))};for(const part of frame.parts){const level=part.level||1;if(part.type==='repair'){stats.damageTaken*=.96**level;stats.battery+=10*level;}if(part.type==='armor'){stats.damageTaken*=.88**level;stats.armor++;}if(part.type==='drive'){stats.speed*=1+.05*level;stats.drain*=.85**level;}if(part.type==='reactor')stats.battery+=35*level;if(part.type==='core'){stats.battery+=100*level;stats.drain*=.7**level;}if(part.type==='weapon')stats.damage*=1+.05*level;}return applyEquipmentStats(stats,Object.values(frame.equipment||{}).filter(Boolean));}
 export function normalizeModule(p){const module={id:p.id,type:p.type,level:Math.max(1,Math.floor(p.level||1)),isNew:Boolean(p.isNew??(p.identified===false))};if(Number.isInteger(p.slot))module.slot=p.slot;return module;}
 export function makePart(type,id){return normalizeModule({id,type,level:1,isNew:true});}
 export function createCampaign(storage){let state;try{const parsed=JSON.parse(storage?.getItem(SAVE_KEY)||'null');if(parsed?.version===1&&Number.isFinite(parsed.nextId)&&parsed.ammo&&parsed.weaponStock&&Array.isArray(parsed.weapons)&&Array.isArray(parsed.frames)&&Array.isArray(parsed.stash)&&parsed.frames.every(f=>Number.isFinite(f.id)&&Number.isFinite(f.hp)&&Array.isArray(f.parts)&&f.parts.every(p=>PARTS[p.type]||p.type==='jet'))&&parsed.stash.every(p=>PARTS[p.type]||p.type==='jet'))state=parsed;}catch{}state ||=freshCampaign();state.materials=Math.max(0,Math.floor(state.materials||0));state.stashWeapons ||= [];state.stashEquipment=(state.stashEquipment||[]).filter(p=>EQUIPMENT[p.type]);
@@ -64,6 +64,6 @@ export function spendBattery(run,amount){if(!run||run.finished)return false;if(r
 export function tickBattery(run,dt,speed){if(!run||run.finished)return;run.time+=dt;const spent=Math.min(run.battery,dt*(.08+speed*.12*run.stats.drain));run.battery=Math.max(0,run.battery-spent);run.energyUsed=(run.energyUsed||0)+spent;}
 export function lootPart(random=Math.random){const n=random();return n<.34?'repair':n<.54?'armor':n<.72?'drive':n<.86?'reactor':'weapon';}
 
-export function partDescription(p){const l=p.level||1;return {repair:`받는 피해 −${Math.round((1-.96**l)*100)}% · 배터리 +${10*l}`,armor:`받는 피해 −${Math.round((1-.88**l)*100)}% · 외장 장갑`,drive:`이동 속도 +${10*l}% · 이동 소모 −${Math.round((1-.85**l)*100)}%`,reactor:`배터리 용량 +${35*l}`,weapon:`무기 피해 +${15*l}%`,jet:`제트 대시 · 이단 점프 활성화${l>1?' · 배터리 +'+5*(l-1):''}`,core:`배터리 +${100*l} · 이동 소모 −${Math.round((1-.7**l)*100)}%`}[p.type];}
+export function partDescription(p){const l=p.level||1;return {repair:`받는 피해 −${Math.round((1-.96**l)*100)}% · 배터리 +${10*l}`,armor:`받는 피해 −${Math.round((1-.88**l)*100)}% · 외장 장갑`,drive:`이동 속도 +${5*l}% · 이동 소모 −${Math.round((1-.85**l)*100)}%`,reactor:`배터리 용량 +${35*l}`,weapon:`무기 피해 +${5*l}%`,jet:`제트 대시 · 이단 점프 활성화${l>1?' · 배터리 +'+5*(l-1):''}`,core:`배터리 +${100*l} · 이동 소모 −${Math.round((1-.7**l)*100)}%`}[p.type];}
 
 export function lootWeapon(random=Math.random){return WEAPON_TYPES[Math.min(WEAPON_TYPES.length-1,Math.floor(random()*WEAPON_TYPES.length))];}
