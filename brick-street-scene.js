@@ -20,16 +20,34 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  for(const side of[-1,1]){box(2.4,.3,36,side*6.2,.12,0,stone,true);for(let z=-17.5;z<18;z+=1){box(.18,.34,.94,side*5.05,.13,z,0xb4b3a2);box(2.3,.012,.025,side*6.2,.277,z,0x666d60);}for(let x=5.6;x<7.4;x+=.8)box(.018,.012,36,side*x,.278,0,0x757969);}
  for(let z=-15;z<18;z+=6)box(.12,.02,2,0,.03,z,0xb1b29a);
  for(const b of block.buildings){const front=b.side*7.4,center=b.side*11.4,H=b.floors*3.1,color=bricks[b.tone],cellWidth=9/b.columns;
- box(8,H,9,center,H/2,b.z,color); // Solid backing closes the street, including damaged facade cells.
+ // Recessed interior shell: openings are empty geometry, while the rear structure blocks entry.
+ const roomDepth=2.7;box(5.3,H,9,front+b.side*5.35,H/2,b.z,color);
+ box(roomDepth,H,.2,front+b.side*roomDepth/2,H/2,b.z-4.4,color);box(roomDepth,H,.2,front+b.side*roomDepth/2,H/2,b.z+4.4,color);
  colliders.push({x:center,z:b.z+offset,w:8,d:9,h:H});
- for(let f=0;f<b.floors;f++){const y=f*3.1;box(.28,.18,9,front,y+.1,b.z,0x614333);for(let c=0;c<b.columns;c++){const z=b.z-4.5+(c+.5)*cellWidth,type=b.cells[f*b.columns+c],face=front-b.side*.12;
- if(type==='collapsed'){box(.035,2.8,cellWidth-.2,face,y+1.55,z,0x252b26);for(let k=0;k<3;k++)box(.15,.28,.5,face-b.side*.08,y+.4+k*.85,z+(r()-.5)*cellWidth,color);rod([face-b.side*.1,y+.3,z-cellWidth*.35],[face-b.side*.1,y+2.7,z+cellWidth*.3],.04);continue;}
+ const hole=(f,c)=>f>=0&&f<b.floors&&c>=0&&c<b.columns&&b.cells[f*b.columns+c]==='collapsed';
+ for(let f=0;f<b.floors;f++){const y=f*3.1;for(let c=0;c<b.columns;c++){const z=b.z-4.5+(c+.5)*cellWidth,type=b.cells[f*b.columns+c],face=front-b.side*.12;
+ if(type==='collapsed'){
+ // Only the outside perimeter gets torn masonry. Adjacent holes have no divider.
+ const rim=(cy,cz,w,h)=>{box(.35,h,w,front,cy,cz,color);for(let k=0;k<3;k++){const chunk=box(.3,.16,.23,face-b.side*.04,cy+(r()-.5)*h,cz+(r()-.5)*w,stone);chunk.rotation.x=r();}};
+ if(!hole(f,c-1))rim(y+1.55,z-cellWidth/2+.13,.26,3.1);
+ if(!hole(f,c+1))rim(y+1.55,z+cellWidth/2-.13,.26,3.1);
+ if(!hole(f-1,c)){rim(y+.12,z,cellWidth,.24);box(roomDepth,.15,cellWidth,front+b.side*roomDepth/2,y+.1,z,stone);}
+ if(f<b.floors-1&&!hole(f+1,c)){rim(y+2.97,z,cellWidth,.26);box(roomDepth,.15,cellWidth,front+b.side*roomDepth/2,y+3.02,z,stone);}
+ rod([front+b.side*.15,y+.25,z-cellWidth*.32],[front+b.side*.5,y+.7,z-cellWidth*.18],.025);continue;}
+ box(.38,3.1,cellWidth,front,y+1.55,z,color);box(.28,.18,cellWidth,front-b.side*.1,y+.1,z,0x614333);
+ box(roomDepth,.15,cellWidth,front+b.side*roomDepth/2,y+.1,z,stone);
  const wh=type==='door'?2.3:1.65,ww=type==='door'?1.1:cellWidth*.57,wy=y+(type==='door'?1.15:1.75);
  box(.04,wh,ww,face,wy,z,0x25332e);for(const dz of[-ww/2,ww/2])box(.16,wh+.18,.12,face-b.side*.05,wy,z+dz,0xa18166);for(const dy of[-wh/2,wh/2])box(.18,.12,ww+.22,face-b.side*.08,wy+dy,z,0xa18166);
  if(type==='door'){for(let k=0;k<3;k++)box(.5,.18*(k+1),1.6,front-b.side*(.3+k*.4),.27+.09*(k+1),z,stone,true);}
  else if(type==='boarded'){for(let k=0;k<3;k++){const plank=box(.13,.2,ww,face-b.side*.12,wy-.5+k*.5,z,0x8a7756);plank.rotation.x=(k-1)*.22;}}
  else{box(.12,wh,.045,face-b.side*.07,wy,z,0x766e59);if(type==='broken'){for(let k=0;k<3;k++)box(.05,.25,.16,face-b.side*.13,wy+(r()-.5)*wh,z+(r()-.5)*ww,0x75928e);}}
- }}const roof=box(8.4,.23,9,center,H+.08,b.z,0x694635);growthTargets.push({object:roof,kind:'roof'});if(b.damaged){for(let k=0;k<5;k++){const slab=box(1.5,.15,1.3,front+b.side*(r()*2),H-.6-r(),b.z-3+r()*6,stone);slab.rotation.z=(r()-.5)*.9;}}
+ }}
+ const rearRoof=box(5.5,.23,9,front+b.side*5.45,H+.08,b.z,0x694635);growthTargets.push({object:rearRoof,kind:'roof'});
+ for(let c=0;c<b.columns;c++){const z=b.z-4.5+(c+.5)*cellWidth;
+ if(!hole(b.floors-1,c)){const roof=box(2.9,.23,cellWidth,front+b.side*1.25,H+.08,z,0x694635);growthTargets.push({object:roof,kind:'roof'});}
+ else {for(let k=0;k<4;k++){const slab=box(.35+r()*.4,.18,cellWidth/5,front+b.side*(2.4+r()*.25),H-.12-r()*.3,z-cellWidth/2+(k+.5)*cellWidth/4,stone);slab.rotation.z=b.side*(.15+r()*.45);growthTargets.push({object:slab,kind:'rubble'});rod([front+b.side*2.65,H-.12,z-cellWidth*.3+k*.2],[front+b.side*(1.8+r()*.5),H-.4-r()*.5,z-cellWidth*.3+k*.2],.025);}}
+ }
+
  if(b.ivy>.2){for(let k=0;k<2;k++)ivy(front-b.side*.22,.4,b.z-3+k*5,H*.85);}
  }
  // City infrastructure follows fixed planting/utility slots; state varies, positions do not.
