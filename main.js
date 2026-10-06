@@ -593,10 +593,28 @@ function updateRoadAwareness(e,dt){
  if(!e.awareness||e.awareness.state==='combat')return true;
  const eye=e.group.position.clone().add(new THREE.Vector3(0,e.boss?2.8:e.type==='scoutDrone'?.64:1.7,0)),delta=player.pos.clone().sub(eye),distance=delta.length();let visible=false;
  if(distance<40){ray.set(eye,delta.normalize());ray.far=Math.max(0,distance-.4);visible=!ray.intersectObjects(worldObstacles,false).length;}
- if(SALVAGE.updateAwareness(e,dt,player.pos,visible,enemies)){e.attack=Math.max(e.attack,.8);return true;}
+ if(SALVAGE.updateAwareness(e,dt,player.pos,visible,enemies)){e.attack=0;e.fireClock=.55;e.seenTime=1;return true;}
  e.wantFire=false;
- if(e.awareness.state==='checking'||e.awareness.signal){const angle=Math.atan2(player.pos.x-eye.x,player.pos.z-eye.z),turn=Math.atan2(Math.sin(angle-e.group.rotation.y),Math.cos(angle-e.group.rotation.y));e.group.rotation.y+=turn*(1-Math.exp(-dt*3));}
- if(e.type==='scoutDrone')animateBoss(e.robot,dt,time,0);else animateRobot(e.robot,dt,{speed:0,aim:e.awareness.state==='checking'?.35:0});
+ e.patrolTime=(e.patrolTime||0)-dt;
+ const home=e.home||e.group.position,position=e.group.position;
+ if(!e.idlePatrolGoal||e.patrolTime<=0||Math.hypot(position.x-e.idlePatrolGoal.x,position.z-e.idlePatrolGoal.z)<.6){
+  e.patrolTime=4+Math.random()*4;e.idlePatrolGoal=null;
+  for(let i=0;i<12;i++){
+   const p=sortieWorld.route.sample(THREE.MathUtils.clamp(sortieWorld.route.progress(home)+(Math.random()-.5)*(e.boss?6:16),2,sortieWorld.route.length-2),(Math.random()-.5)*Math.min(sortieWorld.route.width*.5,6));
+   if(Math.hypot(p.x-home.x,p.z-home.z)>12||platforms.some(q=>!q.walkable&&q.h>position.y+.3&&Math.abs(p.x-q.x)<q.w/2+.4&&Math.abs(p.z-q.z)<q.d/2+.4))continue;
+   e.idlePatrolGoal=p;break;
+  }
+ }
+ let speed=0;
+ if(e.idlePatrolGoal){
+  const before=position.clone(),heading=new THREE.Vector3(e.idlePatrolGoal.x-position.x,0,e.idlePatrolGoal.z-position.z).normalize(),velocity=heading.multiplyScalar(e.boss?.7:e.type==='scoutDrone'?1.1:1.3),start=position.clone().add(new THREE.Vector3(0,1.7,0));
+  if(e.type!=='scoutDrone')velocity.y=-23*dt;
+  const step=movePlayerWithSlide(start,start.clone().addScaledVector(velocity,dt),velocity,platforms,{boundsX:platforms.bounds?.x||100,boundsZ:platforms.bounds?.z||210});position.copy(step.position).add(new THREE.Vector3(0,-1.7,0));
+  speed=Math.hypot(position.x-before.x,position.z-before.z)/Math.max(dt,.001);
+  if(speed<.1)e.patrolTime=Math.min(e.patrolTime,.4);
+  if(speed>.1){const angle=Math.atan2(velocity.x,velocity.z),turn=Math.atan2(Math.sin(angle-e.group.rotation.y),Math.cos(angle-e.group.rotation.y));e.group.rotation.y+=turn*(1-Math.exp(-dt*5));}
+ }
+ if(e.type==='scoutDrone')animateBoss(e.robot,dt,time,0);else if(e.boss)animateBoss(e.robot,dt,time,0);else animateRobot(e.robot,dt,{speed,aim:0});
  e.group.updateMatrixWorld(true);return false;
 }
 function updateRoadSortie(dt){

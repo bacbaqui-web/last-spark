@@ -10,10 +10,12 @@ export function createRoadRoute(seed=null){
  return {points,segments,length,width:seed===null?36:10,bounds:{x:100,z:210},sample,progress,start:sample(0),end:sample(length)};
 }
 export function updateAwareness(e,dt,player,visible,allies){
- const a=e.awareness;if(!a)return true;if(a.state==='combat')return true;
+ const a=e.awareness;if(!a||a.state==='combat')return true;
  const distance=Math.hypot(e.group.position.x-player.x,e.group.position.z-player.z);
- if(visible&&distance<(a.signal?38:25)){a.state='checking';a.timer+=dt;}
- else{a.timer=Math.max(0,a.timer-dt*.65);if(!a.timer)a.state='idle';}
- if(a.timer>=a.delay){a.state='combat';for(const other of allies){if(other===e||!other.awareness||other.awareness.state==='combat')continue;if(other.group.position.distanceTo(e.group.position)<28)other.awareness.signal=true;}return true;}
- return false;
+ if(visible&&distance<(a.signal?38:25)||a.timer>=a.delay){
+  a.state='combat';a.timer=0;
+  for(const other of allies){if(other===e||!other.awareness||other.awareness.state==='combat')continue;if(other.group.position.distanceTo(e.group.position)<28)other.awareness.signal=true;}
+  return true;
+ }
+ a.state=a.signal?'checking':'idle';return false;
 }
