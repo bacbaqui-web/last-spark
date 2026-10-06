@@ -55,7 +55,7 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  for(let f=1;f<b.floors;f++){const y=f*3.1,escapeCol=b.columns-1,z=b.z-4.5+(escapeCol+.5)*cellWidth;if(hole(f,escapeCol))continue;box(1.15,.1,Math.min(2.2,cellWidth),front-b.side*.65,y,z,steel);const edge=front-b.side*1.2;for(const dz of[-cellWidth*.42,cellWidth*.42])rod([edge,y,z+dz],[edge,y+1,z+dz],.035);rod([edge,y+1,z-cellWidth*.42],[edge,y+1,z+cellWidth*.42],.035);for(let k=0;k<9;k++)rod([edge,y,z-cellWidth*.4+k*cellWidth*.1],[edge,y+1,z-cellWidth*.4+k*cellWidth*.1],.02);if(f<b.floors-1&&!hole(f+1,escapeCol)){for(let k=0;k<10;k++)box(.65,.07,.22,front-b.side*.7,y+k*.31,z-cellWidth*.4+k*cellWidth*.08,steel);rod([edge,y+.1,z-cellWidth*.4],[edge,y+3.1,z+cellWidth*.4],.035);} }
  for(let f=0;f<b.floors;f++)for(let c=0;c<b.columns;c++){if(hole(f,c)||hole(f-1,c))continue;box(.45,.14,cellWidth,front-b.side*.1,f*3.1+.12,b.z-4.5+(c+.5)*cellWidth,0x614333);}
 
- if(b.ivy>.2){for(let k=0;k<2;k++)ivy(front-b.side*.22,.4,b.z-3+k*5,H*.85);}
+ if(b.ivy>.2){for(let k=0;k<8;k++)ivy(front-b.side*.26,.4,b.z-3.9+k*1.1,H*(.72+(k%3)*.07));}
  }
  // City infrastructure follows fixed planting/utility slots; state varies, positions do not.
  // Mature street trees form overlapping horizontal foliage decks above the road.
@@ -71,7 +71,7 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  for(const v of block.vehicles){const t=getRuinedVehicle(v.id,v.paint??0)||library.get(v.id);if(!t)continue;const g=new T.Group();for(const p of t.parts){const m=new T.Mesh(p.geometry,p.material);m.userData.shared=true;g.add(m);}const scale=(VEHICLE_TYPES.find(t=>t.id===v.id)?.length||(v.id==='car'?5.2:7))/t.maxSize;g.scale.setScalar(scale);g.rotation.set(0,v.angle,v.roll);g.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(g);g.position.set(v.x-(bounds.min.x+bounds.max.x)/2,-bounds.min.y,v.z+offset-(bounds.min.z+bounds.max.z)/2);root.add(g);
  // Conservative collision includes overturned vehicles. One pavement is reachable around each zone.
  const w=bounds.max.x-bounds.min.x,d=bounds.max.z-bounds.min.z,h=bounds.max.y-bounds.min.y;const safeX=T.MathUtils.clamp(v.x,-5+w/2,5-w/2);g.position.x+=safeX-v.x;colliders.push({x:safeX,z:v.z+offset,w,d,h});growthTargets.push({object:g,kind:'vehicle'});}
- for(let i=0;i<110;i++){const side=i%2?1:-1,x=side*(4.3+r()*2.7),z=-16+r()*32;for(let k=0;k<3;k++){const m=new T.Mesh(new T.PlaneGeometry(.5,.4+r()*.65),grassMat());m.position.set(x,.35,z+offset);m.rotation.y=k*Math.PI/3;root.add(m);}}
+ for(let i=0;i<385;i++){const side=i%2?1:-1,x=side*(i%5===0?.6+r()*3.7:4.3+r()*2.7),z=-16+r()*32;for(let k=0;k<3;k++){const height=.4+r()*.65,m=new T.Mesh(new T.PlaneGeometry(.5,height),grassMat());m.position.set(x,(Math.abs(x)>5.05?.27:.03)+height/2,z+offset);m.rotation.y=k*Math.PI/3;root.add(m);}}
  // Surface growth runs only after all rigid assets have their final pose.
  root.updateMatrixWorld(true);const ray=new T.Raycaster(),down=new T.Vector3(0,-1,0),up=new T.Vector3(0,1,0),planeNormal=new T.Vector3(0,0,1);let surfacePlants=0;
  function plantAt(hit,grass=false){const normal=hit.face.normal.clone().transformDirection(hit.object.matrixWorld);const m=new T.Mesh(new T.PlaneGeometry(grass?.35:.32,grass?.38:.42),grass?grassMat():leafMat());m.position.copy(hit.point).addScaledVector(normal,.025);if(grass){m.position.y+=.18;m.rotation.y=r()*Math.PI;}else{m.quaternion.setFromUnitVectors(planeNormal,normal);m.rotateZ(r()*Math.PI*2);}root.add(m);surfacePlants++;return m;}
