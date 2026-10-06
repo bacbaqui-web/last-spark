@@ -68,3 +68,12 @@
 @media(max-width:850px){#baseCamp .hangarIdentity{left:18px;top:85px;width:240px}.hangarVitals b{font-size:20px}.hangarEffects span{font-size:10px}#baseCamp .computerStation,#baseCamp .mountedWeaponStation{left:2%;width:180px}#baseCamp .equipmentStation{right:2%;width:180px}}
 @media(max-width:600px){#baseCamp .hangarIdentity{top:76px;width:220px}.hangarEffects>div{grid-template-columns:1fr}.hangarEffects{max-height:120px;overflow:auto}#baseCamp .hangarStation{padding:10px!important;width:145px}#baseCamp .hangarStation b{font-size:13px}#baseCamp .hangarStation small{display:none}#baseCamp .computerStation{bottom:31%}#baseCamp .mountedWeaponStation{bottom:20%}#baseCamp .equipmentStation{top:50%}#baseCamp .partsStation,#baseCamp .weaponsStation{bottom:10%}}
 @media(min-width:851px){#baseCamp .computerStation,#baseCamp .mountedWeaponStation{left:27%;width:180px}#baseCamp .computerStation{bottom:35%}#baseCamp .mountedWeaponStation{bottom:19%}#baseCamp .partsStation,#baseCamp .weaponsStation{bottom:11%}}
+
+/* Station hit areas follow the supplied hangar annotation (1280 × 720). */
+#baseCamp .hangarArrow{display:grid;place-items:center;padding:0!important;line-height:1;box-sizing:border-box}
+#baseCamp .hangarArrow svg{width:32px;height:40px;display:block;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+@media(min-width:851px){
+ #baseCamp .computerStation{left:30.08%;top:20.56%;bottom:auto;width:180px}
+ #baseCamp .mountedWeaponStation{left:33.2%;top:75.97%;bottom:auto;width:182px}
+ #baseCamp .equipmentStation{left:56.72%;right:auto;top:24.72%;bottom:auto;width:210px}
+}
