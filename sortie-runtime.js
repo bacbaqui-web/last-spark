@@ -4,9 +4,9 @@ export {EQUIPMENT,EQUIPMENT_SLOTS,makeEquipment,lootEquipment} from './equipment
 import {createAtomicCityWorld} from './atomic-city-world.js';
 export {applyFrameVisual,framePreview} from './frame-preview.js';
 import * as THREE from 'three';
-import {createCampaign,PARTS,frameStats,makePart,makeWeapon,weaponPerk,lootWeapon,lootPart,tickBattery,spendBattery} from './salvage-campaign.js';
+import {createCampaign,PARTS,frameStats,makePart,makeWeapon,makeCoreWeapon,SALVAGE_DROPS,weaponPerk,lootWeapon,lootPart,tickBattery,spendBattery} from './salvage-campaign.js';
 import {createBaseUI} from './salvage-ui.js';
-export {createCampaign,PARTS,frameStats,makePart,makeWeapon,weaponPerk,lootWeapon,lootPart,tickBattery,spendBattery,createBaseUI};
+export {createCampaign,PARTS,frameStats,makePart,makeWeapon,makeCoreWeapon,SALVAGE_DROPS,weaponPerk,lootWeapon,lootPart,tickBattery,spendBattery,createBaseUI};
 import {createRoadRoute,updateAwareness} from './road-route.js';
 export {updateAwareness};
 export function createSalvageWorld(scene,platforms,box,mats){

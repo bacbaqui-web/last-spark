@@ -26,3 +26,8 @@ assert(WEAPON_TYPES.includes('rifle')&&WEAPON_TYPES.includes('pistol'));const al
 const variants=[0,.4,.9].map((n,i)=>makeWeapon('rifle','variant-'+i,1,()=>n));assert.equal(new Set(variants.map(w=>w.perk)).size,3);craft.state.stashWeapons.push(...variants);craft.save();const perkSave=createCampaign({getItem:()=>JSON.stringify(craft.state),setItem(){}});for(const w of variants)assert.equal(perkSave.state.stashWeapons.find(p=>p.id===w.id).perk,w.perk);console.log('PASS: weapon options differ by instance and survive reload; weapon fusion rejected');
 
 const oldStarter=freshCampaign();oldStarter.frames[0].weaponSlots[0].type='pistol';oldStarter.ammo.rifle=0;let starterSave=JSON.stringify(oldStarter);const starterStore={getItem:()=>starterSave,setItem:(k,v)=>starterSave=v};const migratedStarter=createCampaign(starterStore);assert.equal(migratedStarter.frame().weaponSlots[0].type,'rifle');assert.equal(migratedStarter.state.ammo.rifle,120);assert.equal(createCampaign(starterStore).state.ammo.rifle,120,'starter conversion is not repeated');
+
+const {makeCoreWeapon,SALVAGE_DROPS}=await import('../salvage-campaign.js');
+for(let i=0;i<100;i++){const reward=makeCoreWeapon(()=>(i+.5)/100);assert(['rapid','sniper','rail','rocket','flame','laser'].includes(reward.type));assert(reward.level>=3&&reward.level<=5);assert(reward.perk);}
+assert(SALVAGE_DROPS.battery*SALVAGE_DROPS.batteryCharge<3,'battery recovery per enemy is limited');assert(SALVAGE_DROPS.module<.2&&SALVAGE_DROPS.equipment<.1&&SALVAGE_DROPS.weapon<.05);
+console.log('PASS reduced supply rates and guaranteed level 3-5 advanced core weapons');

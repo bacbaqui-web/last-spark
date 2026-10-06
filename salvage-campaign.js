@@ -9,6 +9,8 @@ export const PARTS={
  weapon:{name:'무기 제어 회로',slot:'weapon',description:'무기 피해 +15%'},
  core:{name:'고밀도 발전 코어',slot:'reactor',description:'목표 핵심 모듈 · 배터리 +100 · 이동 소모 −30%'},
 };
+export const SALVAGE_DROPS={battery:.65,batteryCharge:4,module:.12,ammo:.30,equipment:.07,weapon:.04};
+export function makeCoreWeapon(random=Math.random){const types=['rapid','sniper','rail','rocket','flame','laser'];return makeWeapon(types[Math.min(types.length-1,Math.floor(random()*types.length))],undefined,3+Math.min(2,Math.floor(random()*3)),random);}
 export const WEAPON_TYPES=['pistol','rifle','rapid','shotgun','sniper','rail','rocket','flame','bow','laser','knife','chainsaw'];
 export const WEAPON_PERKS={power:{name:'고출력 회로',description:'무기 피해 +12%',damage:1.12},critical:{name:'취약점 분석기',description:'치명타 확률 +8%',crit:.08},headshot:{name:'정밀 타격 센서',description:'헤드샷 피해 +25%',headshot:.25}};
 export function weaponPerk(item){return WEAPON_PERKS[item?.perk]||{};}
