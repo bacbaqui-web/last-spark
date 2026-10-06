@@ -19,3 +19,12 @@
 #weaponSlots .slotValue strong{font:700 21px system-ui;white-space:nowrap}
 .slotBar{display:block;height:6px;background:#101c21bb;width:130px}.slotBar em{display:block;height:100%;background:currentColor;transition:width .12s linear}
 @media(max-width:720px){#combatRing,.salvageMode #combatRing{left:calc(50% - 30px);transform:translate(-100%,-50%) scale(.7);transform-origin:right center}#weaponSlots,.salvageMode #weaponSlots{left:calc(50% + 30px);transform:translateY(-50%) scale(.7);transform-origin:left center}}
+
+/* Preserve the original curved reticle HUD, with two arcs on each side. */
+#combatRing .ringTrack,#combatRing .ringFill,.salvageMode #combatRing .ringTrack,.salvageMode #combatRing .ringFill{stroke-width:6;stroke-linecap:round}
+#weaponSlots .slotBar{width:130px;height:40px;background:none;overflow:visible}
+.slotTrack,.slotFill{fill:none;stroke-width:6;stroke-linecap:round}.slotTrack{stroke:#101c21bb}.slotFill{stroke:currentColor;stroke-dasharray:100;transition:stroke-dashoffset .12s linear}
+
+#combatRing,.salvageMode #combatRing{height:240px}#combatRing svg{height:240px}
+#combatRing .ringHP{top:100px}#combatRing .ringBattery,#combatRing .ringAmmo{top:140px}
+#weaponSlots .slotBar{position:absolute;left:0;top:-80px;height:240px;width:130px}
