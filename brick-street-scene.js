@@ -1,3 +1,4 @@
+import {createLeafCanvas} from './foliage-texture.js';
 import {TREE_LOCAL_SCALE} from './city-world-scale.js';
 import {vehicleColliders} from './vehicle-collision.js';
 import * as T from 'three';
@@ -9,7 +10,7 @@ const materials=new Map();const mat=(color)=>{if(!materials.has(color))materials
 let brickTexture;
 function brickMap(){if(brickTexture)return brickTexture;const c=document.createElement('canvas');c.width=c.height=256;const ctx=c.getContext('2d'),r=rng(934);ctx.fillStyle='#635e54';ctx.fillRect(0,0,256,256);for(let row=0;row<16;row++)for(let col=-1;col<8;col++){const v=170+Math.floor(r()*70);ctx.fillStyle=`rgb(${v},${v},${v})`;ctx.fillRect(col*32+(row%2)*16+1,row*16+1,30,14);}brickTexture=new T.CanvasTexture(c);brickTexture.colorSpace=T.SRGBColorSpace;brickTexture.wrapS=brickTexture.wrapT=T.RepeatWrapping;brickTexture.repeat.set(3,6);return brickTexture;}
 let leafTexture;
-function leafMap(){if(leafTexture)return leafTexture;const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d'),edge=rng(673);x.fillStyle='#4b7c36';x.beginPath();for(let k=0;k<72;k++){const a=k*Math.PI*2/72,radius=49+edge()*12,px=64+Math.cos(a)*radius,py=64+Math.sin(a)*radius;k?x.lineTo(px,py):x.moveTo(px,py);}x.closePath();x.fill();for(let i=0;i<70;i++){const a=i*2.4,px=64+Math.cos(a)*Math.sqrt((i+.5)/70)*46,py=64+Math.sin(a)*Math.sqrt((i+.5)/70)*46;x.save();x.translate(px,py);x.rotate(a);x.fillStyle=['#648d43','#3b702f','#81a857'][i%3];x.beginPath();x.ellipse(0,0,6,12,0,0,Math.PI*2);x.fill();x.strokeStyle='#abc674';x.lineWidth=.8;x.beginPath();x.moveTo(0,-10);x.lineTo(0,10);x.stroke();x.restore();}leafTexture=new T.CanvasTexture(c);leafTexture.colorSpace=T.SRGBColorSpace;return leafTexture;}
+function leafMap(){if(leafTexture)return leafTexture;leafTexture=new T.CanvasTexture(createLeafCanvas());leafTexture.colorSpace=T.SRGBColorSpace;return leafTexture;}
 let grassTexture,grassMaterial;
 function grassMat(){if(grassMaterial)return grassMaterial;const c=document.createElement('canvas');c.width=c.height=128;const ctx=c.getContext('2d'),random=rng(82);for(let i=0;i<24;i++){const x=12+random()*104;ctx.fillStyle=['#69894b','#8a9f60','#43683d'][i%3];ctx.beginPath();ctx.moveTo(x-3,128);ctx.quadraticCurveTo(x-8,65,x+(random()-.5)*45,10+random()*50);ctx.quadraticCurveTo(x+4,75,x+3,128);ctx.fill();}grassTexture=new T.CanvasTexture(c);grassTexture.colorSpace=T.SRGBColorSpace;return grassMaterial=new T.MeshStandardMaterial({map:grassTexture,alphaTest:.45,side:T.DoubleSide,roughness:1});}
 let foliageMaterial;function leafMat(){return foliageMaterial??=new T.MeshStandardMaterial({map:leafMap(),alphaTest:.45,side:T.DoubleSide,roughness:1});}
@@ -21,7 +22,7 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  function tornStrip(points,depth,x,y,z,angle=0,color=stone){const shape=new T.Shape();points.forEach(([a,b],i)=>i?shape.lineTo(a,b):shape.moveTo(a,b));shape.closePath();const mesh=new T.Mesh(new T.ExtrudeGeometry(shape,{depth,bevelEnabled:false}),mat(color));mesh.rotation.y=angle;mesh.position.set(x,y,z+offset);root.add(mesh);return mesh;}
  function entranceSteps(front,side,z){for(let k=0;k<6;k++){const h=.17*(6-k);box(.36,h,1.8,front-side*(.18+k*.3),.27+h/2,z,stone,true);}for(const dz of[-.94,.94])rod([front-side*.2,2.15,z+dz],[front-side*1.68,1.25,z+dz],.035);}
  function leaves(x,y,z,w=1,h=1,angle=0){const mesh=new T.Mesh(new T.PlaneGeometry(w,h),leafMat());mesh.position.set(x,y,z+offset);mesh.rotation.set((r()-.5)*.7,angle,0);root.add(mesh);}
- function ivy(x,y,z,height){rod([x,y,z],[x+.15,y+height,z],.025,0x52643c);for(let j=0;j<height*7;j++)leaves(x+(r()-.5)*.6,y+j/7,z+.06 ,.55,.7,Math.PI/2);}
+ function ivy(x,y,z,height){rod([x,y,z],[x+.15,y+height,z],.025,0x52643c);for(let j=0;j<height*4;j++)leaves(x+(r()-.5)*.9,y+j/4,z+.06,.65,.8,Math.PI/2+(r()-.5)*.35);}
  box(36,.15,36,0,-.11,0,0x39403b);box(10,.08,36,0,-.025,0,0x424741);
  for(const side of[-1,1]){box(3.6,.04,36,side*6.8,-.005,0,stone,true);colliders.at(-1).walkable=true;for(let z=-17.5;z<18;z+=1){box(.18,.04,.94,side*5.05,-.005,z,0xb4b3a2);box(3.5,.012,.025,side*6.8,.022,z,0x666d60);}for(let x=5.6;x<8.6;x+=.8)box(.018,.012,36,side*x,.023,0,0x757969);}
  for(let z=-15;z<18;z+=6)box(.12,.02,2,0,.03,z,0xb1b29a);
