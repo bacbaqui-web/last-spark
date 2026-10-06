@@ -17,6 +17,7 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  function rod(a,b,width=.06,color=steel){const va=new T.Vector3(...a),vb=new T.Vector3(...b),delta=vb.clone().sub(va),m=new T.Mesh(new T.CylinderGeometry(width,width,delta.length(),6),mat(color));m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),delta.normalize());m.position.copy(va.add(vb).multiplyScalar(.5));m.position.z+=offset;root.add(m);}
  function originalWall(id,x,y,z,width,height,angle){const t=library.get(id);if(!t)return false;for(const p of t.parts){if(!originalWallMaterials.has(p.material.uuid)){const material=p.material.clone();material.color.multiply(new T.Color(0xa1745b));originalWallMaterials.set(p.material.uuid,material);}const mesh=new T.Mesh(p.geometry,originalWallMaterials.get(p.material.uuid));mesh.userData.shared=true;mesh.scale.set(width/t.size.x,height/t.size.y,.4/t.size.z);mesh.rotation.y=angle;mesh.position.set(x,y,z+offset);root.add(mesh);}return true;}
  function tornStrip(points,depth,x,y,z,angle=0,color=stone){const shape=new T.Shape();points.forEach(([a,b],i)=>i?shape.lineTo(a,b):shape.moveTo(a,b));shape.closePath();const mesh=new T.Mesh(new T.ExtrudeGeometry(shape,{depth,bevelEnabled:false}),mat(color));mesh.rotation.y=angle;mesh.position.set(x,y,z+offset);root.add(mesh);return mesh;}
+ function entranceSteps(front,side,z){for(let k=0;k<6;k++){const h=.17*(6-k);box(.36,h,1.8,front-side*(.18+k*.3),.27+h/2,z,stone,true);}for(const dz of[-.94,.94])rod([front-side*.2,2.15,z+dz],[front-side*1.68,1.25,z+dz],.035);}
  function leaves(x,y,z,w=1,h=1,angle=0){const mesh=new T.Mesh(new T.PlaneGeometry(w,h),leafMat());mesh.position.set(x,y,z+offset);mesh.rotation.set((r()-.5)*.7,angle,0);root.add(mesh);}
  function ivy(x,y,z,height){rod([x,y,z],[x+.15,y+height,z],.025,0x52643c);for(let j=0;j<height*7;j++)leaves(x+(r()-.5)*.6,y+j/7,z+.06 ,.55,.7,Math.PI/2);}
  box(36,.15,36,0,-.11,0,0x39403b);box(10,.08,36,0,-.025,0,0x424741);
@@ -36,12 +37,12 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  if(!hole(f-1,c)){jagged('bottom');box(roomDepth,.15,cellWidth,front+b.side*roomDepth/2,y+.1,z,stone);}
  if(f<b.floors-1&&!hole(f+1,c)){jagged('top');box(roomDepth,.15,cellWidth,front+b.side*roomDepth/2,y+3.02,z,stone);}
  rod([front+b.side*.15,y+.25,z-cellWidth*.32],[front+b.side*.5,y+.7,z-cellWidth*.18],.025);continue;}
- if(originalWall(type==='door'?'wall_1_door_boarded':'wall_1_window_1',front,y,z,cellWidth,3.1,-b.side*Math.PI/2)){if(type==='door'){for(let k=0;k<6;k++)box(.38,.17*(k+1),1.8,front-b.side*(.25+k*.32),.27+.085*(k+1),z,stone,true);}else if(type==='boarded'){for(let k=0;k<3;k++)box(.12,.2,cellWidth*.6,face-b.side*.18,y+1+k*.5,z,0x8a7756);}continue;}
+ if(originalWall(type==='door'?'wall_1_door_boarded':'wall_1_window_1',front,y,z,cellWidth,3.1,-b.side*Math.PI/2)){if(type==='door'){entranceSteps(front,b.side,z);}else if(type==='boarded'){for(let k=0;k<3;k++)box(.12,.2,cellWidth*.6,face-b.side*.18,y+1+k*.5,z,0x8a7756);}continue;}
  box(.38,3.1,cellWidth,front,y+1.55,z,color);box(.28,.18,cellWidth,front-b.side*.1,y+.1,z,0x614333);
  box(roomDepth,.15,cellWidth,front+b.side*roomDepth/2,y+.1,z,stone);
  const wh=type==='door'?2.3:1.65,ww=type==='door'?1.1:cellWidth*.57,wy=y+(type==='door'?1.15:1.75);
  box(.04,wh,ww,face,wy,z,0x25332e);for(const dz of[-ww/2,ww/2])box(.16,wh+.18,.12,face-b.side*.05,wy,z+dz,0xa18166);for(const dy of[-wh/2,wh/2])box(.18,.12,ww+.22,face-b.side*.08,wy+dy,z,0xa18166);
- if(type==='door'){for(let k=0;k<3;k++)box(.5,.18*(k+1),1.6,front-b.side*(.3+k*.4),.27+.09*(k+1),z,stone,true);}
+ if(type==='door'){entranceSteps(front,b.side,z);}
  else if(type==='boarded'){for(let k=0;k<3;k++){const plank=box(.13,.2,ww,face-b.side*.12,wy-.5+k*.5,z,0x8a7756);plank.rotation.x=(k-1)*.22;}}
  else{box(.12,wh,.045,face-b.side*.07,wy,z,0x766e59);if(type==='broken'){for(let k=0;k<3;k++)box(.05,.25,.16,face-b.side*.13,wy+(r()-.5)*wh,z+(r()-.5)*ww,0x75928e);}}
  }}
