@@ -33,6 +33,16 @@ context.SALVAGE=SALVAGE;context.URLSearchParams=URLSearchParams;const memory=new
 source=source.slice(0,source.lastIndexOf('if(salvageMode){\n baseUI'))+source.slice(source.indexOf('let cargoRack=null'));
 source+=`baseUI={show(){},hide(){},root:{hidden:true}};sortieHUD={hidden:true};extractPrompt={hidden:true};baseBack={hidden:true};
 selectedWeapons=['shotgun','bow'];reset(false);launchRemoteFrame();active=true;damageGrace=999;assert(slotAmmo[0]===24&&player.pos.z===sortieWorld.route.start.z,'entrance and carried ammo');startRoadSortie();assert(enemies.length===25,'all patrols and guardian preplaced');assert(enemies.every(e=>e.awareness.state==='idle'),'initially unaware');assert(enemies.every(e=>!platforms.some(p=>Math.abs(e.group.position.x-p.x)<p.w/2+.7&&Math.abs(e.group.position.z-p.z)<p.d/2+.7)),'patrols spawn outside cover');assert(Math.abs(sortieWorld.route.length-380)<.001&&sortieWorld.route.width===36,'five times length and twice width');for(let s=0;s<=380;s++){const p=sortieWorld.route.sample(s);assert(!platforms.some(q=>Math.abs(p.x-q.x)<q.w/2+.6&&Math.abs(p.z-q.z)<q.d/2+.6),'continuous clear route');}
+const layout=enemies.filter(e=>!e.boss).map(e=>[e.group.position.x,e.group.position.z]);
+for(let round=0;round<30;round++){
+ for(const e of enemies){scene.remove(e.group);disposeRobot(e.robot);}enemies.length=0;
+ for(let distance=42;distance<340;distance+=42)spawnRoadGroup(distance,3);
+ assert(enemies.length===24,'random layout retains patrol count');
+ assert(enemies.every(e=>sortieWorld.route.progress(e.group.position)>=28),'safe entrance');
+ assert(enemies.every((e,i)=>!platforms.some(p=>Math.abs(e.group.position.x-p.x)<p.w/2+1&&Math.abs(e.group.position.z-p.z)<p.d/2+1)&&enemies.slice(i+1).every(other=>e.group.position.distanceTo(other.group.position)>=3.5)),'random placement clear of cover and enemies');
+ assert(enemies.some((e,i)=>Math.hypot(e.group.position.x-layout[i][0],e.group.position.z-layout[i][1])>1),'fresh random layout');
+}
+for(const e of enemies){scene.remove(e.group);disposeRobot(e.robot);}enemies.length=0;sortie.bossSpawned=false;startRoadSortie();
 const first=enemies[0],before=first.group.position.clone();for(let i=0;i<60;i++)updateRoadAwareness(first,1/60);assert(first.group.position.distanceTo(before)<.001&&first.awareness.state==='idle','distant enemy does not chase');
 player.pos.copy(first.group.position).add(new THREE.Vector3(0,1.7,5));scene.updateMatrixWorld(true);updateRoadAwareness(first,1);assert(first.awareness.state==='checking','checks first');updateRoadAwareness(first,1.5);assert(first.awareness.state==='combat','detects after seconds');assert(enemies[1].awareness.signal,'nearby ally investigates');assert(enemies[1].awareness.state!=='combat','ally does not instantly attack');
 player.pos.copy(sortieWorld.target.position).setY(1.703);interactRoadSortie();assert(!sortie.core,'locked reward cannot collect');

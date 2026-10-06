@@ -549,9 +549,17 @@ function launchRemoteFrame(){
 }
 function spawnRoadGroup(distance,count,returning=false){
  for(let i=0;i<count;i++){
-  const type=['trooper','scoutDrone','assassin'][i%3];spawn(false,type);const e=enemies.at(-1),p=sortieWorld.route.sample(distance+i*3,(i%2?1:-1)*(4+i%3*1.5));
-  let placed=p;for(let attempt=0;attempt<32;attempt++){const candidate=sortieWorld.route.sample(distance+i*3+Math.floor(attempt/4)*2,((attempt%4)-1.5)*3);if(!platforms.some(q=>Math.abs(candidate.x-q.x)<q.w/2+1&&Math.abs(candidate.z-q.z)<q.d/2+1)){placed=candidate;break;}}e.group.position.set(placed.x,type==='scoutDrone'?7:0,placed.z);e.bossAnchor.copy(e.group.position);e.hp=e.max=type==='scoutDrone'?40:type==='assassin'?75:55;e.speed*=returning?1.08:1;
-  e.awareness={state:'idle',timer:0,delay:2.3+i*.25,signal:false};e.home=e.group.position.clone();e.group.rotation.y=Math.atan2(p.dx,p.dz)+i;
+  // Keep encounters spread along the road, but shuffle positions within each sector.
+  const type=['trooper','scoutDrone','assassin'][i%3];let placed=null;
+  for(let attempt=0;attempt<160;attempt++){
+   const candidate=sortieWorld.route.sample(THREE.MathUtils.clamp(distance+(Math.random()-.5)*30,28,sortieWorld.route.length-24),(Math.random()-.5)*Math.min(sortieWorld.route.width*.72,24));
+   if(platforms.some(q=>Math.abs(candidate.x-q.x)<q.w/2+1&&Math.abs(candidate.z-q.z)<q.d/2+1))continue;
+   if(enemies.some(e=>Math.hypot(candidate.x-e.group.position.x,candidate.z-e.group.position.z)<3.5))continue;
+   placed=candidate;break;
+  }
+  if(!placed)continue;
+  spawn(false,type);const e=enemies.at(-1);e.group.position.set(placed.x,type==='scoutDrone'?7:0,placed.z);e.bossAnchor.copy(e.group.position);e.hp=e.max=type==='scoutDrone'?40:type==='assassin'?75:55;e.speed*=returning?1.08:1;
+  e.awareness={state:'idle',timer:0,delay:2.3+i*.25,signal:false};e.home=e.group.position.clone();e.group.rotation.y=Math.random()*Math.PI*2;
  }
 }
 function startRoadSortie(){
