@@ -8,6 +8,15 @@ export function createEquipmentModel(type,segment=''){const d=EQUIPMENT[type],ro
  const sphere=(size,pos,material=mat,start=0,length=Math.PI)=>add(new THREE.SphereGeometry(1,24,16,0,Math.PI*2,start,length),material,pos,size);
  if(d.slot==='head'){
   if(d.shape==='beanie'){sphere([.156,.20,.145],[0,.035,0],mat,0,Math.PI*.44);add(new THREE.TorusGeometry(.148,.024,10,32),mat,[0,.075,0]).rotation.x=Math.PI/2;sphere([.035,.035,.035],[0,.245,0]);for(let i=0;i<12;i++){const a=i*Math.PI/6;box([.009,.10,.009],[Math.cos(a)*.15,.07,Math.sin(a)*.14],dark);}}
+  else if(d.shape==='tactical'){
+   // A deep shell leaves a real opening around the robot's existing eye strip.
+   const size=[.174,.195,.165],center=[0,.015,-.005],upper=Math.acos((.055-center[1])/size[1]),lower=Math.acos((-.015-center[1])/size[1]);
+   sphere(size,center,mat,0,upper);
+   add(new THREE.SphereGeometry(1,32,8,Math.PI*.75,Math.PI*1.5,upper,lower-upper),mat,center,size);
+   sphere(size,center,mat,lower,Math.PI*.78-lower);
+   box([.23,.018,.035],[0,.061,.153]);box([.23,.018,.035],[0,-.021,.153]);
+   for(const x of[-.16,.16])box([.026,.09,.065],[x,-.055,0],dark);
+  }
   else{sphere([.167,.215,.153],[0,.025,-.005],mat,0,Math.PI*.44);if(d.shape==='cycle'){for(let i=-1;i<=1;i++)box([.027,.03,.16],[i*.055,.22,.01],dark);}else{box([.22,.06,.028],[0,.105,.148],dark);if(d.shape==='moto'){sphere([.162,.072,.16],[0,-.09,0],mat,Math.PI*.3,Math.PI*.7);box([.16,.03,.024],[0,.105,.167],light);}else{box([.22,.025,.1],[0,.085,.15]);for(const x of[-.16,.16])box([.025,.085,.065],[x,-.045,0],dark);}}}
  }else if(d.slot==='chest'){
   if(segment.startsWith('upperarm')){add(new THREE.CylinderGeometry(.10,.10,.12,18,1,true),mat,[0,.03,0]);return root;}box([.34,.31,.235],[0,0,0]);if(d.shape==='tshirt'){box([.26,.025,.018],[0,.045,.125],dark);}else{box([.27,.23,.035],[0,0,.135],dark);for(const x of[-.095,.095])box([.067,.065,.034],[x,-.055,.167]);for(const x of[-.14,.14])box([.025,.25,.024],[x,0,.13],dark);if(d.shape==='medic'){box([.085,.021,.01],[0,.04,.16],light);box([.021,.085,.01],[0,.04,.16],light);}}
