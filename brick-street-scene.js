@@ -51,7 +51,12 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  if(b.ivy>.2){for(let k=0;k<2;k++)ivy(front-b.side*.22,.4,b.z-3+k*5,H*.85);}
  }
  // City infrastructure follows fixed planting/utility slots; state varies, positions do not.
- for(const side of[-1,1])for(const z of[-12,0,12]){const x=side*5.65;box(1,.015,1.2,x,.285,z,0x344b32);rod([x,.3,z],[x,9.2,z],.23,0x615642);for(let k=0;k<7;k++){const a=k*2.4,dx=Math.cos(a)*2,dz=Math.sin(a)*2;rod([x,6+k*.4,z],[x+dx,9+k*.4,z+dz],.085,0x615642);}for(let k=0;k<70;k++){const a=k*2.4,rad=Math.sqrt(r())*3.1;leaves(x+Math.cos(a)*rad,8+r()*4,z+Math.sin(a)*rad,1.8,2,a);} }
+ // Mature street trees form overlapping horizontal foliage decks above the road.
+ for(const side of[-1,1])for(const z of[-12,0,12]){const x=side*5.65,crownX=x-side*1.1;box(1,.015,1.2,x,.285,z,0x344b32);rod([x,.3,z],[x,9.8,z],.3,0x615642);
+ for(let k=0;k<10;k++){const a=k*Math.PI*2/10,dx=Math.cos(a)*4.7,dz=Math.sin(a)*4.2;rod([x,6.5+(k%3)*.6,z],[crownX+dx,9.4+(k%2)*.6,z+dz],.11,0x615642);}
+ for(let layer=0;layer<4;layer++){const radiusX=[4.8,5.4,4.4,3.0][layer],radiusZ=[4.1,4.7,3.8,2.6][layer];for(let gx=-radiusX;gx<=radiusX;gx+=.95)for(let gz=-radiusZ;gz<=radiusZ;gz+=.95){const q=(gx/radiusX)**2+(gz/radiusZ)**2;if(q>1)continue;const mesh=new T.Mesh(new T.PlaneGeometry(1.85,2.05),leafMat());mesh.position.set(crownX+gx+(r()-.5)*.28,9+layer*1.05+(1-q)*.85+(r()-.5)*.15,z+gz+offset+(r()-.5)*.28);mesh.rotation.set(-Math.PI/2+(r()-.5)*.16,(r()-.5)*.12,r()*Math.PI*2);root.add(mesh);}}
+ }
+
  for(const side of[-1,1])for(const z of[-9,9]){const x=side*6.9;rod([x,.3,z],[x,6.7,z],.11);rod([x-.6,6.1,z],[x+.6,6.1,z],.06);rod([x,6.7,z],[x-side*1.8,6.6,z],.05);box(.55,.15,.35,x-side*1.8,6.5,z,steel);}
  for(const side of[-1,1]){rod([side*6.9,6.3,-18],[side*6.9,5.8,0],.014);rod([side*6.9,5.8,0],[side*6.9,6.3,18],.014);}
  for(const mound of block.rubble){const wall=mound.side*7.3;for(let k=0;k<6;k++){const depth=mound.reach/6,h=mound.height*(1-k/6),x=wall-mound.side*(k+.5)*depth;box(depth,h,5,x,h/2,mound.z,0x777264,true);for(let j=0;j<4;j++){const m=box(.3+r()*.7,.15+r()*.28,.3+r()*.7,x,h+.1,mound.z+(r()-.5)*5,j%2?stone:0x86543c);m.rotation.set(r()*.5,r()*3,r()*.4);growthTargets.push({object:m,kind:'rubble'});}}
