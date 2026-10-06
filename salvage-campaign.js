@@ -35,6 +35,7 @@ export function createCampaign(storage){let state;try{const parsed=JSON.parse(st
  // A reloaded or closed sortie has no remotely recoverable robot. Preserve the hangar.
  if(state.deployed){const old=state.deployed;finish({...old,cargo:[],weapons:[],finished:false},false,0,'출격 중 원격 연결 종료');}
  return {get state(){return state;},get storageError(){return storageError;},save,frame,
+ rename(name){if(state.deployed||typeof name!=='string')return false;const value=name.trim().slice(0,24);if(!value)return false;frame().name=value;save();return true;},
  select(id){if(state.frames.some(f=>f.id===id)){state.selected=id;save();}},
  build(){const spare=state.stash.findIndex(()=>true);if(spare<0)return false;state.stash.splice(spare,1);const f=freshFrame(state.nextId++);state.frames.push(f);state.selected=f.id;save();return true;},
  markModulesSeen(ids){const set=new Set(ids);for(const p of state.stash)if(set.has(p.id))p.isNew=false;save();},
