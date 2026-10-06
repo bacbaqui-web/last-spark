@@ -64,7 +64,7 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  // Mature street trees form overlapping horizontal foliage decks above the road.
  for(const side of[-1,1])for(const z of[-12,0,12]){const x=side*5.65,crownX=x-side*1.1,occupied=treeCanopyMask((block.seed+Math.imul(z+19,7919)+(side>0?104729:0))>>>0);box(1,.015,1.2,x,.285,z,0x344b32);rod([x,.3,z],[x,9.8,z],.3,0x615642);
  for(let k=0;k<10;k++){const a=k*Math.PI*2/10,dx=Math.cos(a)*4.7,dz=Math.sin(a)*4.2;rod([x,6.5+(k%3)*.6,z],[crownX+dx,9.4+(k%2)*.6,z+dz],.11,0x615642);}
- for(let layer=0;layer<4;layer++){const radiusX=[4.8,5.4,4.4,3.0][layer],radiusZ=[4.1,4.7,3.8,2.6][layer];for(const cell of occupied)for(let a=0;a<3;a++)for(let b=0;b<3;b++){const gx=-5.4+(cell%4+(a+.5)/3)*2.7,gz=-4.7+(Math.floor(cell/4)+(b+.5)/3)*2.35,q=(gx/radiusX)**2+(gz/radiusZ)**2;if(q>1.45)continue;const mesh=new T.Mesh(new T.PlaneGeometry(.95,1.05),leafMat());mesh.position.set(crownX+gx+(r()-.5)*.12,9+layer*1.05+Math.max(0,1-q)*.85+(r()-.5)*.15,z+gz+offset+(r()-.5)*.12);mesh.rotation.set(-Math.PI/2+(r()-.5)*.16,(r()-.5)*.12,r()*Math.PI*2);root.add(mesh);}}
+ for(let layer=0;layer<4;layer++){const radiusX=[4.8,5.4,4.4,3.0][layer],radiusZ=[4.1,4.7,3.8,2.6][layer];for(const cell of occupied)for(let a=0;a<3;a++)for(let b=0;b<3;b++){const gx=-5.4+(cell%4+(a+.5)/3)*2.7,gz=-4.7+(Math.floor(cell/4)+(b+.5)/3)*2.35,q=(gx/radiusX)**2+(gz/radiusZ)**2;if(q>1.45)continue;const mesh=new T.Mesh(new T.PlaneGeometry(1.85,2.05),leafMat());mesh.position.set(crownX+gx+(r()-.5)*.12,9+layer*1.05+Math.max(0,1-q)*.85+(r()-.5)*.15,z+gz+offset+(r()-.5)*.12);mesh.rotation.set(-Math.PI/2+(r()-.5)*.16,(r()-.5)*.12,r()*Math.PI*2);root.add(mesh);}}
 
  }
 
