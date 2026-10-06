@@ -30,7 +30,7 @@ source=source.replace("import {moveBladeBoss,tryBladeLeap,moveDroneBoss} from '.
 source=source.replace("import {ADS_POSES,keepAimClear} from './weapon-view.js';",'const {ADS_POSES,keepAimClear}=VIEW;');
 
 context.SALVAGE=SALVAGE;context.URLSearchParams=URLSearchParams;const memory=new Map();context.window.location={search:''};context.window.localStorage={getItem:k=>memory.get(k),setItem:(k,v)=>memory.set(k,v)};
-source=source.slice(0,source.lastIndexOf('if(salvageMode){\n baseUI'))+source.slice(source.indexOf('let cargoRack=null'));
+source=source.slice(0,source.lastIndexOf('if(salvageMode){\n makeWeaponImages();'))+source.slice(source.indexOf('let cargoRack=null'));
 source+=`baseUI={show(){},hide(){},root:{hidden:true}};sortieHUD={hidden:true};extractPrompt={hidden:true};baseBack={hidden:true};
 selectedWeapons=['shotgun','bow'];reset(false);launchRemoteFrame();active=true;damageGrace=999;assert(slotAmmo[0]===24&&player.pos.z===sortieWorld.route.start.z,'entrance and carried ammo');startRoadSortie();assert(enemies.length===25,'all patrols and guardian preplaced');assert(enemies.every(e=>e.awareness.state==='idle'),'initially unaware');assert(enemies.every(e=>!platforms.some(p=>Math.abs(e.group.position.x-p.x)<p.w/2+.7&&Math.abs(e.group.position.z-p.z)<p.d/2+.7)),'patrols spawn outside cover');assert(Math.abs(sortieWorld.route.length-380)<.001&&sortieWorld.route.width===36,'five times length and twice width');for(let s=0;s<=380;s++){const p=sortieWorld.route.sample(s);assert(!platforms.some(q=>Math.abs(p.x-q.x)<q.w/2+.6&&Math.abs(p.z-q.z)<q.d/2+.6),'continuous clear route');}
 const layout=enemies.filter(e=>!e.boss).map(e=>[e.group.position.x,e.group.position.z]);
