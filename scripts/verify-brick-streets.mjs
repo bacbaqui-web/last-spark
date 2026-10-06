@@ -21,3 +21,24 @@ for(let seed=0;seed<6;seed++){const block=generateBrickBlock(seed),root=buildBri
 assert(irregular>5,'broken perimeter must vary along its height');console.log('PASS irregular fracture silhouettes along opening edges');
 
 const masks=new Set();for(let seed=0;seed<100;seed++){const mask=treeCanopyMask(seed);assert.equal(mask.length,12);assert.equal(new Set(mask).size,12);assert(mask.every(c=>c>=0&&c<16));assert.deepEqual(mask,treeCanopyMask(seed));masks.add(mask.join());}assert(masks.size>80);console.log("PASS reproducible 4x4 canopy masks with twelve occupied cells and varied silhouettes");
+
+import {populateBrickRoute} from '../brick-street-world.js';
+import {scaleCityWorld} from '../city-world-scale.js';
+import {movePlayerWithSlide} from '../player-movement.js';
+globalThis.localStorage={getItem:()=>null};
+const city=new T.Group(),terrain=[],route=populateBrickRoute(123,library,city,terrain,{destination:'brick',blocks:1});
+const oldLength=route.length,oldBounds=route.bounds.z,oldHeight=terrain.find(p=>p.walkable).h;
+scaleCityWorld(city,terrain,route);
+assert.equal(route.length,oldLength*1.2);assert.equal(route.width,12);assert.equal(route.bounds.z,oldBounds*1.2);
+assert.equal(terrain.find(p=>p.walkable).h,oldHeight*1.2);
+assert(Math.abs(route.progress(route.sample(route.length*.7))-route.length*.7)<1e-8);
+for(const side of [-1,1])for(const fps of [30,144]){
+ const pavement=terrain.find(p=>p.walkable&&p.x*side>0);let pos=new T.Vector3(side*4.8,1.703,0);
+ for(const direction of [side,-side])for(let i=0;i<fps*.5;i++){
+  const velocity=new T.Vector3(direction*6,-23/fps,0),step=movePlayerWithSlide(pos,pos.clone().addScaledVector(velocity,1/fps),velocity,[pavement]);
+  assert(!step.blocked,'road/sidewalk crossing must not block');pos=step.position;
+ }
+ assert(Math.abs(pos.x-side*4.8)<.01,'crossing and returning preserves horizontal travel');
+}
+city.children.forEach(disposeBrickStreet);
+console.log('PASS 1.2x geometry, collision, route distances/bounds and bidirectional sidewalk crossing at 30/144 FPS');

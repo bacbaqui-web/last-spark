@@ -21,7 +21,7 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  function leaves(x,y,z,w=1,h=1,angle=0){const mesh=new T.Mesh(new T.PlaneGeometry(w,h),leafMat());mesh.position.set(x,y,z+offset);mesh.rotation.set((r()-.5)*.7,angle,0);root.add(mesh);}
  function ivy(x,y,z,height){rod([x,y,z],[x+.15,y+height,z],.025,0x52643c);for(let j=0;j<height*7;j++)leaves(x+(r()-.5)*.6,y+j/7,z+.06 ,.55,.7,Math.PI/2);}
  box(36,.15,36,0,-.11,0,0x39403b);box(10,.08,36,0,-.025,0,0x424741);
- for(const side of[-1,1]){box(3.6,.3,36,side*6.8,.12,0,stone,true);for(let z=-17.5;z<18;z+=1){box(.18,.34,.94,side*5.05,.13,z,0xb4b3a2);box(3.5,.012,.025,side*6.8,.277,z,0x666d60);}for(let x=5.6;x<8.6;x+=.8)box(.018,.012,36,side*x,.278,0,0x757969);}
+ for(const side of[-1,1]){box(3.6,.04,36,side*6.8,-.005,0,stone,true);colliders.at(-1).walkable=true;for(let z=-17.5;z<18;z+=1){box(.18,.04,.94,side*5.05,-.005,z,0xb4b3a2);box(3.5,.012,.025,side*6.8,.022,z,0x666d60);}for(let x=5.6;x<8.6;x+=.8)box(.018,.012,36,side*x,.023,0,0x757969);}
  for(let z=-15;z<18;z+=6)box(.12,.02,2,0,.03,z,0xb1b29a);
  for(const b of block.buildings){const front=b.side*8.6,center=b.side*12.6,H=b.floors*3.1,color=bricks[b.tone],buildingWidth=brickBuildingWidth(b),cellWidth=buildingWidth/b.columns;
  // Recessed interior shell: openings are empty geometry, while the rear structure blocks entry.
@@ -62,7 +62,7 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  // Shallow side alleys breathe between houses, with a recessed boundary wall.
  for(const side of[-1,1])for(const z of[-18,-9,0,9,18]){box(.25,2.8,2,side*10.5,1.4,z,0x614333,true);for(let k=0;k<5;k++)rod([side*10.5,2.8,z-.85+k*.42],[side*10.5,3.25,z-.85+k*.42],.025);}
  // Mature street trees form overlapping horizontal foliage decks above the road.
- for(const side of[-1,1])for(const z of[-12,0,12]){const x=side*5.65,crownX=x-side*1.1,occupied=treeCanopyMask((block.seed+Math.imul(z+19,7919)+(side>0?104729:0))>>>0);box(1,.015,1.2,x,.285,z,0x344b32);rod([x,.3,z],[x,9.8,z],.3,0x615642);
+ for(const side of[-1,1])for(const z of[-12,0,12]){const x=side*5.65,crownX=x-side*1.1,occupied=treeCanopyMask((block.seed+Math.imul(z+19,7919)+(side>0?104729:0))>>>0);box(1,.015,1.2,x,.03,z,0x344b32);rod([x,.3,z],[x,9.8,z],.3,0x615642);
  for(let k=0;k<10;k++){const a=k*Math.PI*2/10,dx=Math.cos(a)*4.7,dz=Math.sin(a)*4.2;rod([x,6.5+(k%3)*.6,z],[crownX+dx,9.4+(k%2)*.6,z+dz],.11,0x615642);}
  // Occupied tiles seed rounded overlapping tufts, rather than rectangular leaf patches.
  for(const cell of occupied){let cx=-5.4+(cell%4+.5)*2.7+(r()-.5)*.8,cz=-4.7+(Math.floor(cell/4)+.5)*2.35+(r()-.5)*.8;const centerQ=(cx/5.4)**2+(cz/4.7)**2;if(centerQ>.88){const scale=Math.sqrt(.88/centerQ);cx*=scale;cz*=scale;}const tuftSize=1.4+r()*.6,tuftHeight=(r()-.5)*.7;
@@ -78,7 +78,7 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  for(const v of block.vehicles){const t=getRuinedVehicle(v.id,v.paint??0)||library.get(v.id);if(!t)continue;const g=new T.Group();for(const p of t.parts){const m=new T.Mesh(p.geometry,p.material);m.userData.shared=true;g.add(m);}const scale=(VEHICLE_TYPES.find(t=>t.id===v.id)?.length||(v.id==='car'?5.2:7))/t.maxSize;g.scale.setScalar(scale);g.rotation.set(0,v.angle,v.roll);g.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(g);g.position.set(v.x-(bounds.min.x+bounds.max.x)/2,-bounds.min.y,v.z+offset-(bounds.min.z+bounds.max.z)/2);root.add(g);
  // Conservative collision includes overturned vehicles. One pavement is reachable around each zone.
  const w=bounds.max.x-bounds.min.x,d=bounds.max.z-bounds.min.z,h=bounds.max.y-bounds.min.y;const safeX=T.MathUtils.clamp(v.x,-5+w/2,5-w/2);g.position.x+=safeX-v.x;colliders.push({x:safeX,z:v.z+offset,w,d,h});growthTargets.push({object:g,kind:'vehicle'});}
- for(let i=0;i<385;i++){const side=i%2?1:-1,x=side*(i%5===0?.6+r()*3.7:4.3+r()*3.9),z=-16+r()*32;for(let k=0;k<3;k++){const height=.4+r()*.65,m=new T.Mesh(new T.PlaneGeometry(.5,height),grassMat());m.position.set(x,(Math.abs(x)>5.05?.27:.03)+height/2,z+offset);m.rotation.y=k*Math.PI/3;root.add(m);}}
+ for(let i=0;i<385;i++){const side=i%2?1:-1,x=side*(i%5===0?.6+r()*3.7:4.3+r()*3.9),z=-16+r()*32;for(let k=0;k<3;k++){const height=.4+r()*.65,m=new T.Mesh(new T.PlaneGeometry(.5,height),grassMat());m.position.set(x, .03+height/2,z+offset);m.rotation.y=k*Math.PI/3;root.add(m);}}
  // Surface growth runs only after all rigid assets have their final pose.
  root.updateMatrixWorld(true);const ray=new T.Raycaster(),down=new T.Vector3(0,-1,0),up=new T.Vector3(0,1,0),planeNormal=new T.Vector3(0,0,1);let surfacePlants=0;
  function plantAt(hit,grass=false){const normal=hit.face.normal.clone().transformDirection(hit.object.matrixWorld);const m=new T.Mesh(new T.PlaneGeometry(grass?.35:.32,grass?.38:.42),grass?grassMat():leafMat());m.position.copy(hit.point).addScaledVector(normal,.025);if(grass){m.position.y+=.18;m.rotation.y=r()*Math.PI;}else{m.quaternion.setFromUnitVectors(planeNormal,normal);m.rotateZ(r()*Math.PI*2);}root.add(m);surfacePlants++;return m;}
