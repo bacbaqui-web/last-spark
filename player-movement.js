@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 const RADIUS=.35,HEIGHT=1.7,HEAD=.2,SKIN=.003,EPS=1e-8;
 const axes=['x','y','z'];
-function expanded(p){return {min:{x:p.x-p.w/2-RADIUS,y:(p.base||0)-HEAD,z:p.z-p.d/2-RADIUS},max:{x:p.x+p.w/2+RADIUS,y:p.h+HEIGHT,z:p.z+p.d/2+RADIUS}};}
+function expanded(p){const radius=p.vehicle?.27:RADIUS;return {min:{x:p.x-p.w/2-radius,y:(p.base||0)-HEAD,z:p.z-p.d/2-radius},max:{x:p.x+p.w/2+radius,y:p.h+HEIGHT,z:p.z+p.d/2+radius}};}
 function inside(p,b){return axes.every(a=>p[a]>b.min[a]+EPS&&p[a]<b.max[a]-EPS);}
 function clip(v,n){const inward=v.dot(n);if(inward<0)v.addScaledVector(n,-inward);}
 function sweep(start,delta,b){let enter=-Infinity,exit=Infinity,normal=new THREE.Vector3();for(const a of axes){if(Math.abs(delta[a])<EPS){if(start[a]<=b.min[a]+EPS||start[a]>=b.max[a]-EPS)return null;continue;}const t1=(b.min[a]-start[a])/delta[a],t2=(b.max[a]-start[a])/delta[a],near=Math.min(t1,t2),far=Math.max(t1,t2);if(near>enter){enter=near;normal.set(0,0,0);normal[a]=delta[a]>0?-1:1;}exit=Math.min(exit,far);if(enter>exit)return null;}if(enter<-EPS||enter>1||exit<0||delta.dot(normal)>=-EPS)return null;return {time:Math.max(0,enter),normal};}

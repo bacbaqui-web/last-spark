@@ -1,3 +1,4 @@
+import {vehicleColliders} from './vehicle-collision.js';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {getRuinedVehicle,VEHICLE_TYPES} from './ruined-vehicles.js';
@@ -76,8 +77,8 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  for(const mound of block.rubble){const wall=mound.side*8.5;for(let k=0;k<6;k++){const depth=mound.reach/6,h=mound.height*(1-k/6),x=wall-mound.side*(k+.5)*depth;box(depth,h,5,x,h/2,mound.z,0x777264,true);for(let j=0;j<4;j++){const m=box(.3+r()*.7,.15+r()*.28,.3+r()*.7,x,h+.1,mound.z+(r()-.5)*5,j%2?stone:0x86543c);m.rotation.set(r()*.5,r()*3,r()*.4);growthTargets.push({object:m,kind:'rubble'});}}
  for(let j=0;j<7;j++){const x=wall-mound.side*r()*mound.reach;rod([x,.6,mound.z-2+r()*4],[x-.6*mound.side,1.1,mound.z+r()*2],.035);}}
  for(const v of block.vehicles){const t=getRuinedVehicle(v.id,v.paint??0)||library.get(v.id);if(!t)continue;const g=new T.Group();for(const p of t.parts){const m=new T.Mesh(p.geometry,p.material);m.userData.shared=true;g.add(m);}const scale=(VEHICLE_TYPES.find(t=>t.id===v.id)?.length||(v.id==='car'?5.2:7))/t.maxSize;g.scale.setScalar(scale);g.rotation.set(0,v.angle,v.roll);g.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(g);g.position.set(v.x-(bounds.min.x+bounds.max.x)/2,-bounds.min.y,v.z+offset-(bounds.min.z+bounds.max.z)/2);root.add(g);
- // Conservative collision includes overturned vehicles. One pavement is reachable around each zone.
- const w=bounds.max.x-bounds.min.x,d=bounds.max.z-bounds.min.z,h=bounds.max.y-bounds.min.y;const safeX=T.MathUtils.clamp(v.x,-5+w/2,5-w/2);g.position.x+=safeX-v.x;colliders.push({x:safeX,z:v.z+offset,w,d,h});growthTargets.push({object:g,kind:'vehicle'});}
+ // Keep placement inside the road, but use the posed vehicle silhouette for collision.
+ const w=bounds.max.x-bounds.min.x,d=bounds.max.z-bounds.min.z,h=bounds.max.y-bounds.min.y;const safeX=T.MathUtils.clamp(v.x,-5+w/2,5-w/2);g.position.x+=safeX-v.x;g.updateMatrixWorld(true);colliders.push(...vehicleColliders(g));growthTargets.push({object:g,kind:'vehicle'});}
  for(let i=0;i<385;i++){const side=i%2?1:-1,x=side*(i%5===0?.6+r()*3.7:4.3+r()*3.9),z=-16+r()*32;for(let k=0;k<3;k++){const height=.4+r()*.65,m=new T.Mesh(new T.PlaneGeometry(.5,height),grassMat());m.position.set(x, .03+height/2,z+offset);m.rotation.y=k*Math.PI/3;root.add(m);}}
  // Surface growth runs only after all rigid assets have their final pose.
  root.updateMatrixWorld(true);const ray=new T.Raycaster(),down=new T.Vector3(0,-1,0),up=new T.Vector3(0,1,0),planeNormal=new T.Vector3(0,0,1);let surfacePlants=0;

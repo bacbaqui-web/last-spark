@@ -19,3 +19,13 @@ for(const dt of[1/144,1/60,1/30,.04]){let pos=v(-2,1.703,-6),velocity=v(30,-.5,3
 // Fixed seed: sweep long and short movements through neighboring/overlapping boxes.
 let seed=9127;const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);const boxes=[...corner,platform,{x:1,z:-3,w:2,d:2,h:3}];for(let i=0;i<1000;i++){const start=v(random()*20-10,1.7+random()*6,random()*20-10),velocity=v(random()*300-150,random()*80-40,random()*300-150),next=move(start,start.clone().addScaledVector(velocity,.04),velocity,boxes,{dash:true});assert(boxes.every(b=>!overlap(next.position,b)),'random sweep/overlap recovery remains outside solid boxes');assert(next.position.toArray().every(Number.isFinite),'finite movement');}
 console.log('PASS: smooth full-speed wall slide, frontal/corner stop, overlap recovery, thin wall tunneling, landing/ceiling/platform edge, 30–144 FPS, 1000 seeded sweeps');
+
+const {vehicleColliders}=await import('../vehicle-collision.js');
+const angle=Math.PI/4,along=v(Math.sin(angle),0,Math.cos(angle)),across=v(Math.cos(angle),0,-Math.sin(angle));
+for(const roll of [0,.15]){
+ const cars=[-1,1].map(side=>{const car=new THREE.Mesh(new THREE.BoxGeometry(2,1.5,6),new THREE.MeshBasicMaterial());car.position.copy(across.clone().multiplyScalar(side*1.7)).setY(.75);car.rotation.set(0,angle,roll);return car;});
+ const carBoxes=cars.flatMap(car=>vehicleColliders(car));
+ for(const fps of [30,144]){let pos=along.clone().multiplyScalar(-4).setY(1.703);for(let i=0;i<fps*2;i++){const velocity=along.clone().multiplyScalar(4).setY(-23/fps),step=move(pos,pos.clone().addScaledVector(velocity,1/fps),velocity,carBoxes);assert(!step.blocked,'body-width diagonal vehicle gap stays passable');pos=step.position;}assert(pos.dot(along)>3.9,'full travel through rotated vehicle gap');}
+ for(const car of cars){car.geometry.dispose();car.material.dispose();}
+}
+console.log('PASS actual vehicle silhouettes allow diagonal gaps at 30/144 FPS, including tilted vehicles');
