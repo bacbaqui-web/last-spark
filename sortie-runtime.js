@@ -1,3 +1,4 @@
+export {assistedDirection} from './aim-assist.js';
 export {createBackEquipmentRuntime} from './back-equipment-runtime.js';
 export {createEquipmentModel} from './equipment-models.js';
 export {EQUIPMENT,EQUIPMENT_SLOTS,makeEquipment,lootEquipment} from './equipment.js';

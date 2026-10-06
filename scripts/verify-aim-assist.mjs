@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import * as T from 'three';
+import {assistedDirection} from '../aim-assist.js';
+const origin=new T.Vector3(),forward=new T.Vector3(0,0,-1),target=new T.Mesh(new T.BoxGeometry(.5,1,.5),new T.MeshBasicMaterial());target.position.set(.5,0,-20);target.updateMatrixWorld(true);const enemy={hp:100,robot:{hitMeshes:[target]}};
+assert.deepEqual(assistedDirection(origin,forward,[enemy],0).toArray(),forward.toArray());
+const corrected=assistedDirection(origin,forward,[enemy],.15);assert(corrected.x>0);const ray=new T.Raycaster(origin,corrected);assert(ray.intersectObject(target).length,'near miss becomes a hit');
+assert.deepEqual(assistedDirection(origin,forward,[enemy],.06).toArray(),forward.toArray(),'weaker gear has a smaller correction cone');
+const wall=new T.Mesh(new T.BoxGeometry(3,3,.5),new T.MeshBasicMaterial());wall.position.z=-10;wall.updateMatrixWorld(true);assert.deepEqual(assistedDirection(origin,forward,[enemy],.65,[wall]).toArray(),forward.toArray(),'cover blocks assist');
+enemy.hp=0;assert.deepEqual(assistedDirection(origin,forward,[enemy],.65).toArray(),forward.toArray());enemy.hp=100;
+assert.deepEqual(assistedDirection(origin,forward,[enemy],.65,[],10).toArray(),forward.toArray(),'range is respected');
+target.position.x=0;target.updateMatrixWorld(true);const direct=new T.Vector3(.005,0,-1).normalize();assert.deepEqual(assistedDirection(origin,direct,[enemy],.65).toArray(),direct.toArray(),'existing aim hits remain untouched');
+assert.deepEqual(forward.toArray(),[0,0,-1],'camera direction is not mutated');
+console.log('PASS aim correction strength, near misses, direct aim, cover, range, dead targets and unchanged camera');

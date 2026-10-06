@@ -17,7 +17,7 @@ export const EQUIPMENT={
  autoTurret:{name:'자동 사격 팔',slot:'back',color:0x8ca371,shape:'autoTurret',options:{autoDamage:12}},
  houndPack:{name:'로봇 사냥개',slot:'back',color:0xd79b55,shape:'houndPack',options:{houndDamage:22}},
 };
-const labels={shield:['방어막 내구도',''],autoDamage:['자동 사격 피해',''],houndDamage:['사냥개 공격력',''],maxHP:['최대 HP',''],accuracy:['명중률','%'],headshot:['헤드샷 피해','%'],defense:['받는 피해 감소','%'],evasion:['회피율','%'],regen:['HP 회복','/초'],crit:['치명타 확률','%'],melee:['근접 피해','%'],speed:['이동속도','%'],drain:['이동 배터리 절약','%'],battery:['배터리',''],dashEfficiency:['대시 배터리 절약','%']};
+const labels={shield:['방어막 내구도',''],autoDamage:['자동 사격 피해',''],houndDamage:['사냥개 공격력',''],maxHP:['최대 HP',''],accuracy:['에임 보정','%'],headshot:['헤드샷 피해','%'],defense:['받는 피해 감소','%'],evasion:['회피율','%'],regen:['HP 회복','/초'],crit:['치명타 확률','%'],melee:['근접 피해','%'],speed:['이동속도','%'],drain:['이동 배터리 절약','%'],battery:['배터리',''],dashEfficiency:['대시 배터리 절약','%']};
 export function makeEquipment(type,id=`gear-${Date.now()}-${Math.random().toString(36).slice(2)}`,random=Math.random){const def=EQUIPMENT[type];if(!def)throw Error('Unknown equipment');const quality=.85+random()*.3;return {id,type,level:1,options:Object.fromEntries(Object.entries(def.options).map(([k,v])=>[k,k==='jet'?v:Math.round(v*quality*1000)/1000]))};}
 export function equipmentOptions(item){return Object.fromEntries(Object.entries(item.options||EQUIPMENT[item.type].options).map(([k,v])=>[k,k==='jet'?v:v*(1+.15*((item.level||1)-1))]));}
 export function equipmentDescription(item){return Object.entries(equipmentOptions(item)).map(([k,v])=>k==='jet'?'제트 대시 / 이단 점프':`${labels[k][0]} +${labels[k][1]==='%'?Math.round(v*100):Math.round(v*10)/10}${labels[k][1]}`).join(' · ');}
