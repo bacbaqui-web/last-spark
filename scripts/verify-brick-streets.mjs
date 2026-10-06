@@ -42,3 +42,14 @@ for(const side of [-1,1])for(const fps of [30,144]){
 }
 city.children.forEach(disposeBrickStreet);
 console.log('PASS 1.2x geometry, collision, route distances/bounds and bidirectional sidewalk crossing at 30/144 FPS');
+
+import {createBrickPath,bendBrickBlock} from '../brick-route-path.js';
+import {rng} from '../brick-street-layout.js';
+for(let seed=0;seed<100;seed++){
+ const path=createBrickPath(12,rng(seed)),again=createBrickPath(12,rng(seed));assert.deepEqual(path.route.points,again.route.points);
+ assert(path.route.points.some(p=>Math.abs(p.x)>10),'street bends sideways');
+ for(let i=1;i<path.blocks.length;i++)assert.deepEqual(path.blocks[i-1].bottom,path.blocks[i].top,'adjacent blocks join without gaps');
+ for(let s=0;s<path.route.length;s+=3)assert(Math.abs(path.route.progress(path.route.sample(s))-s)<1e-7,'distance and return progress follow bends');
+ for(const block of path.blocks){const geometry=new T.BoxGeometry(10,.04,36),mesh=new T.Group();geometry.translate(0,0,(block.top.z+block.bottom.z)/2);mesh.add(new T.Mesh(geometry));const colliders=bendBrickBlock(mesh,[{x:6.8,z:(block.top.z+block.bottom.z)/2,w:3.6,d:36,h:.015,walkable:true}],block);assert.equal(colliders.length,18);assert(colliders.every(p=>p.w<4.4),'curved sidewalk cannot create a broad blocking box');geometry.dispose();}
+}
+console.log('PASS 100 bent routes: deterministic turns, joined block seams, arc-length progress and tight pavement collisions');
