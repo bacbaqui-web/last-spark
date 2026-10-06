@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {validateBlock,corridorIssues,assembleStreetBlocks} from '../street-blocks.js';
+const library=new Map([['car',{size:{x:2,y:1.5,z:5},maxSize:5}],['ruin-wall',{size:{x:1.5,y:4,z:1.5},maxSize:4}]]);
+const make=(id,x)=>validateBlock({version:1,id,name:id,size:40,roadWidth:10,surface:'asphalt',objects:[{uid:id,asset:'car',x,y:0,z:0,rotation:0,scale:1,solid:true}]});
+const a=make('a',4),b=make('b',-4);
+assert.equal(corridorIssues(a,library).length,0);assert.equal(corridorIssues(make('blocked',0),library).length,1);
+assert.throws(()=>assembleStreetBlocks(1,[make('blocked',0)],library));assert.throws(()=>validateBlock({...a,size:100}));assert.throws(()=>validateBlock({...a,objects:[{...a.objects[0],x:Infinity}]}));
+const one=assembleStreetBlocks(17,[a,b],library),same=assembleStreetBlocks(17,[a,b],library),other=assembleStreetBlocks(5,[a,b],library);
+assert.deepEqual(one.items,same.items);assert.notDeepEqual(one.items,other.items);assert.equal(one.route.length,360);assert.equal(one.floors.length,9);assert.equal(one.route.sample(360).z,-180);assert.equal(one.route.progress({x:0,z:0}),180);assert.deepEqual(one.items.filter(o=>o.authored).map(o=>o.z),[160,120,80,40,0,-40,-80,-120,-160]);
+assert.throws(()=>assembleStreetBlocks(1,[a,{...b,roadWidth:8}],library));
+console.log('PASS: block input validation, player corridor, compatible joins, deterministic variety, exact placement and continuous 360m route');
