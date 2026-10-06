@@ -33,7 +33,6 @@ export function decorateRobot(r,boss=false,type='trooper'){
  // A spherical head keeps the existing eye strip and slim neck.
  r.head.geometry=new THREE.SphereGeometry(.5,28,20);r.head.scale.set(.28,.28,.28);r.head.userData.cosmetic=true;
  const helmet=new THREE.Group();helmet.name='round-helmet';helmet.position.copy(r.head.position);helmet.quaternion.copy(r.head.quaternion);r.head.parent.add(helmet);
- detailBatch(r.body,[[[.23,.035,.025],[0,.14,-.13],identity]]);
  const backpack=new THREE.Group();backpack.name='original-backpack';r.body.add(backpack);detailBatch(backpack,[[[.3,.32,.15],[0,.015,-.22],black]]);r.backpack=backpack;
  for(const [index,arm]of r.arms.entries()){
   const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.10,24,16),black);shoulder.scale.set(1.02,1,1.02);shoulder.position.y=.005;shoulder.userData.cosmetic=true;arm.shoulder.add(shoulder);
