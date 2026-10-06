@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {scaleCityWorld} from './city-world-scale.js';
+import {scaleCityWorld,TREE_LOCAL_SCALE} from './city-world-scale.js';
 import {populateBrickRoute} from './brick-street-world.js';
 import {disposeBrickStreet} from './brick-street-scene.js';
 import {loadPurchasedModels} from './purchased-model-library.js';
@@ -31,7 +31,7 @@ export function createAtomicCityWorld(scene,platforms,mats){
   const end=route.end;part(10,.08,12,end.x,.04,end.z-3,roadMaterial);
   const placements=new Map();let count=0;
   for(const item of layout.items){const template=templates.get(item.id);if(!template)continue;
-   const scale=item.size/template.maxSize,sx=item.dimensions?item.dimensions[0]/template.size.x:scale,sy=item.dimensions?item.dimensions[1]/template.size.y:scale,sz=item.dimensions?item.dimensions[2]/template.size.z:scale,transform=new T.Matrix4().compose(new T.Vector3(item.x,item.y||0,item.z),new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),item.angle),new T.Vector3(sx,sy,sz));
+   const scale=item.size/template.maxSize,sx=item.dimensions?item.dimensions[0]/template.size.x:scale,sy=item.dimensions?item.dimensions[1]/template.size.y:scale,sz=item.dimensions?item.dimensions[2]/template.size.z:scale,transform=new T.Matrix4().compose(new T.Vector3(item.x,item.y||0,item.z),new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),item.angle),new T.Vector3(sx,sy,sz).multiplyScalar(item.id==='lush-tree'?TREE_LOCAL_SCALE:1));
    if(!placements.has(item.id))placements.set(item.id,[]);placements.get(item.id).push(transform);count++;
    if(item.solid){const w=(Math.abs(Math.cos(item.angle))*template.size.x+Math.abs(Math.sin(item.angle))*template.size.z)*scale,d=(Math.abs(Math.sin(item.angle))*template.size.x+Math.abs(Math.cos(item.angle))*template.size.z)*scale,h=template.size.y*scale;
     // Reserve an unbroken three-metre corridor, including at bends; reject overlaps.

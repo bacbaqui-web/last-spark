@@ -1,4 +1,5 @@
-export const CITY_SCALE=1.2;
+export const TREE_LOCAL_SCALE=1/1.2;
+export const CITY_SCALE=1.44;
 // Scale the rendered city and its navigation/collision data together once per rebuild.
 export function scaleCityWorld(root,platforms,route,...markers){
  const k=CITY_SCALE,sample=route.sample,progress=route.progress;

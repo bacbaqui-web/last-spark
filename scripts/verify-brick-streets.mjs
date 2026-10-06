@@ -23,14 +23,14 @@ assert(irregular>5,'broken perimeter must vary along its height');console.log('P
 const masks=new Set();for(let seed=0;seed<100;seed++){const mask=treeCanopyMask(seed);assert.equal(mask.length,12);assert.equal(new Set(mask).size,12);assert(mask.every(c=>c>=0&&c<16));assert.deepEqual(mask,treeCanopyMask(seed));masks.add(mask.join());}assert(masks.size>80);console.log("PASS reproducible 4x4 canopy masks with twelve occupied cells and varied silhouettes");
 
 import {populateBrickRoute} from '../brick-street-world.js';
-import {scaleCityWorld} from '../city-world-scale.js';
+import {scaleCityWorld,CITY_SCALE} from '../city-world-scale.js';
 import {movePlayerWithSlide} from '../player-movement.js';
 globalThis.localStorage={getItem:()=>null};
 const city=new T.Group(),terrain=[],route=populateBrickRoute(123,library,city,terrain,{destination:'brick',blocks:1});
 const oldLength=route.length,oldBounds=route.bounds.z,oldHeight=terrain.find(p=>p.walkable).h;
 scaleCityWorld(city,terrain,route);
-assert.equal(route.length,oldLength*1.2);assert.equal(route.width,12);assert.equal(route.bounds.z,oldBounds*1.2);
-assert.equal(terrain.find(p=>p.walkable).h,oldHeight*1.2);
+assert.equal(route.length,oldLength*CITY_SCALE);assert.equal(route.width,10*CITY_SCALE);assert.equal(route.bounds.z,oldBounds*CITY_SCALE);
+assert.equal(terrain.find(p=>p.walkable).h,oldHeight*CITY_SCALE);
 assert(Math.abs(route.progress(route.sample(route.length*.7))-route.length*.7)<1e-8);
 for(const side of [-1,1])for(const fps of [30,144]){
  const pavement=terrain.find(p=>p.walkable&&p.x*side>0);let pos=new T.Vector3(side*4.8,1.703,0);
@@ -41,7 +41,7 @@ for(const side of [-1,1])for(const fps of [30,144]){
  assert(Math.abs(pos.x-side*4.8)<.01,'crossing and returning preserves horizontal travel');
 }
 city.children.forEach(disposeBrickStreet);
-console.log('PASS 1.2x geometry, collision, route distances/bounds and bidirectional sidewalk crossing at 30/144 FPS');
+console.log('PASS scaled geometry, collision, route distances/bounds and bidirectional sidewalk crossing at 30/144 FPS');
 
 import {createBrickPath,bendBrickBlock} from '../brick-route-path.js';
 import {rng} from '../brick-street-layout.js';
@@ -53,3 +53,5 @@ for(let seed=0;seed<100;seed++){
  for(const block of path.blocks){const geometry=new T.BoxGeometry(10,.04,36),mesh=new T.Group();geometry.translate(0,0,(block.top.z+block.bottom.z)/2);mesh.add(new T.Mesh(geometry));const colliders=bendBrickBlock(mesh,[{x:6.8,z:(block.top.z+block.bottom.z)/2,w:3.6,d:36,h:.015,walkable:true}],block);assert.equal(colliders.length,18);assert(colliders.every(p=>p.w<4.4),'curved sidewalk cannot create a broad blocking box');geometry.dispose();}
 }
 console.log('PASS 100 bent routes: deterministic turns, joined block seams, arc-length progress and tight pavement collisions');
+
+const treeScene=buildBrickStreet(generateBrickBlock(37),library);treeScene.updateMatrixWorld(true);const trunks=treeScene.children.filter(m=>m.material.color.getHex()===0x615642);assert(trunks.length);const trunkBounds=new T.Box3().setFromObject(trunks[0]);assert(trunkBounds.max.y*CITY_SCALE<12.2,'tree height stays at its previous size while map grows');disposeBrickStreet(treeScene);

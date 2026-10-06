@@ -1,3 +1,4 @@
+import {TREE_LOCAL_SCALE} from './city-world-scale.js';
 import {vehicleColliders} from './vehicle-collision.js';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
@@ -63,13 +64,12 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  // Shallow side alleys breathe between houses, with a recessed boundary wall.
  for(const side of[-1,1])for(const z of[-18,-9,0,9,18]){box(.25,2.8,2,side*10.5,1.4,z,0x614333,true);for(let k=0;k<5;k++)rod([side*10.5,2.8,z-.85+k*.42],[side*10.5,3.25,z-.85+k*.42],.025);}
  // Mature street trees form overlapping horizontal foliage decks above the road.
- for(const side of[-1,1])for(const z of[-12,0,12]){const x=side*5.65,crownX=x-side*1.1,occupied=treeCanopyMask((block.seed+Math.imul(z+19,7919)+(side>0?104729:0))>>>0);box(1,.015,1.2,x,.03,z,0x344b32);rod([x,.3,z],[x,9.8,z],.3,0x615642);
+ for(const side of[-1,1])for(const z of[-12,0,12]){const treeStart=root.children.length;const x=side*5.65,crownX=x-side*1.1,occupied=treeCanopyMask((block.seed+Math.imul(z+19,7919)+(side>0?104729:0))>>>0);box(1,.015,1.2,x,.03,z,0x344b32);rod([x,.3,z],[x,9.8,z],.3,0x615642);
  for(let k=0;k<10;k++){const a=k*Math.PI*2/10,dx=Math.cos(a)*4.7,dz=Math.sin(a)*4.2;rod([x,6.5+(k%3)*.6,z],[crownX+dx,9.4+(k%2)*.6,z+dz],.11,0x615642);}
  // Occupied tiles seed rounded overlapping tufts, rather than rectangular leaf patches.
  for(const cell of occupied){let cx=-5.4+(cell%4+.5)*2.7+(r()-.5)*.8,cz=-4.7+(Math.floor(cell/4)+.5)*2.35+(r()-.5)*.8;const centerQ=(cx/5.4)**2+(cz/4.7)**2;if(centerQ>.88){const scale=Math.sqrt(.88/centerQ);cx*=scale;cz*=scale;}const tuftSize=1.4+r()*.6,tuftHeight=(r()-.5)*.7;
  for(let layer=0;layer<4;layer++)for(let k=0;k<22;k++){const a=k*2.399+cell*.43,rad=Math.sqrt((k+.5)/22)*tuftSize*(1-layer*.13),gx=cx+Math.cos(a)*rad,gz=cz+Math.sin(a)*rad,q=(gx/5.4)**2+(gz/4.7)**2,outline=1+.09*Math.sin(Math.atan2(gz,gx)*9+cell);if(q>outline)continue;const w=1.35+r()*.45,mesh=new T.Mesh(new T.PlaneGeometry(w,w*(.9+r()*.2)),leafMat());mesh.position.set(crownX+gx,9+layer*.85+Math.max(0,1-q)*1.1+tuftHeight+(r()-.5)*.3,z+gz+offset);mesh.rotation.set(-Math.PI/2+(r()-.5)*.5,(r()-.5)*.25,r()*Math.PI*2);root.add(mesh);}}
-
-
+ for(const mesh of root.children.slice(treeStart)){mesh.position.sub(new T.Vector3(x,.03,z+offset)).multiplyScalar(TREE_LOCAL_SCALE).add(new T.Vector3(x,.03,z+offset));mesh.scale.multiplyScalar(TREE_LOCAL_SCALE);}
  }
 
  for(const side of[-1,1])for(const z of[-9,9]){const x=side*6.9;rod([x,.3,z],[x,6.7,z],.11);rod([x-.6,6.1,z],[x+.6,6.1,z],.06);rod([x,6.7,z],[x-side*1.8,6.6,z],.05);box(.55,.15,.35,x-side*1.8,6.5,z,steel);}
