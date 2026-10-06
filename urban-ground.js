@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-export function createUrbanGround(scene,platforms,{avenue=false}={}){
- const root=new THREE.Group();root.name='broken-streets-and-terraces';scene.add(root);
+export function createUrbanGround(scene,platforms,{avenue=false,route=null}={}){
+ const root=new THREE.Group();root.name='broken-streets-and-terraces';scene.add(root);if(route)return root;
  const asphalt=new THREE.MeshStandardMaterial({color:0x555b5c,roughness:1}),concrete=new THREE.MeshStandardMaterial({color:0xaaa695,roughness:1}),earth=new THREE.MeshStandardMaterial({color:0x788259,roughness:1}),paint=new THREE.MeshStandardMaterial({color:0xe4d5a1,roughness:1}),metal=new THREE.MeshStandardMaterial({color:0x535e64,roughness:.85});
  const geometry=new THREE.BoxGeometry(1,1,1);
  function part(mat,p,s,rotation=0){const m=new THREE.Mesh(geometry,mat);m.position.set(...p);m.scale.set(...s);m.rotation.y=rotation;m.receiveShadow=true;root.add(m);return m;}

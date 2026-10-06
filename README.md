@@ -1063,3 +1063,13 @@ The default game now starts in the human operator's base, with a hangar, recover
 - Equipped parts, weapons, ammunition and sortie cargo are lost with a destroyed robot. Secured stash and other robots survive. An identified spare part can assemble another basic frame; if all frames or usable starter weapon choices are lost, basic replacements prevent a dead end.
 - Campaign data is stored in this browser under `last-spark-salvage-v1`. A deployment marker forfeits the deployed robot on reload/reopen, preventing a refresh from avoiding loss. The base states this rule explicitly. Existing survival records remain separate. `?arena` retains the earlier survival mode for combat regression checks.
 - Validation: `npm run test:salvage` verifies inventory transfer, no field healing, road-sector/guardian/core/return interception integration, extraction, retained damage, frame/gear loss, reserve preservation, assembly, reload forfeiture and storage failures. Existing weapon and TPS regression scripts remain available.
+
+## 굽은 도로 회수 작전 (2026-10-06)
+
+기본 모드는 본거지에서 출격하는 원격 회수 작전입니다. 도로 중심선 길이 380m(기존 76m의 5배), 폭 36m(기존 18m의 2배)이며 여러 번 방향을 바꿉니다. 큰 건물, 가로수, 신호등, 차량과 낮은 엄폐물을 양쪽에 배치했습니다. 기존 웨이브 모드는 `?arena`로 유지됩니다.
+
+야생 기체 24대와 수호 개체는 처음부터 각 구역에 배치됩니다. 약 25m 안에서 시야가 확보되면 2.3~2.8초 확인한 뒤 전투를 시작합니다. 인식한 적 주변 28m의 동료도 경보를 받아 더 먼 거리에서 플레이어를 확인하지만 바로 공격하지는 않습니다. 건물과 엄폐물은 시야를 차단합니다.
+
+도로 끝 광장 중앙의 보상 상자는 수호 개체 처치 전에는 잠겨 있습니다. 처치 후 열린 상자에서 F로 코어를 회수하면 귀환로에 21대가 다시 배치됩니다. 코어와 부품은 입구에서 F로 철수해야 보관됩니다. 긴 왕복 거리에 맞춰 이동 배터리 소모를 거리당 0.12로 조정했습니다.
+
+`npm run test:salvage`는 경로 길이·폭, 중앙 통행, 엄폐물 밖 적 배치, 원거리 대기, 인식 지연·동료 경보, 보상 잠금·해제, 귀환 적 재배치, 회수 및 전손 보존 규칙을 검사합니다. 브라우저에서 입구의 도로·건물·나무·신호등 렌더링을 확인했습니다. 전체 왕복 전투의 난이도는 추가 플레이 조정 대상입니다.

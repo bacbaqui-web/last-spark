@@ -1,7 +1,7 @@
 import {terraceHeight} from './urban-ground.js';
 import * as THREE from 'three';
 // Seeded cosmetic scenery: arena movement/cover volumes remain gameplay-owned.
-export function createOvergrownCity(scene,platforms,{avenue=false}={}){
+export function createOvergrownCity(scene,platforms,{avenue=false,route=null}={}){
  const root=new THREE.Group();root.name='sunlit-overgrown-city';scene.add(root);
  let seed=7319;const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
  const concrete=new THREE.MeshStandardMaterial({color:0x8b8775,roughness:.95}),broken=new THREE.MeshStandardMaterial({color:0x555e52,roughness:1}),glass=new THREE.MeshStandardMaterial({color:0x303f3c,roughness:.65,metalness:.25}),moss=new THREE.MeshStandardMaterial({color:0x61743d,roughness:1}),leaf=new THREE.MeshStandardMaterial({color:0x467044,roughness:1}),grass=new THREE.MeshStandardMaterial({color:0x7a914b,roughness:1,side:THREE.DoubleSide});
@@ -11,7 +11,7 @@ export function createOvergrownCity(scene,platforms,{avenue=false}={}){
  }
  const weather=new THREE.DataTexture(texels,128,128);weather.wrapS=weather.wrapT=THREE.RepeatWrapping;weather.colorSpace=THREE.SRGBColorSpace;weather.magFilter=THREE.LinearFilter;weather.needsUpdate=true;concrete.map=broken.map=weather;
  const box=new THREE.BoxGeometry(1,1,1),dummy=new THREE.Object3D();
- function batch(name,geometry,mat,items){const mesh=new THREE.InstancedMesh(geometry,mat,items.length);mesh.name=name;for(let i=0;i<items.length;i++){const {p,s,r=0}=items[i];dummy.position.set(...p);dummy.scale.set(...s);dummy.rotation.set(0,r,0);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);if(['wild-grass','moss-and-hanging-vines','reclaimed-tree-canopies'].includes(name))mesh.setColorAt(i,new THREE.Color().setHSL(.22+random()*.09,.20+random()*.22,.35+random()*.18));}mesh.instanceMatrix.needsUpdate=true;mesh.castShadow=name==='ruined-towers';mesh.receiveShadow=true;root.add(mesh);return mesh;}
+ function batch(name,geometry,mat,items){if(route){if(['wild-grass','wall-ivy-leaves','collapsed-masonry'].includes(name))items=[];else if(name!=='high-sunlit-clouds')items=items.map(item=>({...item,p:[item.p[0]+(item.p[0]<0?-85:85),item.p[1],item.p[2]*2.2]}));}const mesh=new THREE.InstancedMesh(geometry,mat,items.length);mesh.name=name;for(let i=0;i<items.length;i++){const {p,s,r=0}=items[i];dummy.position.set(...p);dummy.scale.set(...s);dummy.rotation.set(0,r,0);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);if(['wild-grass','moss-and-hanging-vines','reclaimed-tree-canopies'].includes(name))mesh.setColorAt(i,new THREE.Color().setHSL(.22+random()*.09,.20+random()*.22,.35+random()*.18));}mesh.instanceMatrix.needsUpdate=true;mesh.castShadow=name==='ruined-towers';mesh.receiveShadow=true;root.add(mesh);return mesh;}
  const buildings=[],towers=[],windows=[],frames=[],growth=[],rubble=[];
  for(let i=0;i<82;i++){
   const a=i/82*Math.PI*2,r=60+random()*85,x=Math.sin(a)*r,z=Math.cos(a)*r,w=5+random()*7,d=5+random()*6,h=15+random()*42;
@@ -71,7 +71,7 @@ export function createOvergrownCity(scene,platforms,{avenue=false}={}){
   for(let j=0;j<3;j++)crowns.push({p:[x+(random()-.5)*2,h+j*.7,z+(random()-.5)*2],s:[1.8+random(),1.4+random(),1.8+random()]});
  }
  batch('reclaimed-tree-trunks',box,broken,trunks);batch('reclaimed-tree-canopies',new THREE.IcosahedronGeometry(1,1),leaf,crowns);
- const sky=new THREE.Mesh(new THREE.SphereGeometry(260,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{top:{value:new THREE.Color(0x68bff2)},horizon:{value:new THREE.Color(0xd9edf5)}},vertexShader:'varying vec3 localPosition;void main(){localPosition=position;gl_Position=projectionMatrix*mat4(mat3(viewMatrix))*vec4(position,1.0);}',fragmentShader:'varying vec3 localPosition;uniform vec3 top;uniform vec3 horizon;void main(){float h=clamp(normalize(localPosition).y,0.,1.);gl_FragColor=vec4(mix(horizon,top,pow(h,.6)),1.);}'}));sky.name='clear-blue-sky';sky.material.fog=false;root.add(sky);
+ const sky=new THREE.Mesh(new THREE.SphereGeometry(route?600:260,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{top:{value:new THREE.Color(0x68bff2)},horizon:{value:new THREE.Color(0xd9edf5)}},vertexShader:'varying vec3 localPosition;void main(){localPosition=position;gl_Position=projectionMatrix*mat4(mat3(viewMatrix))*vec4(position,1.0);}',fragmentShader:'varying vec3 localPosition;uniform vec3 top;uniform vec3 horizon;void main(){float h=clamp(normalize(localPosition).y,0.,1.);gl_FragColor=vec4(mix(horizon,top,pow(h,.6)),1.);}'}));sky.name='clear-blue-sky';sky.material.fog=false;root.add(sky);
  const clouds=[];for(let i=0;i<12;i++){const a=random()*6.28;for(let j=0;j<4;j++)clouds.push({p:[Math.sin(a)*100+j*4,70+random()*22,Math.cos(a)*100],s:[6+random()*5,1.3,3+random()*3]});}
  batch('high-sunlit-clouds',new THREE.SphereGeometry(1,24,12),new THREE.MeshBasicMaterial({color:0xf5f5e9,fog:false,transparent:true,opacity:.78,depthWrite:false}),clouds);
  root.userData.sceneryCounts={towers:towers.length,grass:tufts.length,trees:trunks.length,windows:windows.length};return root;
