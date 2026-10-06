@@ -630,7 +630,7 @@ if(salvageMode){
 }
 
 let cargoRack=null,cargoRackCount=-1;
-function updateCargoRack(){if(!salvageMode)return;if(!cargoRack){cargoRack=new THREE.Group();cargoRack.name='carried-salvage-parts';cargoRack.position.set(0,.02,-.2);playerAvatar.body.add(cargoRack);}const count=sortie&&!sortie.finished?sortie.cargo.length+sortie.lootEquipment.length:0;if(count===cargoRackCount)return;cargoRackCount=count;for(const mesh of [...cargoRack.children]){cargoRack.remove(mesh);mesh.geometry.dispose();mesh.material.dispose();}for(let i=0;i<Math.min(count,6);i++){const mesh=new THREE.Mesh(new THREE.BoxGeometry(.11,.09,.08),new THREE.MeshStandardMaterial({color:i===0&&sortie.core?0x9b78db:0x8b907d,metalness:.5,roughness:.6}));mesh.position.set((i%2-.5)*.12,.08-Math.floor(i/2)*.10,-.02);cargoRack.add(mesh);}}
+function updateCargoRack(){if(!salvageMode)return;if(!cargoRack){cargoRack=new THREE.Group();cargoRack.name='carried-salvage-parts';cargoRack.position.set(0,-.42,-.16);playerAvatar.body.add(cargoRack);}const count=sortie&&!sortie.finished?sortie.cargo.length+sortie.lootEquipment.length:0;if(count===cargoRackCount)return;cargoRackCount=count;for(const mesh of [...cargoRack.children]){cargoRack.remove(mesh);mesh.geometry.dispose();mesh.material.dispose();}for(let i=0;i<Math.min(count,6);i++){const mesh=new THREE.Mesh(new THREE.BoxGeometry(.11,.09,.08),new THREE.MeshStandardMaterial({color:i===0&&sortie.core?0x9b78db:0x8b907d,metalness:.5,roughness:.6}));mesh.position.set((i%2-.5)*.34,.08-Math.floor(i/2)*.10,-.02);cargoRack.add(mesh);}}
 
 if(import.meta.env.DEV&&salvageMode)window.atomicMapDebug={world:sortieWorld,platforms,scene,regenerate:seed=>{if(active)throw Error("출격 중에는 맵을 바꿀 수 없습니다");sortieWorld.regenerate(seed);return sortieWorld.ground.userData;}};
 
