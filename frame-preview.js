@@ -5,7 +5,7 @@ import {createRobot,animateRobot,disposeRobot} from './robot.js';
 let renderer;const cache=new Map();
 function clearModules(robot){for(const group of robot.frameModules||[]){group.removeFromParent();group.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose();}});}robot.frameModules=[];}
 function addModules(robot,parts){
- const colors={armor:0x9ab78a,drive:0xe4ab63,reactor:0x70ced5,weapon:0x76aaf1,jet:0xe89962,core:0xaf85e4};
+ const colors={armor:0x9ab78a,drive:0xe4ab63,reactor:0x70ced5,weapon:0x76aaf1,core:0xaf85e4};
  function mount(boneName,type){const bone=robot.bones.find(b=>b.name===boneName),base=bone?.children.find(m=>m.isMesh&&!m.userData.cosmetic&&!m.userData.weakPoint);if(!bone||!base)return null;const group=new THREE.Group();group.name='installed-'+type+'-'+boneName;group.userData.frameModule=true;group.position.copy(base.position);group.quaternion.copy(base.quaternion);bone.add(group);robot.frameModules.push(group);return group;}
  function piece(parent,size,pos,color,shape='box'){if(!parent)return;const geometry=shape==='sphere'?new THREE.SphereGeometry(.5,16,12):shape==='ring'?new THREE.TorusGeometry(.085,.014,6,20):shape==='cylinder'?new THREE.CylinderGeometry(.5,.5,1,16):new RoundedBoxGeometry(1,1,1,3,.12);const material=new THREE.MeshStandardMaterial({color,metalness:.6,roughness:.4,emissive:color,emissiveIntensity:shape==='ring'?.55:.04});const mesh=new THREE.Mesh(geometry,material);mesh.userData.cosmetic=true;mesh.scale.set(...size);mesh.position.set(...pos);parent.add(mesh);return mesh;}
  for(const {type,level}of parts){const color=colors[type];if(!color)continue;const torso=mount('spine_03',type);
@@ -14,7 +14,6 @@ function addModules(robot,parts){
   if(type==='weapon'){const wrist=mount('lowerarm_r',type);piece(wrist,[.11,.075,.035],[0,0,.095],color);piece(wrist,[.075,.04,.009],[0,0,.12],0xa5d5ff);piece(torso,[.055,.075,.025],[.08,.065,.115],color);}
   if(type==='reactor'){for(const side of[-1,1])piece(torso,[.085,.21,.085],[side*.06,0,-.15],color,'cylinder');piece(torso,[.16,.045,.03],[0,.1,-.2],0x33464b);}
   if(type==='core'){piece(torso,[.18,.18,.07],[0,0,-.145],0x37424c,'cylinder').rotation.x=Math.PI/2;piece(torso,[1,1,1],[0,0,-.19],color,'ring');piece(torso,[.1,.1,.07],[0,0,-.19],color,'sphere');}
-  if(type==='jet'){for(const side of[-1,1]){piece(torso,[.075,.19,.085],[side*.11,-.025,-.14],0x49575c,'cylinder');piece(torso,[.09,.045,.09],[side*.11,-.12,-.14],color,'cylinder');}}
   // Small illuminated rank marks convey upgrades without bloating the silhouette.
   for(let i=0;i<Math.min(3,level);i++)piece(torso,[.035,.009,.009],[-.04+i*.04,.13,.12],color);
  }

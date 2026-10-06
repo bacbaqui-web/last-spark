@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {createRobot,animateRobot,disposeRobot} from '../robot.js';
 import {applyFrameVisual} from '../frame-preview.js';
 import {frameStats} from '../salvage-campaign.js';
-const robot=createRobot(false,'player',.82),parts=['armor','drive','reactor','weapon','jet'].map(type=>({type,level:2})),stats=frameStats({parts});applyFrameVisual(robot,stats);
+const robot=createRobot(false,'player',.82),parts=['armor','drive','reactor','weapon'].map(type=>({type,level:2})),stats=frameStats({parts});applyFrameVisual(robot,stats);
 for(const type of parts.map(p=>p.type))assert(robot.frameModules.some(g=>g.name.startsWith('installed-'+type)),'visual '+type);
 const count=robot.frameModules.length;applyFrameVisual(robot,stats);assert.equal(robot.frameModules.length,count,'refresh does not duplicate modules');
 for(let i=0;i<30;i++)animateRobot(robot,1/60,{speed:8});robot.root.updateMatrixWorld(true);assert(robot.frameModules.every(g=>g.parent.isBone),'modules stay attached to animation bones');

@@ -1,3 +1,4 @@
+export {createBackEquipmentRuntime} from './back-equipment-runtime.js';
 export {createEquipmentModel} from './equipment-models.js';
 export {EQUIPMENT,EQUIPMENT_SLOTS,makeEquipment,lootEquipment} from './equipment.js';
 import {createAtomicCityWorld} from './atomic-city-world.js';
