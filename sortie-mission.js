@@ -1,0 +1,1 @@
+export function sortieMission(input={}){const raw=Number(input.blocks),blocks=Number.isFinite(raw)?Math.max(1,Math.min(12,Math.round(raw))):4;return {destination:input.destination==='saved'?'saved':'brick',blocks,length:blocks*36-16,difficulty:1+(blocks-1)*.15,enemyCount:2+Math.floor(blocks/4),name:input.destination==='saved'?'보관한 거리':'붉은 벽돌 주거지'};}

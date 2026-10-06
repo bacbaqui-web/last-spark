@@ -77,3 +77,5 @@
  #baseCamp .mountedWeaponStation{left:33.2%;top:75.97%;bottom:auto;width:182px}
  #baseCamp .equipmentStation{left:56.72%;right:auto;top:24.72%;bottom:auto;width:210px}
 }
+
+.missionField{display:grid;gap:10px;margin:22px 0;color:#c6d7c8}.missionField select,.missionField input{font:inherit;padding:14px;background:#16221c;color:#e7f0dc;border:1px solid #526348;border-radius:8px;width:100%;box-sizing:border-box}.missionField input{max-width:180px}
