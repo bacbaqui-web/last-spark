@@ -571,7 +571,7 @@ const backEquipment=SALVAGE.createBackEquipmentRuntime(scene,{hit:dealEnemyDamag
 function spawnRoadGroup(distance,count,returning=false){
  for(let i=0;i<count;i++){
   // Keep encounters spread along the road, but shuffle positions within each sector.
-  const type=['trooper','scoutDrone','assassin'][i%3];let placed=null;
+  const sector=Math.floor(distance/Math.max(1,sortieWorld.route.length/selectedMission.blocks)),type=['trooper','scoutDrone','spider','assassin'][(sector+i)%4];let placed=null;
   for(let attempt=0;attempt<160;attempt++){
    const candidate=sortieWorld.route.sample(THREE.MathUtils.clamp(distance+(Math.random()-.5)*18,4,sortieWorld.route.length-8),(Math.random()-.5)*Math.min(sortieWorld.route.width*.72,24));
    if(platforms.some(q=>Math.abs(candidate.x-q.x)<q.w/2+1&&Math.abs(candidate.z-q.z)<q.d/2+1))continue;
@@ -579,7 +579,7 @@ function spawnRoadGroup(distance,count,returning=false){
    placed=candidate;break;
   }
   if(!placed)continue;
-  spawn(false,type);const e=enemies.at(-1);e.group.position.set(placed.x,type==='scoutDrone'?7:0,placed.z);e.bossAnchor.copy(e.group.position);e.hp=e.max=(type==='scoutDrone'?40:type==='assassin'?75:55)*(sortie.mission?.difficulty||1);e.speed*=returning?1.08:1;
+  spawn(false,type);const e=enemies.at(-1);e.group.position.set(placed.x,type==='scoutDrone'?7:0,placed.z);e.bossAnchor.copy(e.group.position);e.hp=e.max=(type==='scoutDrone'?40:type==='assassin'?75:type==='spider'?24:55)*(sortie.mission?.difficulty||1);e.speed*=returning?1.08:1;
   e.awareness={state:'idle',timer:0,delay:2.3+i*.25,signal:false};e.home=e.group.position.clone();e.group.rotation.y=Math.random()*Math.PI*2;
  }
 }
@@ -591,7 +591,7 @@ function startRoadSortie(){
 }
 function updateRoadAwareness(e,dt){
  if(!e.awareness||e.awareness.state==='combat')return true;
- const eye=e.group.position.clone().add(new THREE.Vector3(0,e.boss?2.8:e.type==='scoutDrone'?.64:1.7,0)),delta=player.pos.clone().sub(eye),distance=delta.length();let visible=false;
+ const eye=e.group.position.clone().add(new THREE.Vector3(0,e.boss?2.8:e.type==='scoutDrone'?.64:e.type==='spider'?.35:1.7,0)),delta=player.pos.clone().sub(eye),distance=delta.length();let visible=false;
  if(distance<40){ray.set(eye,delta.normalize());ray.far=Math.max(0,distance-.4);visible=!ray.intersectObjects(worldObstacles,false).length;}
  if(SALVAGE.updateAwareness(e,dt,player.pos,visible,enemies)){e.attack=0;e.fireClock=.55;e.seenTime=1;return true;}
  e.wantFire=false;
@@ -607,14 +607,14 @@ function updateRoadAwareness(e,dt){
  }
  let speed=0;
  if(e.idlePatrolGoal){
-  const before=position.clone(),heading=new THREE.Vector3(e.idlePatrolGoal.x-position.x,0,e.idlePatrolGoal.z-position.z).normalize(),velocity=heading.multiplyScalar(e.boss?.7:e.type==='scoutDrone'?1.1:1.3),start=position.clone().add(new THREE.Vector3(0,1.7,0));
+  const before=position.clone(),heading=new THREE.Vector3(e.idlePatrolGoal.x-position.x,0,e.idlePatrolGoal.z-position.z).normalize(),velocity=heading.multiplyScalar(e.boss?.7:e.type==='scoutDrone'?.65:1.3),start=position.clone().add(new THREE.Vector3(0,1.7,0));
   if(e.type!=='scoutDrone')velocity.y=-23*dt;
   const step=movePlayerWithSlide(start,start.clone().addScaledVector(velocity,dt),velocity,platforms,{boundsX:platforms.bounds?.x||100,boundsZ:platforms.bounds?.z||210});position.copy(step.position).add(new THREE.Vector3(0,-1.7,0));
   speed=Math.hypot(position.x-before.x,position.z-before.z)/Math.max(dt,.001);
   if(speed<.1)e.patrolTime=Math.min(e.patrolTime,.4);
   if(speed>.1){const angle=Math.atan2(velocity.x,velocity.z),turn=Math.atan2(Math.sin(angle-e.group.rotation.y),Math.cos(angle-e.group.rotation.y));e.group.rotation.y+=turn*(1-Math.exp(-dt*5));}
  }
- if(e.type==='scoutDrone')animateBoss(e.robot,dt,time,0);else if(e.boss)animateBoss(e.robot,dt,time,0);else animateRobot(e.robot,dt,{speed,aim:0});
+ if(e.type==='scoutDrone'){position.y=THREE.MathUtils.damp(position.y,home.y+Math.sin(time*.8+home.x)*.18,2,dt);animateBoss(e.robot,dt,time,0);}else if(e.boss)animateBoss(e.robot,dt,time,0);else animateRobot(e.robot,dt,{speed,aim:0});
  e.group.updateMatrixWorld(true);return false;
 }
 function updateRoadSortie(dt){
