@@ -2,6 +2,7 @@ import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {getRuinedVehicle,VEHICLE_TYPES} from './ruined-vehicles.js';
 import {rng,hasBrickPassage} from './brick-street-layout.js';
+const originalWallMaterials=new Map();
 const materials=new Map();const mat=(color)=>{if(!materials.has(color))materials.set(color,new T.MeshStandardMaterial({color,roughness:1}));return materials.get(color);};
 let brickTexture;
 function brickMap(){if(brickTexture)return brickTexture;const c=document.createElement('canvas');c.width=c.height=256;const ctx=c.getContext('2d'),r=rng(934);ctx.fillStyle='#635e54';ctx.fillRect(0,0,256,256);for(let row=0;row<16;row++)for(let col=-1;col<8;col++){const v=170+Math.floor(r()*70);ctx.fillStyle=`rgb(${v},${v},${v})`;ctx.fillRect(col*32+(row%2)*16+1,row*16+1,30,14);}brickTexture=new T.CanvasTexture(c);brickTexture.colorSpace=T.SRGBColorSpace;brickTexture.wrapS=brickTexture.wrapT=T.RepeatWrapping;brickTexture.repeat.set(3,6);return brickTexture;}
@@ -14,6 +15,8 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  const growthTargets=[];const colliderStart=colliders.length;const root=new T.Group(),r=rng(block.seed),stone=0x929383,steel=0x444b43,bricks=[0x854b38,0x784333,0x92543c,0x6f3e31];
  function box(w,h,d,x,y,z,color,solid=false){if(bricks.includes(color))mat(color).map=brickMap();const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat(color));m.position.set(x,y,z+offset);root.add(m);if(solid)colliders.push({x,z:z+offset,w,d,h:y+h/2});return m;}
  function rod(a,b,width=.06,color=steel){const va=new T.Vector3(...a),vb=new T.Vector3(...b),delta=vb.clone().sub(va),m=new T.Mesh(new T.CylinderGeometry(width,width,delta.length(),6),mat(color));m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),delta.normalize());m.position.copy(va.add(vb).multiplyScalar(.5));m.position.z+=offset;root.add(m);}
+ function originalWall(id,x,y,z,width,height,angle){const t=library.get(id);if(!t)return false;for(const p of t.parts){if(!originalWallMaterials.has(p.material.uuid)){const material=p.material.clone();material.color.multiply(new T.Color(0xa1745b));originalWallMaterials.set(p.material.uuid,material);}const mesh=new T.Mesh(p.geometry,originalWallMaterials.get(p.material.uuid));mesh.userData.shared=true;mesh.scale.set(width/t.size.x,height/t.size.y,.4/t.size.z);mesh.rotation.y=angle;mesh.position.set(x,y,z+offset);root.add(mesh);}return true;}
+ function tornStrip(points,depth,x,y,z,angle=0,color=stone){const shape=new T.Shape();points.forEach(([a,b],i)=>i?shape.lineTo(a,b):shape.moveTo(a,b));shape.closePath();const mesh=new T.Mesh(new T.ExtrudeGeometry(shape,{depth,bevelEnabled:false}),mat(color));mesh.rotation.y=angle;mesh.position.set(x,y,z+offset);root.add(mesh);return mesh;}
  function leaves(x,y,z,w=1,h=1,angle=0){const mesh=new T.Mesh(new T.PlaneGeometry(w,h),leafMat());mesh.position.set(x,y,z+offset);mesh.rotation.set((r()-.5)*.7,angle,0);root.add(mesh);}
  function ivy(x,y,z,height){rod([x,y,z],[x+.15,y+height,z],.025,0x52643c);for(let j=0;j<height*7;j++)leaves(x+(r()-.5)*.6,y+j/7,z+.06 ,.55,.7,Math.PI/2);}
  box(36,.15,36,0,-.11,0,0x39403b);box(10,.08,36,0,-.025,0,0x424741);
@@ -28,12 +31,12 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  for(let f=0;f<b.floors;f++){const y=f*3.1;for(let c=0;c<b.columns;c++){const z=b.z-4.5+(c+.5)*cellWidth,type=b.cells[f*b.columns+c],face=front-b.side*.12;
  if(type==='collapsed'){
  // Only the outside perimeter gets torn masonry. Adjacent holes have no divider.
- const rim=(cy,cz,w,h)=>{box(.35,h,w,front,cy,cz,color);for(let k=0;k<3;k++){const chunk=box(.3,.16,.23,face-b.side*.04,cy+(r()-.5)*h,cz+(r()-.5)*w,stone);chunk.rotation.x=r();}};
- if(!hole(f,c-1))rim(y+1.55,z-cellWidth/2+.13,.26,3.1);
- if(!hole(f,c+1))rim(y+1.55,z+cellWidth/2-.13,.26,3.1);
- if(!hole(f-1,c)){rim(y+.12,z,cellWidth,.24);box(roomDepth,.15,cellWidth,front+b.side*roomDepth/2,y+.1,z,stone);}
- if(f<b.floors-1&&!hole(f+1,c)){rim(y+2.97,z,cellWidth,.26);box(roomDepth,.15,cellWidth,front+b.side*roomDepth/2,y+3.02,z,stone);}
+ const jagged=(edge)=>{const n=10,pts=[];if(edge==='left'||edge==='right'){const sign=edge==='left'?1:-1,border=z+(edge==='left'?-cellWidth/2:cellWidth/2);pts.push([border,y],[border,y+3.1]);for(let k=n;k>=0;k--)pts.push([border+sign*(.12+r()*.45),y+k*3.1/n]);}else{const sign=edge==='bottom'?1:-1,border=y+(edge==='bottom'?0:3.1);pts.push([z-cellWidth/2,border],[z+cellWidth/2,border]);for(let k=n;k>=0;k--)pts.push([z-cellWidth/2+k*cellWidth/n,border+sign*(.1+r()*.45)]);}tornStrip(pts.map(([z,y])=>[-z,y]),.4,front-.2,0,0,Math.PI/2,color);};
+ if(!hole(f,c-1))jagged('left');if(!hole(f,c+1))jagged('right');
+ if(!hole(f-1,c)){jagged('bottom');box(roomDepth,.15,cellWidth,front+b.side*roomDepth/2,y+.1,z,stone);}
+ if(f<b.floors-1&&!hole(f+1,c)){jagged('top');box(roomDepth,.15,cellWidth,front+b.side*roomDepth/2,y+3.02,z,stone);}
  rod([front+b.side*.15,y+.25,z-cellWidth*.32],[front+b.side*.5,y+.7,z-cellWidth*.18],.025);continue;}
+ if(originalWall(type==='door'?'wall_1_door_boarded':'wall_1_window_1',front,y,z,cellWidth,3.1,-b.side*Math.PI/2)){if(type==='door'){for(let k=0;k<6;k++)box(.38,.17*(k+1),1.8,front-b.side*(.25+k*.32),.27+.085*(k+1),z,stone,true);}else if(type==='boarded'){for(let k=0;k<3;k++)box(.12,.2,cellWidth*.6,face-b.side*.18,y+1+k*.5,z,0x8a7756);}continue;}
  box(.38,3.1,cellWidth,front,y+1.55,z,color);box(.28,.18,cellWidth,front-b.side*.1,y+.1,z,0x614333);
  box(roomDepth,.15,cellWidth,front+b.side*roomDepth/2,y+.1,z,stone);
  const wh=type==='door'?2.3:1.65,ww=type==='door'?1.1:cellWidth*.57,wy=y+(type==='door'?1.15:1.75);
@@ -45,8 +48,12 @@ export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
  const rearRoof=box(5.5,.23,9,front+b.side*5.45,H+.08,b.z,0x694635);growthTargets.push({object:rearRoof,kind:'roof'});
  for(let c=0;c<b.columns;c++){const z=b.z-4.5+(c+.5)*cellWidth;
  if(!hole(b.floors-1,c)){const roof=box(2.9,.23,cellWidth,front+b.side*1.25,H+.08,z,0x694635);growthTargets.push({object:roof,kind:'roof'});}
- else {for(let k=0;k<4;k++){const slab=box(.35+r()*.4,.18,cellWidth/5,front+b.side*(2.4+r()*.25),H-.12-r()*.3,z-cellWidth/2+(k+.5)*cellWidth/4,stone);slab.rotation.z=b.side*(.15+r()*.45);growthTargets.push({object:slab,kind:'rubble'});rod([front+b.side*2.65,H-.12,z-cellWidth*.3+k*.2],[front+b.side*(1.8+r()*.5),H-.4-r()*.5,z-cellWidth*.3+k*.2],.025);}}
+ else {const pts=[[z-cellWidth/2,2.8],[z+cellWidth/2,2.8]];for(let k=10;k>=0;k--)pts.push([z-cellWidth/2+k*cellWidth/10,2.7-(.15+r()*.7)]);const lip=tornStrip(pts.map(([z,d])=>[front+b.side*d,-z]),.18,0,H,0,0,stone);lip.rotation.x=-Math.PI/2;for(let k=0;k<4;k++){const slab=box(.35+r()*.4,.18,cellWidth/5,front+b.side*(2.4+r()*.25),H-.12-r()*.3,z-cellWidth/2+(k+.5)*cellWidth/4,stone);slab.rotation.z=b.side*(.15+r()*.45);growthTargets.push({object:slab,kind:'rubble'});rod([front+b.side*2.65,H-.12,z-cellWidth*.3+k*.2],[front+b.side*(1.8+r()*.5),H-.4-r()*.5,z-cellWidth*.3+k*.2],.025);}}
  }
+
+ // Reuse the brownstone's projecting cornices and exterior iron fire escape.
+ for(let f=1;f<b.floors;f++){const y=f*3.1,escapeCol=b.columns-1,z=b.z-4.5+(escapeCol+.5)*cellWidth;if(hole(f,escapeCol))continue;box(1.15,.1,Math.min(2.2,cellWidth),front-b.side*.65,y,z,steel);const edge=front-b.side*1.2;for(const dz of[-cellWidth*.42,cellWidth*.42])rod([edge,y,z+dz],[edge,y+1,z+dz],.035);rod([edge,y+1,z-cellWidth*.42],[edge,y+1,z+cellWidth*.42],.035);for(let k=0;k<9;k++)rod([edge,y,z-cellWidth*.4+k*cellWidth*.1],[edge,y+1,z-cellWidth*.4+k*cellWidth*.1],.02);if(f<b.floors-1&&!hole(f+1,escapeCol)){for(let k=0;k<10;k++)box(.65,.07,.22,front-b.side*.7,y+k*.31,z-cellWidth*.4+k*cellWidth*.08,steel);rod([edge,y+.1,z-cellWidth*.4],[edge,y+3.1,z+cellWidth*.4],.035);} }
+ for(let f=0;f<b.floors;f++)for(let c=0;c<b.columns;c++){if(hole(f,c)||hole(f-1,c))continue;box(.45,.14,cellWidth,front-b.side*.1,f*3.1+.12,b.z-4.5+(c+.5)*cellWidth,0x614333);}
 
  if(b.ivy>.2){for(let k=0;k<2;k++)ivy(front-b.side*.22,.4,b.z-3+k*5,H*.85);}
  }
