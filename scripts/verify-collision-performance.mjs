@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import * as T from 'three';
+import {nearbyColliders,navigationColliders} from '../collision-broadphase.js';
+import {movePlayerWithSlide} from '../player-movement.js';
+const platforms=Array.from({length:6000},(_,i)=>({x:(i%60-30)*2,z:(Math.floor(i/60)-50)*3,w:.4,d:.3,h:1.5,vehicleGroup:Math.floor(i/100),vehicle:true})),start=new T.Vector3(.7,1.703,.7),end=start.clone().add(new T.Vector3(.02,-.003,.02));
+assert(nearbyColliders(platforms,start,end).length<100,'movement checks a small local subset');assert(navigationColliders(platforms).length<160,'vehicle groups reduce pathfinding graph');
+const moving=[{x:0,z:0,w:1,d:1,h:2}];assert.equal(nearbyColliders(moving,start,end).length,1);moving[0]={x:90,z:90,w:1,d:1,h:2};moving.collisionRevision=1;assert.equal(nearbyColliders(moving,start,end).length,0,'regeneration rebuilds index even with same count');
+const hidden=new T.Mesh(new T.BoxGeometry(2,2,2),new T.MeshBasicMaterial());hidden.position.z=-4;hidden.visible=false;hidden.updateMatrixWorld(true);assert(new T.Raycaster(new T.Vector3(),new T.Vector3(0,0,-1)).intersectObject(hidden).length,'hidden collision proxies retain ray hits');
+for(let i=0;i<10;i++)movePlayerWithSlide(start,end,new T.Vector3(1,-1,1),platforms);
+const before=performance.now();for(let i=0;i<300;i++)movePlayerWithSlide(start,end,new T.Vector3(1,-1,1),platforms);console.log(`PASS indexed collision and grouped navigation; 6000 boxes, local ${nearbyColliders(platforms,start,end).length}, 300 moves ${(performance.now()-before).toFixed(1)}ms`);

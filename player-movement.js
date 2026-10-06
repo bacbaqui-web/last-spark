@@ -1,3 +1,4 @@
+import {nearbyColliders} from './collision-broadphase.js';
 import * as THREE from 'three';
 const RADIUS=.35,HEIGHT=1.7,HEAD=.2,SKIN=.003,EPS=1e-8;
 const axes=['x','y','z'];
@@ -8,6 +9,7 @@ function sweep(start,delta,b){let enter=-Infinity,exit=Infinity,normal=new THREE
 // Continuous sweep of a player's expanded footprint, then consume the remaining
 // movement along the contact plane. Vertical sweeps also handle landing/ceilings.
 export function movePlayerWithSlide(start,desired,velocity,platforms,{dash=false,bounds=41.5,boundsX=bounds,boundsZ=bounds}={}){
+ platforms=nearbyColliders(platforms,start,desired);
  const boxes=platforms.map(expanded);boxes.push({min:{x:-1000,y:-1000,z:-1000},max:{x:1000,y:HEIGHT,z:1000}});
  for(const a of['x','z'])for(const sign of[-1,1]){const b={min:{x:-1000,y:-1000,z:-1000},max:{x:1000,y:1000,z:1000}};if(sign<0)b.max[a]=-(a==='x'?boundsX:boundsZ);else b.min[a]=a==='x'?boundsX:boundsZ;boxes.push(b);}
  const position=start.clone(),speed=velocity.clone(),contacts=[],path=[];let grounded=false,stepped=false;
