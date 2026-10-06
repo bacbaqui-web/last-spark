@@ -4,6 +4,9 @@ import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js'
 import rigData from './rig-data.json' with {type:'json'};
 const cubeGeometry=panelGeometry;
 const frameGeometry=new THREE.CapsuleGeometry(.5,1,8,20);
+// Broad waist edge and a downward point between the two hip joints.
+const pelvisOutline=new THREE.Shape();pelvisOutline.moveTo(-.5,.5);pelvisOutline.lineTo(.5,.5);pelvisOutline.lineTo(.42,-.08);pelvisOutline.lineTo(0,-.5);pelvisOutline.lineTo(-.42,-.08);pelvisOutline.closePath();
+const pelvisGeometry=new THREE.ExtrudeGeometry(pelvisOutline,{depth:1,bevelEnabled:false,steps:1});pelvisGeometry.translate(0,0,-.5);
 const armor=new THREE.MeshStandardMaterial({color:0x928775,metalness:.3,roughness:.65});
 const bossArmor=new THREE.MeshStandardMaterial({color:0xad7852,metalness:.35,roughness:.65});
 const joints=new THREE.MeshStandardMaterial({color:0x343b40,metalness:.5,roughness:.7});
@@ -22,7 +25,7 @@ export function createRobot(boss=false,type='trooper',headScale=1){
  // Rigid armor sections bind to actual animation bones in the rest pose.
  function bind(name,size,offset=[0,0,0],material=mat){const b=byName[name],pos=b.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(...offset));const m=block(motion,material,size,pos.toArray());motion.updateMatrixWorld(true);b.attach(m);return m;}
  function segment(name,end,width,depth){const b=byName[name],a=b.getWorldPosition(new THREE.Vector3()),z=byName[end].getWorldPosition(new THREE.Vector3()),delta=z.clone().sub(a);const m=block(motion,joints,[width,delta.length()*.48,depth],a.add(z).multiplyScalar(.5).toArray());m.geometry=frameGeometry;m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());motion.updateMatrixWorld(true);b.attach(m);}
- const pelvisShell=bind('pelvis',[.25,.16,.18],[0,0,0],joints);pelvisShell.geometry=new THREE.SphereGeometry(.5,20,16);pelvisShell.userData.cosmetic=true;bind('spine_01',[.19,.18,.16],[0,.04,0],joints);bind('spine_03',[.32,.30,.20],[0,.015,0],joints);
+ const pelvisShell=bind('pelvis',[.25,.16,.18],[0,0,-byName.pelvis.getWorldPosition(new THREE.Vector3()).z],joints);pelvisShell.geometry=pelvisGeometry;pelvisShell.userData.cosmetic=true;bind('spine_01',[.19,.18,.16],[0,.04,0],joints);bind('spine_03',[.32,.30,.20],[0,.015,0],joints);
  const neckShell=bind('Head',[.105,.065,.105],[0,-.045,0],joints);neckShell.geometry=frameGeometry;
  const head=bind('Head',[.28,.36,.255],[0,.135,0],joints);const visor=bind('Head',[.18,.035,.025],[0,.155,.133],glow);head.userData.weakPoint=visor.userData.weakPoint=true;
  for(const side of ['l','r']){if(!boss){segment('upperarm_'+side,'lowerarm_'+side,.175,.175);segment('lowerarm_'+side,'hand_'+side,.17,.17);bind('hand_'+side,[.13,.16,.13],[0,0,0],joints);}segment('thigh_'+side,'calf_'+side,.20,.20);segment('calf_'+side,'foot_'+side,.19,.19);const foot=bind('foot_'+side,[.145,.105,.235],[0,-.005,.04],joints);foot.geometry=new RoundedBoxGeometry(1,1,1,5,.28);foot.userData.cosmetic=true;}
