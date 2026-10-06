@@ -1,0 +1,44 @@
+import * as T from 'three';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {rng,hasBrickPassage} from './brick-street-layout.js';
+const materials=new Map();const mat=(color)=>{if(!materials.has(color))materials.set(color,new T.MeshStandardMaterial({color,roughness:1}));return materials.get(color);};
+let brickTexture;
+function brickMap(){if(brickTexture)return brickTexture;const c=document.createElement('canvas');c.width=c.height=256;const ctx=c.getContext('2d'),r=rng(934);ctx.fillStyle='#635e54';ctx.fillRect(0,0,256,256);for(let row=0;row<16;row++)for(let col=-1;col<8;col++){const v=170+Math.floor(r()*70);ctx.fillStyle=`rgb(${v},${v},${v})`;ctx.fillRect(col*32+(row%2)*16+1,row*16+1,30,14);}brickTexture=new T.CanvasTexture(c);brickTexture.colorSpace=T.SRGBColorSpace;brickTexture.wrapS=brickTexture.wrapT=T.RepeatWrapping;brickTexture.repeat.set(3,6);return brickTexture;}
+let leafTexture;
+function leafMap(){if(leafTexture)return leafTexture;const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');for(let i=0;i<25;i++){const a=i*2.4,px=64+Math.cos(a)*(i%6)*9,py=64+Math.sin(a)*(i%6)*9;x.save();x.translate(px,py);x.rotate(a);x.fillStyle=['#648d43','#3b702f','#81a857'][i%3];x.beginPath();x.ellipse(0,0,6,12,0,0,Math.PI*2);x.fill();x.strokeStyle='#abc674';x.lineWidth=.8;x.beginPath();x.moveTo(0,-10);x.lineTo(0,10);x.stroke();x.restore();}leafTexture=new T.CanvasTexture(c);leafTexture.colorSpace=T.SRGBColorSpace;return leafTexture;}
+let foliageMaterial;function leafMat(){return foliageMaterial??=new T.MeshStandardMaterial({map:leafMap(),alphaTest:.45,side:T.DoubleSide,roughness:1});}
+export function buildBrickStreet(block,library,{offset=0,colliders=[]}={}){
+ const colliderStart=colliders.length;const root=new T.Group(),r=rng(block.seed),stone=0x929383,steel=0x444b43,bricks=[0x854b38,0x784333,0x92543c,0x6f3e31];
+ function box(w,h,d,x,y,z,color,solid=false){if(bricks.includes(color))mat(color).map=brickMap();const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat(color));m.position.set(x,y,z+offset);root.add(m);if(solid)colliders.push({x,z:z+offset,w,d,h:y+h/2});return m;}
+ function rod(a,b,width=.06,color=steel){const va=new T.Vector3(...a),vb=new T.Vector3(...b),delta=vb.clone().sub(va),m=new T.Mesh(new T.CylinderGeometry(width,width,delta.length(),6),mat(color));m.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),delta.normalize());m.position.copy(va.add(vb).multiplyScalar(.5));m.position.z+=offset;root.add(m);}
+ function leaves(x,y,z,w=1,h=1,angle=0){const mesh=new T.Mesh(new T.PlaneGeometry(w,h),leafMat());mesh.position.set(x,y,z+offset);mesh.rotation.set((r()-.5)*.7,angle,0);root.add(mesh);}
+ function ivy(x,y,z,height){rod([x,y,z],[x+.15,y+height,z],.025,0x52643c);for(let j=0;j<height*7;j++)leaves(x+(r()-.5)*.6,y+j/7,z+.06 ,.55,.7,Math.PI/2);}
+ box(36,.15,36,0,-.11,0,0x39403b);box(10,.08,36,0,-.025,0,0x424741);
+ for(const side of[-1,1]){box(2.4,.3,36,side*6.2,.12,0,stone,true);for(let z=-17.5;z<18;z+=1){box(.18,.34,.94,side*5.05,.13,z,0xb4b3a2);box(2.3,.012,.025,side*6.2,.277,z,0x666d60);}for(let x=5.6;x<7.4;x+=.8)box(.018,.012,36,side*x,.278,0,0x757969);}
+ for(let z=-15;z<18;z+=6)box(.12,.02,2,0,.03,z,0xb1b29a);
+ for(const b of block.buildings){const front=b.side*7.4,center=b.side*11.4,H=b.floors*3.1,color=bricks[b.tone],cellWidth=9/b.columns;
+ box(8,H,9,center,H/2,b.z,color); // Solid backing closes the street, including damaged facade cells.
+ colliders.push({x:center,z:b.z+offset,w:8,d:9,h:H});
+ for(let f=0;f<b.floors;f++){const y=f*3.1;box(.28,.18,9,front,y+.1,b.z,0x614333);for(let c=0;c<b.columns;c++){const z=b.z-4.5+(c+.5)*cellWidth,type=b.cells[f*b.columns+c],face=front-b.side*.12;
+ if(type==='collapsed'){box(.035,2.8,cellWidth-.2,face,y+1.55,z,0x252b26);for(let k=0;k<3;k++)box(.15,.28,.5,face-b.side*.08,y+.4+k*.85,z+(r()-.5)*cellWidth,color);rod([face-b.side*.1,y+.3,z-cellWidth*.35],[face-b.side*.1,y+2.7,z+cellWidth*.3],.04);continue;}
+ const wh=type==='door'?2.3:1.65,ww=type==='door'?1.1:cellWidth*.57,wy=y+(type==='door'?1.15:1.75);
+ box(.04,wh,ww,face,wy,z,0x25332e);for(const dz of[-ww/2,ww/2])box(.16,wh+.18,.12,face-b.side*.05,wy,z+dz,0xa18166);for(const dy of[-wh/2,wh/2])box(.18,.12,ww+.22,face-b.side*.08,wy+dy,z,0xa18166);
+ if(type==='door'){for(let k=0;k<3;k++)box(.5,.18*(k+1),1.6,front-b.side*(.3+k*.4),.27+.09*(k+1),z,stone,true);}
+ else if(type==='boarded'){for(let k=0;k<3;k++){const plank=box(.13,.2,ww,face-b.side*.12,wy-.5+k*.5,z,0x8a7756);plank.rotation.x=(k-1)*.22;}}
+ else{box(.12,wh,.045,face-b.side*.07,wy,z,0x766e59);if(type==='broken'){for(let k=0;k<3;k++)box(.05,.25,.16,face-b.side*.13,wy+(r()-.5)*wh,z+(r()-.5)*ww,0x75928e);}}
+ }}box(8.4,.23,9,center,H+.08,b.z,0x694635);if(b.damaged){for(let k=0;k<5;k++){const slab=box(1.5,.15,1.3,front+b.side*(r()*2),H-.6-r(),b.z-3+r()*6,stone);slab.rotation.z=(r()-.5)*.9;}}
+ if(b.ivy>.2){for(let k=0;k<2;k++)ivy(front-b.side*.22,.4,b.z-3+k*5,H*.85);}
+ }
+ // City infrastructure follows fixed planting/utility slots; state varies, positions do not.
+ for(const side of[-1,1])for(const z of[-12,0,12]){const x=side*6.3;box(1.2,.015,1.2,x,.285,z,0x344b32);rod([x,.3,z],[x,9.2,z],.23,0x615642);for(let k=0;k<7;k++){const a=k*2.4,dx=Math.cos(a)*2,dz=Math.sin(a)*2;rod([x,6+k*.4,z],[x+dx,9+k*.4,z+dz],.085,0x615642);}for(let k=0;k<70;k++){const a=k*2.4,rad=Math.sqrt(r())*3.1;leaves(x+Math.cos(a)*rad,8+r()*4,z+Math.sin(a)*rad,1.8,2,a);} }
+ for(const side of[-1,1])for(const z of[-9,9]){const x=side*6.9;rod([x,.3,z],[x,6.7,z],.11);rod([x-.6,6.1,z],[x+.6,6.1,z],.06);rod([x,6.7,z],[x-side*1.8,6.6,z],.05);box(.55,.15,.35,x-side*1.8,6.5,z,steel);}
+ for(const side of[-1,1]){rod([side*6.9,6.3,-18],[side*6.9,5.8,0],.014);rod([side*6.9,5.8,0],[side*6.9,6.3,18],.014);}
+ for(const mound of block.rubble){const wall=mound.side*7.3;for(let k=0;k<6;k++){const depth=mound.reach/6,h=mound.height*(1-k/6),x=wall-mound.side*(k+.5)*depth;box(depth,h,5,x,h/2,mound.z,0x777264,true);for(let j=0;j<4;j++){const m=box(.3+r()*.7,.15+r()*.28,.3+r()*.7,x,h+.1,mound.z+(r()-.5)*5,j%2?stone:0x86543c);m.rotation.set(r()*.5,r()*3,r()*.4);}}
+ for(let j=0;j<7;j++){const x=wall-mound.side*r()*mound.reach;rod([x,.6,mound.z-2+r()*4],[x-.6*mound.side,1.1,mound.z+r()*2],.035);}}
+ for(const v of block.vehicles){const t=library.get(v.id);if(!t)continue;const g=new T.Group();for(const p of t.parts){const m=new T.Mesh(p.geometry,p.material);m.userData.shared=true;g.add(m);}const scale=(v.id==='car'?5.2:v.id==='wreck-bus'?10:7)/t.maxSize;g.scale.setScalar(scale);g.rotation.set(0,v.angle,v.roll);g.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(g);g.position.set(v.x-(bounds.min.x+bounds.max.x)/2,-bounds.min.y,v.z+offset-(bounds.min.z+bounds.max.z)/2);root.add(g);
+ // Conservative collision includes overturned vehicles. One pavement is reachable around each zone.
+ const w=bounds.max.x-bounds.min.x,d=bounds.max.z-bounds.min.z,h=bounds.max.y-bounds.min.y;const safeX=T.MathUtils.clamp(v.x,-5+w/2,5-w/2);g.position.x+=safeX-v.x;colliders.push({x:safeX,z:v.z+offset,w,d,h});for(let j=0;j<18;j++)leaves(safeX+(r()-.5)*w*.8,h*.65+.08,v.z+(r()-.5)*d*.8,.35,.45,r()*6);for(let j=0;j<3;j++)rod([safeX-w*.3,.15,v.z-d*.3+j*d*.2],[safeX+w*.2,h*.65,v.z-d*.2+j*d*.2],.018,0x52643c);}
+ for(let i=0;i<110;i++){const side=i%2?1:-1,x=side*(4.3+r()*2.7),z=-16+r()*32;for(let k=0;k<3;k++){const m=new T.Mesh(new T.PlaneGeometry(.5,.4+r()*.65),leafMat());m.position.set(x,.35,z+offset);m.rotation.y=k*Math.PI/3;root.add(m);}}
+ if(!hasBrickPassage(colliders.slice(colliderStart),offset))throw Error('통행 가능한 경로가 없습니다.');root.updateMatrixWorld(true);const buckets=new Map();root.traverse(o=>{if(!o.isMesh)return;const geo=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();geo.applyMatrix4(o.matrixWorld);if(!geo.attributes.uv)geo.setAttribute('uv',new T.Float32BufferAttribute(new Float32Array(geo.attributes.position.count*2),2));if(!buckets.has(o.material))buckets.set(o.material,[]);buckets.get(o.material).push(geo);if(!o.userData.shared)o.geometry.dispose();});root.clear();for(const [material,geos]of buckets){const geometry=mergeGeometries(geos,false);geos.forEach(g=>g.dispose());if(!geometry)throw Error('거리 메시 병합 실패');root.add(new T.Mesh(geometry,material));}root.userData.blockSeed=block.seed;return root;
+}
+export function disposeBrickStreet(root){root.traverse(o=>{if(o.isMesh&&!o.userData.shared)o.geometry.dispose();});}

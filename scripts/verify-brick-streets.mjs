@@ -1,0 +1,8 @@
+import assert from 'node:assert/strict';
+import {generateBrickBlock,validateBrickBlock} from '../brick-street-layout.js';
+for(let i=0;i<100;i++){const b=generateBrickBlock(i);assert.deepEqual(b,generateBrickBlock(i));assert.deepEqual(validateBrickBlock(b),b);const child=generateBrickBlock(i+200,b);assert.deepEqual(validateBrickBlock(child),child);assert.deepEqual(child.buildings.map(v=>[v.floors,v.columns,v.tone]),b.buildings.map(v=>[v.floors,v.columns,v.tone]));assert(b.vehicles.every(v=>Math.abs(v.z)<16));assert(b.buildings.every(v=>v.cells.filter(c=>c==='door').length===1));}assert.throws(()=>validateBrickBlock({version:2,seed:-1}));console.log('PASS 100 reproducible seeds, exact JSON restoration, inherited building structure, entrance placement and seam clearances');
+import * as T from 'three';
+import {buildBrickStreet,disposeBrickStreet} from '../brick-street-scene.js';
+globalThis.document={createElement:()=>({width:0,height:0,getContext:()=>new Proxy({},{get:()=>()=>{}})})};
+const library=new Map([['car',[2,1.5,5.2]],['wreck-bus',[2.4,3.1,10.5]],['wreck-truck',[2.4,3.1,7.5]]].map(([id,s])=>{const geometry=new T.BoxGeometry(...s);geometry.translate(0,s[1]/2,0);return [id,{maxSize:Math.max(...s),parts:[{geometry,material:new T.MeshStandardMaterial()}]}];}));
+for(let seed=0;seed<30;seed++){const colliders=[],root=buildBrickStreet(generateBrickBlock(seed),library,{colliders});assert(root.children.length<40,'merged render batches');assert(colliders.length>12);disposeBrickStreet(root);}console.log('PASS 30 assembled scenes: height-field walk/jump passage, merged draw batches, shared vehicle geometry retained');

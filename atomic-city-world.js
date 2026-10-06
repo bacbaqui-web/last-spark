@@ -1,4 +1,6 @@
 import * as T from 'three';
+import {populateBrickRoute} from './brick-street-world.js';
+import {disposeBrickStreet} from './brick-street-scene.js';
 import {loadPurchasedModels} from './purchased-model-library.js';
 import {createStreetProps} from './street-props.js';
 import {composeReferenceAssets} from './reference-buildings.js';
@@ -19,7 +21,8 @@ export function createAtomicCityWorld(scene,platforms,mats){
  }
  const freshSeed=()=>globalThis.crypto.getRandomValues(new Uint32Array(1))[0];
  function part(w,h,d,x,y,z,material,angle=0){const m=new T.Mesh(unitBox,material);m.scale.set(w,h,d);m.position.set(x,y,z);m.rotation.y=angle;m.receiveShadow=true;root.add(m);return m;}
- function populate(){for(const child of root.children){if(child.isInstancedMesh)child.dispose();if(child.userData.ownedMaterial)child.material.dispose();}root.clear();obstacles.length=0;platforms.length=0;Object.assign(route,layout.route);platforms.bounds=route.bounds;
+ function populate(){for(const child of root.children){if(child.userData.blockSeed!==undefined)disposeBrickStreet(child);if(child.isInstancedMesh)child.dispose();if(child.userData.ownedMaterial)child.material.dispose();}root.clear();obstacles.length=0;platforms.length=0;Object.assign(route,layout.route);platforms.bounds=route.bounds;
+  if(loaded&&new URLSearchParams(window.location.search).has('brickBlocks')){Object.assign(route,populateBrickRoute(layout.seed,templates,root,platforms));for(const p of platforms){const proxy=part(p.w,p.h,p.d,p.x,p.h/2,p.z,proxyMaterial);obstacles.push(proxy);}extraction.position.set(route.start.x,0,route.start.z);target.position.set(route.end.x,.1,route.end.z+8);root.updateMatrixWorld(true);return;}
   for(const f of layout.floors||[]){const material=new T.MeshStandardMaterial({color:SURFACES[f.surface].color,roughness:1});const m=part(f.size,.08,f.size,0,-.02,f.z,material);m.userData.ownedMaterial=true;}
   if(!layout.authored)for(const seg of route.segments)part(route.width,.08,seg.distance+2,(seg.a.x+seg.b.x)/2,.04,(seg.a.z+seg.b.z)/2,roadMaterial,Math.atan2(seg.dx,seg.dz));if(!layout.authored)for(const p of route.points)part(route.width,.08,route.width,p.x,.04,p.z,roadMaterial);
   for(const seg of route.segments){const angle=Math.atan2(seg.dx,seg.dz);for(const side of[-1,1]){const x=(seg.a.x+seg.b.x)/2-seg.dz*side*(route.width/2+(layout.authored?1:.6)),z=(seg.a.z+seg.b.z)/2+seg.dx*side*(route.width/2+(layout.authored?1:.6));part(layout.authored?2:1.2,layout.authored?.18:.12,seg.distance,x,.06,z,mats.wall,angle);}}
