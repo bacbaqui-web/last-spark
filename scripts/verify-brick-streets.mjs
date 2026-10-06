@@ -55,3 +55,5 @@ for(let seed=0;seed<100;seed++){
 console.log('PASS 100 bent routes: deterministic turns, joined block seams, arc-length progress and tight pavement collisions');
 
 const treeScene=buildBrickStreet(generateBrickBlock(37),library);treeScene.updateMatrixWorld(true);const trunks=treeScene.children.filter(m=>m.material.color.getHex()===0x615642);assert(trunks.length);const trunkBounds=new T.Box3().setFromObject(trunks[0]);assert(trunkBounds.max.y*CITY_SCALE<12.2,'tree height stays at its previous size while map grows');disposeBrickStreet(treeScene);
+
+const {populateBrickRouteAsync}=await import('../brick-street-world.js');const asyncRoot=new T.Group(),asyncPlatforms=[];let ticks=0;const interval=setInterval(()=>ticks++,0);const asyncRoute=await populateBrickRouteAsync(741,library,asyncRoot,asyncPlatforms,{destination:'brick',blocks:2});clearInterval(interval);assert(ticks>=2,'map building yields to browser between blocks');assert.equal(asyncRoute.blockCount,2);assert.equal(asyncRoot.children.length,2);assert(asyncPlatforms.length>20);asyncRoot.children.forEach(disposeBrickStreet);console.log('PASS incremental map generation yields between complete blocks');
