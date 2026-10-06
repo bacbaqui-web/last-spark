@@ -8,6 +8,22 @@ export function createBaseUI(campaign,{prepare,appearance,weapons=[]}){
 
  const safe=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));let panel=null,sort='recent',moduleSlot=null,weaponSlot=null,gearSlot=null,hangar=null,loadingHangar=false;let newModuleIds=new Set();
  const gunInfo=w=>weapons.find(v=>v.type===w?.type)||{name:'빈 무기 슬롯',image:''};
+ function gunDescription(item){
+  const w=gunInfo(item),details=[],number=n=>Number(n.toFixed(3));
+  if(item.type==='bow')details.push('기본 피해 120~480 · 완충 2.2초');
+  else if(item.type==='rail')details.push(`기본 피해 ${w.damageMin}~${w.damageMax} · 완충 2초`);
+  else if(item.type==='laser')details.push('초당 피해 80→120→180→260→360');
+  else if(item.type==='flame')details.push(`초당 연소 피해 ${w.damage}`);
+  else if(item.type==='chainsaw')details.push(`초당 피해 ${w.damage}`);
+  else if(w.pellets>1)details.push(`기본 피해 ${w.damage} × ${w.pellets}발 (최대 ${w.damage*w.pellets})`);
+  else if(Number.isFinite(w.damage))details.push(`기본 피해 ${w.damage}`);
+  if(!['laser','flame','chainsaw','bow','rail'].includes(item.type)&&w.rate)details.push(`공격 간격 ${number(w.rate)}초`);
+  if(w.headshotMultiplier)details.push(`헤드샷 ${w.damage*w.headshotMultiplier}`);
+  if(w.range)details.push(`사거리 ${w.range}m`);
+  details.push(`${item.type==='knife'?'내구도':['flame','chainsaw'].includes(item.type)?'연료':'탄약'} ${w.ammo??'무한'}`);
+  if(item.level>1)details.push(`강화 피해 +${(item.level-1)*10}%`);
+  return safe(details.join(' · '));
+ }
  const moduleIcon=p=>`<img class="partImage" src="./images/parts/${p.type}.svg" alt="${safe(PARTS[p.type].name)}">`;
  const gunIcon=w=>`<img class="partImage gunItem" src="${gunInfo(w).image}" alt="${safe(gunInfo(w).name)}">`;
  function acknowledgeModules(){if(newModuleIds.size)campaign.markModulesSeen([...newModuleIds]);newModuleIds.clear();}
@@ -27,7 +43,7 @@ export function createBaseUI(campaign,{prepare,appearance,weapons=[]}){
 
  function sorted(items,isGun=false,isGear=false){const list=[...items],name=p=>isGear?EQUIPMENT[p.type].name:isGun?gunInfo(p).name:PARTS[p.type].name;if(sort==='recent')return list.reverse();return list.sort((a,b)=>sort==='levelDown'?b.level-a.level:sort==='levelUp'?a.level-b.level:sort==='type'?a.type.localeCompare(b.type):name(a).localeCompare(name(b),'ko'));}
  function card(p,isGun=false){const list=isGun?campaign.state.stashWeapons:campaign.state.stash,matches=list.filter(q=>q.type===p.type&&q.level===p.level).length,cost=8*p.level,fresh=!isGun&&newModuleIds.has(p.id);
- return `<article class="partCard ${fresh?'newModule':''}" ${fresh?'aria-label="새로 획득한 모듈"':''}>${isGun?gunIcon(p):moduleIcon(p)}<div class="partInfo"><div class="partTitle"><h3>${safe(isGun?gunInfo(p).name:PARTS[p.type].name)}</h3><small>Lv. ${p.level}</small>${fresh?'<span class="newModuleBadge">NEW · 새로 획득</span>':''}</div><p>${isGun?'무기 피해 +'+((p.level-1)*10)+'% · 기체에 장착해 출격':partDescription(p)}</p><div class="partActions">${['combine','upgrade','dismantle'].map((action,i)=>`<button data-${isGun?'gun-':''}${action}="${safe(p.id)}" ${i===0&&matches<3||i===1&&campaign.state.materials<cost?'disabled':''}>${['합성 ('+matches+'/3)','강화 · 재료 '+cost,'분해 · +'+4*p.level][i]}</button>`).join('')}</div></div></article>`;
+ return `<article class="partCard ${fresh?'newModule':''}" ${fresh?'aria-label="새로 획득한 모듈"':''}>${isGun?gunIcon(p):moduleIcon(p)}<div class="partInfo"><div class="partTitle"><h3>${safe(isGun?gunInfo(p).name:PARTS[p.type].name)}</h3><small>Lv. ${p.level}</small>${fresh?'<span class="newModuleBadge">NEW · 새로 획득</span>':''}</div><p>${isGun?gunDescription(p):partDescription(p)}</p><div class="partActions">${['combine','upgrade','dismantle'].map((action,i)=>`<button data-${isGun?'gun-':''}${action}="${safe(p.id)}" ${i===0&&matches<3||i===1&&campaign.state.materials<cost?'disabled':''}>${['합성 ('+matches+'/3)','강화 · 재료 '+cost,'분해 · +'+4*p.level][i]}</button>`).join('')}</div></div></article>`;
  }
 
  const gearIcon=p=>`<img class="partImage" src="${equipmentIcon(p)}" alt="${safe(EQUIPMENT[p.type].name)}">`;
