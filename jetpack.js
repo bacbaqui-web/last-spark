@@ -13,7 +13,7 @@ export function createJetpack(avatar){
   const torso=avatar.bones.find(b=>b.name==='spine_03');avatar.root.updateMatrixWorld(true);root.userData.variant=['rapid','flame'].includes(weapon)?weapon:'standard';box.visible=root.userData.variant==='standard';const core=torso.children.find(o=>o.isMesh&&!o.userData.cosmetic),backFrame=core||torso,backRotation=backFrame.getWorldQuaternion(new THREE.Quaternion());root.position.copy(avatar.root.worldToLocal(backFrame.getWorldPosition(new THREE.Vector3()).add(v(0,.01,-.09).applyQuaternion(backRotation))));root.quaternion.copy(avatar.root.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(backRotation));root.updateMatrixWorld(true);
   const active=boostPhase>=0&&boostPhase<1||jetJump>0;exhaust.visible=active;light.intensity=active?9:0;if(!active)return;
   const direction=jetJump>0?v(0,-1,0):boostDirection.clone().negate().add(v(0,-.22,0)).normalize();const pulse=1+.12*Math.sin(time*91),power=jetJump>0?Math.min(1,jetJump/.1):Math.min(1,(1-boostPhase)*5);
-  for(let i=0;i<2;i++){flames[i].position.copy(nozzles[i].getWorldPosition(new THREE.Vector3()));flames[i].quaternion.setFromUnitVectors(v(0,1,0),direction);flames[i].scale.set(pulse,pulse*(.5+power),pulse);}
+  for(let i=0;i<2;i++){const gearNozzles=avatar.root.getObjectByName('equipment-jetPack')?.children.filter(o=>o.name==='equipment-nozzle');flames[i].position.copy((gearNozzles?.[i]||nozzles[i]).getWorldPosition(new THREE.Vector3()));flames[i].quaternion.setFromUnitVectors(v(0,1,0),direction);flames[i].scale.set(pulse,pulse*(.5+power),pulse);}
   light.position.copy(flames[0].position).addScaledVector(direction,.25);
  }
  return {root,exhaust,update};

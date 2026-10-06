@@ -1,3 +1,4 @@
+import {attachEquipment} from './equipment-models.js';
 import * as THREE from 'three';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {createRobot,animateRobot,disposeRobot} from './robot.js';
@@ -19,7 +20,7 @@ function addModules(robot,parts){
  }
 }
 export function applyFrameVisual(robot,stats){
- clearModules(robot);robot.setArmorLevel(0);const parts=stats.visualParts||[];addModules(robot,parts);const pack=robot.root.getObjectByName('player-jetpack');if(pack)pack.visible=false;
+ clearModules(robot);robot.setArmorLevel(0);const parts=stats.visualParts||[];addModules(robot,parts);attachEquipment(robot,stats.visualEquipment||[]);const pack=robot.root.getObjectByName('player-jetpack');if(pack)pack.visible=false;
  for(const bone of robot.bones||[])for(const mesh of bone.children){
   if(!mesh.isMesh||mesh.userData.cosmetic||mesh===robot.head||mesh.userData.weakPoint)continue;
   mesh.userData.frameRestScale ||=mesh.scale.clone();mesh.scale.copy(mesh.userData.frameRestScale);
@@ -28,7 +29,7 @@ export function applyFrameVisual(robot,stats){
  }
 }
 export function framePreview(stats){
- const key=JSON.stringify(stats.visualParts||[]) + [stats.armor,stats.jet,stats.battery,stats.speed,stats.damage].join(':');if(cache.has(key))return cache.get(key);
+ const key=JSON.stringify([stats.visualParts||[],stats.visualEquipment||[]]) + [stats.armor,stats.jet,stats.battery,stats.speed,stats.damage].join(':');if(cache.has(key))return cache.get(key);
  renderer ||=new THREE.WebGLRenderer({alpha:true,antialias:true,preserveDrawingBuffer:true});renderer.setSize(320,250);renderer.setPixelRatio(1);
  const scene=new THREE.Scene(),robot=createRobot(false,'player',.82);scene.add(robot.root);animateRobot(robot,.1,{speed:0});robot.blaster.visible=false;if(robot.backpack)robot.backpack.visible=false;applyFrameVisual(robot,stats);
  scene.add(new THREE.HemisphereLight(0xddeeff,0x435142,4));const light=new THREE.DirectionalLight(0xffffff,5);light.position.set(2,4,3);scene.add(light);

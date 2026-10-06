@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {createCampaign,frameStats} from '../salvage-campaign.js';
+import {EQUIPMENT,makeEquipment,equipmentDescription} from '../equipment.js';
+import {createRobot,animateRobot,disposeRobot} from '../robot.js';
+import {applyFrameVisual} from '../frame-preview.js';
+let saved;const store={getItem:()=>saved||null,setItem:(key,v)=>saved=v},c=createCampaign(store);
+const gear=(type,id=type)=>makeEquipment(type,id,()=>.5);
+for(const type of Object.keys(EQUIPMENT)){const p=gear(type);assert(equipmentDescription(p));c.state.stashEquipment.push(p);}
+for(const type of ['moto','vest','brawler','runner','jetPack'])assert(c.equipEquipment(type));
+const stats=frameStats(c.frame());assert.equal(stats.maxHP,140);assert.equal(stats.damageTaken,.85);assert.equal(stats.melee,1.25);assert.equal(stats.speed,1.12);assert.equal(stats.jet,true);assert.equal(stats.dashEfficiency,.75);assert.equal(Object.keys(c.frame().equipment).length,5);assert.equal(c.frame().parts.length,0);
+c.frame().hp=50;assert(c.equipEquipment('beanie'));assert.equal(c.frame().hp,50,'equip retains damage, no healing exploit');assert(c.state.stashEquipment.some(p=>p.id==='moto'),'replaced helmet returned');assert(c.unequipEquipment('head'));assert.equal(Object.keys(c.frame().equipment).length,4);
+c.state.materials=24;assert(c.craftEquipment('upgrade','beanie'));assert.equal(c.state.materials,16);assert.equal(c.state.stashEquipment.find(p=>p.id==='beanie').level,2);
+c.state.stashEquipment.push(gear('moto','moto2'),gear('moto','moto3'));assert(c.craftEquipment('combine','moto'));assert.equal(c.state.stashEquipment.filter(p=>p.type==='moto').length,1);assert.equal(c.state.stashEquipment.find(p=>p.id==='moto').level,2);assert(c.craftEquipment('dismantle','moto'));assert.equal(c.state.materials,24);
+c.save();const loaded=createCampaign(store);assert.equal(loaded.frame().equipment.chest.type,'vest');assert.deepEqual(loaded.state.stashEquipment,c.state.stashEquipment);
+const run=c.launch(['pistol'],{});assert(!c.unequipEquipment('chest'),'locked while deployed');run.lootEquipment.push(gear('tactical','recovered'));assert(!c.state.stashEquipment.some(p=>p.id==='recovered'));c.finish(run,true,60,'return');assert(c.state.stashEquipment.some(p=>p.id==='recovered'));assert.equal(c.state.lastReport.equipmentCount,1);assert(Math.abs(c.frame().hp-50)<.00001,'HP normalization on return, max HP 120 without helmet');
+const lost=c.launch(['pistol'],{}),id=lost.frameId;lost.lootEquipment.push(gear('medic','lost'));c.finish(lost,false,0,'destroyed');assert(!c.state.frames.some(f=>f.id===id));assert(!c.state.stashEquipment.some(p=>p.id==='lost'));assert(c.state.stashEquipment.some(p=>p.id==='recovered'));
+for(const type of Object.keys(EQUIPMENT)){const r=createRobot(false,'player',.82);applyFrameVisual(r,frameStats({parts:[],equipment:{[EQUIPMENT[type].slot]:gear(type)}}));assert(r.frameModules.length>0,type+' visibly mounted');const count=r.frameModules.length;for(let i=0;i<30;i++)animateRobot(r,1/60,{speed:8});r.root.updateMatrixWorld(true);assert(r.frameModules.every(g=>g.parent.isBone),'attached during movement');assert(r.frameModules.every(g=>g.children.every(m=>Number.isFinite(m.getWorldPosition(r.root.position.clone()).x))));applyFrameVisual(r,frameStats({parts:[],equipment:{[EQUIPMENT[type].slot]:gear(type)}}));assert.equal(r.frameModules.length,count,'no duplicate appearance');applyFrameVisual(r,frameStats({parts:[]}));assert.equal(r.frameModules.length,0);disposeRobot(r);}
+console.log('PASS: 13 equipment designs, separate body slots, stats, crafting, persistent replacement, extraction/loss, damage preservation and animated appearances');
