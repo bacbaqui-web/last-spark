@@ -30,19 +30,17 @@ export function decorateRobot(r,boss=false,type='trooper'){
   for(let k=0;k<rim.length;k++){const a=rim[k],b=rim[(k+1)%rim.length];indices.push(a,b,a+count,b,b+count,a+count);}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setIndex(indices);g.computeVertexNormals();const mesh=new THREE.Mesh(g,material);mesh.position.set(...pos);mesh.castShadow=true;mesh.userData.cosmetic=true;parent.add(mesh);return mesh;
  }
- // Egg-shaped helmet narrows smoothly toward the chin.
- r.head.geometry=new THREE.SphereGeometry(.5,28,20);const hp=r.head.geometry.attributes.position;for(let i=0;i<hp.count;i++){const y=hp.getY(i),t=THREE.MathUtils.smoothstep(y,-.5,.12),width=.74+.26*t;hp.setX(i,hp.getX(i)*width);hp.setZ(i,hp.getZ(i)*(.84+.16*t));}r.head.geometry.computeVertexNormals();r.head.userData.cosmetic=true;
- const helmet=new THREE.Group();helmet.name='tapered-helmet';helmet.position.copy(r.head.position);helmet.quaternion.copy(r.head.quaternion);r.head.parent.add(helmet);
- // A smooth head and torso keep only the eyes and clavicle bridge.
- const collar=new THREE.Mesh(new THREE.CylinderGeometry(.102,.135,.095,28,1,true,Math.PI*.28,Math.PI*1.44),shell);collar.name='neck-guard';collar.position.set(0,.20,0);collar.rotation.y=Math.PI;collar.material=shell.clone();collar.material.side=THREE.DoubleSide;collar.castShadow=true;collar.userData.cosmetic=true;r.body.add(collar);
+ // A spherical head keeps the existing eye strip and slim neck.
+ r.head.geometry=new THREE.SphereGeometry(.5,28,20);r.head.scale.set(.28,.28,.28);r.head.userData.cosmetic=true;
+ const helmet=new THREE.Group();helmet.name='round-helmet';helmet.position.copy(r.head.position);helmet.quaternion.copy(r.head.quaternion);r.head.parent.add(helmet);
  detailBatch(r.body,[[[.23,.035,.025],[0,.14,-.13],identity]]);
  const backpack=new THREE.Group();backpack.name='original-backpack';r.body.add(backpack);detailBatch(backpack,[[[.3,.32,.15],[0,.015,-.22],black]]);r.backpack=backpack;
  for(const [index,arm]of r.arms.entries()){
   const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.10,24,16),black);shoulder.scale.set(1.02,1,1.02);shoulder.position.y=.005;shoulder.userData.cosmetic=true;arm.shoulder.add(shoulder);
-  const joint=new THREE.Mesh(new THREE.SphereGeometry(.088,20,14),black);joint.userData.cosmetic=true;arm.elbow.add(joint);
+  const joint=new THREE.Mesh(new THREE.SphereGeometry(.068,20,14),black);joint.userData.cosmetic=true;arm.elbow.add(joint);
  }
  for(const leg of r.legs){
-  const joint=new THREE.Mesh(new THREE.SphereGeometry(.099,20,14),black);joint.userData.cosmetic=true;leg.knee.add(joint);
+  const joint=new THREE.Mesh(new THREE.SphereGeometry(.076,20,14),black);joint.userData.cosmetic=true;leg.knee.add(joint);
  }
  // Acquired armor is separate from the smooth unarmored body.
  const armorPieces=[];for(const arm of r.arms)armorPieces.push(sculpt(arm.elbow,.135,.22,.045,[0,-.15,.073],identity));for(const leg of r.legs)armorPieces.push(sculpt(leg.knee,.145,.12,.05,[0,-.025,.06],identity));
