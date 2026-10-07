@@ -55,14 +55,29 @@ function build(index){const d=houseVariants[index],r=random(d.seed),parts=Array.
  if(height>0){const cap=.24+height*story;const broken=d.damage[c]<d.floors,roofDepth=d.ruin?depth*.25:broken?depth*.42:depth*.94;iron.box(x,cap+.05,-depth/2+roofDepth/2+.2,cw-.06,.14,roofDepth);if(!broken){brick.box(x,cap+.27,front,cw,.38,.34,[shade,shade,shade]);stone.box(x,cap+.49,front+.03,cw+.08,.11,.46);}}
  }
  // Window bays become rooms, connected through doorways to a rear corridor.
- const corridorZ=-depth*.20,roomDepth=front-.18-corridorZ;
+ const corridorZ=-depth*.20,roomDepth=front-.18-corridorZ,roomCut=collapseCut(d,true);
  for(let f=0;f<d.floors;f++){
   const floorY=.24+f*story,wallH=story-.16,wallY=floorY+.16+wallH/2;
-  for(let c=1;c<d.columns;c++)stone.box(-w/2+cw*c,wallY,corridorZ+roomDepth/2,.15,wallH,roomDepth,[1.13,1.08,.98]);
+  for(let c=1;c<d.columns;c++){
+   const x=-w/2+cw*c,cut=roomCut,band=cut.bands.find(b=>x>=b.left&&x<=b.right),exposed=floorY+wallH>=band.intercept-story*.9,count=Math.ceil(roomDepth/.22);
+   if(!exposed){brick.box(x,wallY,corridorZ+roomDepth/2,.18,wallH,roomDepth,[.82,.78,.73]);continue;}
+   // Brick-sized columns retain the same jagged cap and solid closure as exterior walls.
+   for(let k=0;k<count;k++){
+    const t=(k+.5)/count,zz=corridorZ+t*roomDepth,dip=Math.max(0,1-Math.abs(t-(.36+(c%2)*.22))/.28),h=Math.max(.24,Math.floor((wallH-.12-dip*(.65+(c%3)*.25)+Math.sin(k*5.3+d.seed)*.10)/.12)*.12);
+    brick.box(x,floorY+.16+h/2,zz,.18,h,roomDepth/count,[.82,.78,.73]);
+   }
+  }
   for(let c=0;c<d.columns;c++){
    const x=-w/2+cw*(c+.5),doorW=.82,doorH=2.15,pier=(cw-doorW)/2;
-   for(const side of [-1,1])stone.box(x+side*(doorW+pier)/2,wallY,corridorZ,pier,wallH,.15,[1.13,1.08,.98]);
-   stone.box(x,floorY+.16+doorH+(wallH-doorH)/2,corridorZ,doorW,wallH-doorH,.15,[1.13,1.08,.98]);
+   for(const side of [-1,1]){
+    const center=x+side*(doorW+pier)/2,n=Math.ceil(pier/.22),safe=roomCut.bands.filter(b=>b.right>=center-pier/2&&b.left<=center+pier/2).every(b=>floorY+wallH<b.intercept-story*.9);
+    if(safe){brick.box(center,wallY,corridorZ,pier,wallH,.18,[.82,.78,.73]);continue;}
+    for(let k=0;k<n;k++){
+     const xx=center-pier/2+(k+.5)*pier/n,band=roomCut.bands.find(b=>xx>=b.left&&xx<=b.right),exposed=floorY+wallH>=band.intercept-story*.9,h=exposed?Math.max(.24,Math.floor((wallH-.15-Math.max(0,Math.sin((k+.5)/n*Math.PI))*.55+Math.sin(k*4.8+d.seed+c)*.12)/.12)*.12):wallH;
+     brick.box(xx,floorY+.16+h/2,corridorZ,pier/n,h,.18,[.82,.78,.73]);
+    }
+   }
+   brick.box(x,floorY+.16+doorH+(wallH-doorH)/2,corridorZ,doorW,wallH-doorH,.18,[.82,.78,.73]);
    for(const side of [-1,1])wood.box(x+side*(doorW/2+.035),floorY+.16+doorH/2,corridorZ+.085,.055,doorH,.06,[.9,.85,.8]);
    wood.box(x,floorY+.16+doorH,corridorZ+.085,doorW+.10,.07,.06,[.9,.85,.8]);
   }
