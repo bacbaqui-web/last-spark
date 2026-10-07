@@ -14,8 +14,10 @@ export function mossMaterial(material,strength=.65){
   shader.fragmentShader='varying vec3 mossWorld; uniform sampler2D streetMoss; uniform float mossStrength;\n'+shader.fragmentShader;
   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
    vec3 mossSample=texture2D(streetMoss,(mossWorld.xz+mossWorld.y*vec2(.37,.61))*.48).rgb;
-   float mossMask=smoothstep(.005,.08,mossSample.g-mossSample.r)*mossStrength;
-   diffuseColor.rgb=mix(diffuseColor.rgb,mossSample*vec3(.78,1.05,.65),mossMask);
+   float mossChroma=(mossSample.g-mossSample.b)/max(.025,mossSample.r+mossSample.g+mossSample.b);
+   float mossMask=smoothstep(.07,.19,mossChroma)*mossStrength;
+   vec3 mossColor=mix(vec3(.025,.065,.008),vec3(.13,.23,.035),clamp(dot(mossSample,vec3(.8)),0.0,1.0));
+   diffuseColor.rgb=mix(diffuseColor.rgb,mossColor,mossMask);
    diffuseColor.rgb*=.83+.17*clamp(dot(mossSample,vec3(.333)),0.0,1.0);`);
- };material.customProgramCacheKey=()=>`street-moss-${strength}`;return material;
+ };material.customProgramCacheKey=()=>`street-moss-v2-${strength}`;return material;
 }
