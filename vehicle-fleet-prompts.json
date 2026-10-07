@@ -1,0 +1,83 @@
+[
+  {
+    "id": "ford-taunus-12m-1968",
+    "mode": "imagegen edit UV guide with blueprint reference",
+    "source": "https://drawingdatabase.com/ford-taunus-12m-1968/",
+    "referenceImage": "https://drawingdatabase.com/wp-content/uploads/2021/01/Ford_Taunus_12M_1968.gif",
+    "prompt": "Create a game vehicle texture UV atlas for ford-taunus-12m-1968, faithfully based on the supplied real orthographic blueprint. Edit the first UV layout image, keep EXACT 4 equal horizontal rows and placements. Row1 entire LEFT side, row2 entire RIGHT side BOTH FRONT AT LEFT, matching cyan silhouette exactly and wheel centers marked red (remove all red lines). Side view WITHOUT wheels; wheel arches dark recesses. Row3 entire TOP projection front LEFT, fit width across 1024 pixels length and 256 pixels breadth, windshield and roof positions align longitudinally with side profiles. Row4 four equal square tiles: FRONT elevation, REAR elevation, one circular WHEEL hub/tire face centered, tire TREAD. No text or borders or logos. Orthographic flat game albedo, not perspective, not a rendered car. Abandoned destroyed vehicle, badly flaking paint, large mottled rusty brown patches 55% body, gritty mud on lower body, very dirty cracked nearly black glass, rusty dirty rims and tires. Remaining intact paint MUST muted cyan teal for shader recoloring. Detailed photographic surface.  ",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-ec26e657-f039-47fc-be18-f7b0c7062917.png"
+  },
+  {
+    "id": "daewoo-matiz-2003",
+    "mode": "imagegen edit UV guide with blueprint reference",
+    "source": "https://drawingdatabase.com/daewoo-matiz-2003/",
+    "referenceImage": "https://drawingdatabase.com/wp-content/uploads/2020/03/matiz_2003.gif",
+    "prompt": "Create a game vehicle texture UV atlas for daewoo-matiz-2003, faithfully based on the supplied real orthographic blueprint. Edit the first UV layout image, keep EXACT 4 equal horizontal rows and placements. Row1 entire LEFT side, row2 entire RIGHT side BOTH FRONT AT LEFT, matching cyan silhouette exactly and wheel centers marked red (remove all red lines). Side view WITHOUT wheels; wheel arches dark recesses. Row3 entire TOP projection front LEFT, fit width across 1024 pixels length and 256 pixels breadth, windshield and roof positions align longitudinally with side profiles. Row4 four equal square tiles: FRONT elevation, REAR elevation, one circular WHEEL hub/tire face centered, tire TREAD. No text or borders or logos. Orthographic flat game albedo, not perspective, not a rendered car. Abandoned destroyed vehicle, badly flaking paint, large mottled rusty brown patches 55% body, gritty mud on lower body, very dirty cracked nearly black glass, rusty dirty rims and tires. Remaining intact paint MUST muted cyan teal for shader recoloring. Detailed photographic surface.  ",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-65d58017-36f9-4495-8d29-2d4d4ab897fa.png"
+  },
+  {
+    "id": "volvo-v70-wagon-2006",
+    "mode": "imagegen edit UV guide with blueprint reference",
+    "source": "https://drawingdatabase.com/volvo-v70-wagon-2006/",
+    "referenceImage": "https://drawingdatabase.com/wp-content/uploads/2024/12/volvo_v70_wagon.gif",
+    "prompt": "Create a game vehicle texture UV atlas for volvo-v70-wagon-2006, faithfully based on the supplied real orthographic blueprint. Edit the first UV layout image, keep EXACT 4 equal horizontal rows and placements. Row1 entire LEFT side, row2 entire RIGHT side BOTH FRONT AT LEFT, matching cyan silhouette exactly and wheel centers marked red (remove all red lines). Side view WITHOUT wheels; wheel arches dark recesses. Row3 entire TOP projection front LEFT, fit width across 1024 pixels length and 256 pixels breadth, windshield and roof positions align longitudinally with side profiles. Row4 four equal square tiles: FRONT elevation, REAR elevation, one circular WHEEL hub/tire face centered, tire TREAD. No text or borders or logos. Orthographic flat game albedo, not perspective, not a rendered car. Abandoned destroyed vehicle, badly flaking paint, large mottled rusty brown patches 55% body, gritty mud on lower body, very dirty cracked nearly black glass, rusty dirty rims and tires. Remaining intact paint MUST muted cyan teal for shader recoloring. Detailed photographic surface.  ",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-3a5a061e-fccc-4a8d-a82e-a2d7b53f5172.png"
+  },
+  {
+    "id": "mahindra-thar-2021",
+    "mode": "imagegen edit UV guide with blueprint reference",
+    "source": "https://drawingdatabase.com/mahindra-thar-2021/",
+    "referenceImage": "https://drawingdatabase.com/wp-content/uploads/2023/06/mahindra_thar.gif",
+    "prompt": "Create a game vehicle texture UV atlas for mahindra-thar-2021, faithfully based on the supplied real orthographic blueprint. Edit the first UV layout image, keep EXACT 4 equal horizontal rows and placements. Row1 entire LEFT side, row2 entire RIGHT side BOTH FRONT AT LEFT, matching cyan silhouette exactly and wheel centers marked red (remove all red lines). Side view WITHOUT wheels; wheel arches dark recesses. Row3 entire TOP projection front LEFT, fit width across 1024 pixels length and 256 pixels breadth, windshield and roof positions align longitudinally with side profiles. Row4 four equal square tiles: FRONT elevation, REAR elevation, one circular WHEEL hub/tire face centered, tire TREAD. No text or borders or logos. Orthographic flat game albedo, not perspective, not a rendered car. Abandoned destroyed vehicle, badly flaking paint, large mottled rusty brown patches 55% body, gritty mud on lower body, very dirty cracked nearly black glass, rusty dirty rims and tires. Remaining intact paint MUST muted cyan teal for shader recoloring. Detailed photographic surface.  ",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-cac4ec98-ca30-40ea-b45d-31004d9fd515.png"
+  },
+  {
+    "id": "willys-mb",
+    "mode": "imagegen edit UV guide with blueprint reference",
+    "source": "https://drawingdatabase.com/willys-mb/",
+    "referenceImage": "https://drawingdatabase.com/wp-content/uploads/2014/03/willys-mb-sovietic-edition.png",
+    "prompt": "Create a game vehicle texture UV atlas for willys-mb, faithfully based on the supplied real orthographic blueprint. Edit the first UV layout image, keep EXACT 4 equal horizontal rows and placements. Row1 entire LEFT side, row2 entire RIGHT side BOTH FRONT AT LEFT, matching cyan silhouette exactly and wheel centers marked red (remove all red lines). Side view WITHOUT wheels; wheel arches dark recesses. Row3 entire TOP projection front LEFT, fit width across 1024 pixels length and 256 pixels breadth, windshield and roof positions align longitudinally with side profiles. Row4 four equal square tiles: FRONT elevation, REAR elevation, one circular WHEEL hub/tire face centered, tire TREAD. No text or borders or logos. Orthographic flat game albedo, not perspective, not a rendered car. Abandoned destroyed vehicle, badly flaking paint, large mottled rusty brown patches 55% body, gritty mud on lower body, very dirty cracked nearly black glass, rusty dirty rims and tires. Remaining intact paint MUST muted cyan teal for shader recoloring. Detailed photographic surface. OPEN JEEP, no roof, open dark seats in top row, windshield bar at 43% length. ",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-30b614a6-67be-4224-b6f9-f9dad38bb8be.png",
+    "correction": "Regenerated short four-wheel open jeep; removed six-wheel hallucination."
+  },
+  {
+    "id": "ford-f-100-1956",
+    "mode": "imagegen edit UV guide with blueprint reference",
+    "source": "https://drawingdatabase.com/ford-f-100-1956/",
+    "referenceImage": "https://drawingdatabase.com/wp-content/uploads/2020/03/Ford-F-100-1956.gif",
+    "prompt": "Create a game vehicle texture UV atlas for ford-f-100-1956, faithfully based on the supplied real orthographic blueprint. Edit the first UV layout image, keep EXACT 4 equal horizontal rows and placements. Row1 entire LEFT side, row2 entire RIGHT side BOTH FRONT AT LEFT, matching cyan silhouette exactly and wheel centers marked red (remove all red lines). Side view WITHOUT wheels; wheel arches dark recesses. Row3 entire TOP projection front LEFT, fit width across 1024 pixels length and 256 pixels breadth, windshield and roof positions align longitudinally with side profiles. Row4 four equal square tiles: FRONT elevation, REAR elevation, one circular WHEEL hub/tire face centered, tire TREAD. No text or borders or logos. Orthographic flat game albedo, not perspective, not a rendered car. Abandoned destroyed vehicle, badly flaking paint, large mottled rusty brown patches 55% body, gritty mud on lower body, very dirty cracked nearly black glass, rusty dirty rims and tires. Remaining intact paint MUST muted cyan teal for shader recoloring. Detailed photographic surface.  PICKUP open rear cargo bed starts at 64% length, rusty dark bed floor visible in top row.",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-5c0bc3af-2838-479b-be7b-91f3020c937f.png"
+  },
+  {
+    "id": "citroen-hy-1957",
+    "mode": "imagegen edit UV guide with blueprint reference",
+    "source": "https://drawingdatabase.com/citroen-hy-1957/",
+    "referenceImage": "https://drawingdatabase.com/wp-content/uploads/2021/12/Citroen_HY_1957.gif",
+    "prompt": "Create a game vehicle texture UV atlas for citroen-hy-1957, faithfully based on the supplied real orthographic blueprint. Edit the first UV layout image, keep EXACT 4 equal horizontal rows and placements. Row1 entire LEFT side, row2 entire RIGHT side BOTH FRONT AT LEFT, matching cyan silhouette exactly and wheel centers marked red (remove all red lines). Side view WITHOUT wheels; wheel arches dark recesses. Row3 entire TOP projection front LEFT, fit width across 1024 pixels length and 256 pixels breadth, windshield and roof positions align longitudinally with side profiles. Row4 four equal square tiles: FRONT elevation, REAR elevation, one circular WHEEL hub/tire face centered, tire TREAD. No text or borders or logos. Orthographic flat game albedo, not perspective, not a rendered car. Abandoned destroyed vehicle, badly flaking paint, large mottled rusty brown patches 55% body, gritty mud on lower body, very dirty cracked nearly black glass, rusty dirty rims and tires. Remaining intact paint MUST muted cyan teal for shader recoloring. Detailed photographic surface.  ",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-86707225-97aa-4bdc-be08-25355ebf2e49.png"
+  },
+  {
+    "id": "nissan-civilian",
+    "mode": "imagegen edit UV guide with blueprint reference",
+    "source": "https://drawingdatabase.com/nissan-civilian/",
+    "referenceImage": "https://drawingdatabase.com/wp-content/uploads/2014/05/2008-nissan-civilian-standard-body-26-persones-bus-blueprint_97de9.gif",
+    "prompt": "Create a game vehicle texture UV atlas for nissan-civilian, faithfully based on the supplied real orthographic blueprint. Edit the first UV layout image, keep EXACT 4 equal horizontal rows and placements. Row1 entire LEFT side, row2 entire RIGHT side BOTH FRONT AT LEFT, matching cyan silhouette exactly and wheel centers marked red (remove all red lines). Side view WITHOUT wheels; wheel arches dark recesses. Row3 entire TOP projection front LEFT, fit width across 1024 pixels length and 256 pixels breadth, windshield and roof positions align longitudinally with side profiles. Row4 four equal square tiles: FRONT elevation, REAR elevation, one circular WHEEL hub/tire face centered, tire TREAD. No text or borders or logos. Orthographic flat game albedo, not perspective, not a rendered car. Abandoned destroyed vehicle, badly flaking paint, large mottled rusty brown patches 55% body, gritty mud on lower body, very dirty cracked nearly black glass, rusty dirty rims and tires. Remaining intact paint MUST muted cyan teal for shader recoloring. Detailed photographic surface.  ",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-dfa51161-0a0b-4433-90a0-59f7c57692f4.png"
+  },
+  {
+    "id": "daihatsu-gran-max-box-van",
+    "mode": "imagegen edit UV guide with blueprint reference",
+    "source": "https://drawingdatabase.com/daihatsu-gran-max-box-van/",
+    "referenceImage": "https://drawingdatabase.com/wp-content/uploads/2026/09/gran-max.gif",
+    "prompt": "Create a game vehicle texture UV atlas for daihatsu-gran-max-box-van, faithfully based on the supplied real orthographic blueprint. Edit the first UV layout image, keep EXACT 4 equal horizontal rows and placements. Row1 entire LEFT side, row2 entire RIGHT side BOTH FRONT AT LEFT, matching cyan silhouette exactly and wheel centers marked red (remove all red lines). Side view WITHOUT wheels; wheel arches dark recesses. Row3 entire TOP projection front LEFT, fit width across 1024 pixels length and 256 pixels breadth, windshield and roof positions align longitudinally with side profiles. Row4 four equal square tiles: FRONT elevation, REAR elevation, one circular WHEEL hub/tire face centered, tire TREAD. No text or borders or logos. Orthographic flat game albedo, not perspective, not a rendered car. Abandoned destroyed vehicle, badly flaking paint, large mottled rusty brown patches 55% body, gritty mud on lower body, very dirty cracked nearly black glass, rusty dirty rims and tires. Remaining intact paint MUST muted cyan teal for shader recoloring. Detailed photographic surface.  ",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-be0be517-71aa-4259-a65b-88bf531a313f.png"
+  },
+  {
+    "id": "nissan-silvia-s14-1994",
+    "mode": "imagegen edit UV guide with blueprint reference",
+    "source": "https://drawingdatabase.com/nissan-silvia-s14-1994/",
+    "referenceImage": "https://drawingdatabase.com/wp-content/uploads/2014/04/nissan-200sx.gif",
+    "prompt": "Create a game vehicle texture UV atlas for nissan-silvia-s14-1994, faithfully based on the supplied real orthographic blueprint. Edit the first UV layout image, keep EXACT 4 equal horizontal rows and placements. Row1 entire LEFT side, row2 entire RIGHT side BOTH FRONT AT LEFT, matching cyan silhouette exactly and wheel centers marked red (remove all red lines). Side view WITHOUT wheels; wheel arches dark recesses. Row3 entire TOP projection front LEFT, fit width across 1024 pixels length and 256 pixels breadth, windshield and roof positions align longitudinally with side profiles. Row4 four equal square tiles: FRONT elevation, REAR elevation, one circular WHEEL hub/tire face centered, tire TREAD. No text or borders or logos. Orthographic flat game albedo, not perspective, not a rendered car. Abandoned destroyed vehicle, badly flaking paint, large mottled rusty brown patches 55% body, gritty mud on lower body, very dirty cracked nearly black glass, rusty dirty rims and tires. Remaining intact paint MUST muted cyan teal for shader recoloring. Detailed photographic surface.  ",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-d3639130-194a-48a7-ad1d-a38da89e2b56.png"
+  }
+]
