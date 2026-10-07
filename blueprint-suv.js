@@ -20,7 +20,7 @@ export function createBlueprintSUV({color=0xb8b6a0}={}){
  const cap=(a,b,tile)=>{const point=(r,t)=>{const [z,w,y]=r;return [(t*2-1)*w,y+(t===0||t===1?0:.04),z];};const v=r=>tile===5?(r[0]+1.60)/2.18:tile===4?(r[0]-1.05)/1.25:tile===14?(r[0]+2.3)/.28:undefined;const va=v(a)??1,vb=v(b)??0;const stops=[0,.055,.945,1];for(let k=0;k<3;k++)face([point(a,stops[k]),point(a,stops[k+1]),point(b,stops[k+1]),point(b,stops[k])],tile,[[stops[k],va],[stops[k+1],va],[stops[k+1],vb],[stops[k],vb]]);};
  cap(cabin[0],cabin[1],7);cap(cabin[1],cabin[2],5);cap(cabin[2],cabin[3],5);cap(cabin[3],cabin[4],5);cap(cabin[4],cabin[5],6);
  cap([-2.3,.82,1.13],[-2.18,.94,1.13],14);cap([-2.18,.94,1.13],cabin[0],14);cap(cabin[5],[2.18,.94,1.13],4);cap([2.18,.94,1.13],[2.3,.82,1.13],4);
- for(const z of [-2.3,2.3])face([[-.82,.4,z],[.82,.4,z],[.82,1.13,z],[-.82,1.13,z]],z>0?8:9,[[.064,0],[.936,0],[.936,1],[.064,1]]);
+ for(const z of [-2.3,2.3]){const pts=[[-.82,.4,z],[.82,.4,z],[.82,1.13,z],[.7298,1.17,z],[-.7298,1.17,z],[-.82,1.13,z]];face(pts,z>0?8:9,pts.map(p=>[(p[0]+.94)/1.88,(p[1]-.4)/.77]));}
  const black=pts=>face(pts,13,pts.map(()=>[.5,.5]));
  // Closed inner box and wheel-well liners prevent holes behind the tire openings.
  const a=[[-.67,.3,-2.27],[.67,.3,-2.27],[.67,1.1,-2.27],[-.67,1.1,-2.27]],b=a.map(([x,y])=>[x,y,2.27]);
