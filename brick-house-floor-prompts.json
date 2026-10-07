@@ -1,0 +1,13 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "id": "wood",
+      "prompt": "Photorealistic seamless square game albedo texture, directly overhead orthographic view of abandoned apartment wood plank floor. Narrow muted gray brown oak boards, staggered joints, worn matte grain, dusty surfaces, pale abrasion, subtle dried water stains and small chips, aged neglected believable wood. Low contrast, no shiny varnish, no perspective, no furniture, no objects, no border, no text, uniform diffuse lighting without cast shadows, seamless tileable edges."
+    },
+    {
+      "id": "tile",
+      "prompt": "Photorealistic seamless square game albedo texture, overhead orthographic view of old abandoned shop ceramic tile floor. Muted cream gray square tiles about eight across, dark dirty grout, dust and ingrained grime, irregular hairline cracks in some tiles, a few small chipped corners, pale brown water stains. Restrained contrast and natural neglect. No perspective, no objects, no borders, no text, uniform diffuse light without cast shadows, seamless tileable edges."
+    }
+  ]
+}
