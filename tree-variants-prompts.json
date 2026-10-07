@@ -1,0 +1,16 @@
+[
+  {
+    "id": "leaves",
+    "prompt": "Use case: photorealistic-natural. Asset type: foliage alpha texture atlas for a real-time 3D street tree. Generate a square 1024x1024 RGBA image with genuinely transparent background. Exactly FOUR separate small Zelkova-like deciduous leaf branch sprays in a strict 2 by 2 grid. Each spray centered in its own equal quadrant, at least 12% transparent margin inside each quadrant, no crossing quadrant borders. All four are the SAME species, spring/summer muted natural olive green, oval pointed serrated leaves with delicate pale veins, slender brown-grey twigs, 8 to 12 leaves per spray with organic spaces between leaves. Top left broad spray facing upward; top right narrow hanging spray; bottom left sparse crooked spray; bottom right gently curved leafy spray. Real photographic surface detail, matte leaves, subtle green variations; natural irregular silhouette. Neutral flat diffuse lighting suitable for albedo; no cast shadows outside the leaves. Not a whole tree, not a round foliage ball, no solid green backing, no dark background, no ground, no frames, no text, no labels, no watermark. Transparent pixels between every leaf and twig and around sprays. Keep all leaf groups fully inside their quadrants.",
+    "mode": "generate",
+    "originalOutput": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-1a573860-f0c1-41a6-9dbb-7fb22286a58a.png",
+    "savedAsset": "public/textures/trees/street-leaves.png"
+  },
+  {
+    "id": "bark",
+    "prompt": "Use case: photorealistic-natural. Asset type: seamless bark albedo texture for a Zelkova-like deciduous street tree trunk, square 1024x1024. Photographic close-up of grey-brown mature bark with fine vertical fissures, irregular small peeling scales, subtle warm tan and grey patches, a little weathering, mostly healthy wood. Texture fills the entire square edge to edge; no trunk silhouette or scene, no leaves, no branches, no knots larger than 10% width, no letters. Seamless tiled surface on all four edges. Front facing orthographic surface under even diffuse lighting, no highlights, no deep cast shadows. Detailed and natural but not exaggerated deep grooves, no dark black cracks. Midtone muted brown-grey, suitable for clear daytime abandoned-city map.",
+    "mode": "generate",
+    "originalOutput": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-e5cb7c85-847a-4952-84bc-bf9b8d405535.png",
+    "savedAsset": "public/textures/trees/street-bark.jpg"
+  }
+]
