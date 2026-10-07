@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {createFleetVehicle,fleet} from './vehicle-fleet-models.js';
 import {createImpactRuinBuilding} from './impact-ruin-buildings.js';
 import {addCityBackdrop} from './street-city-backdrop.js';
 import {mossMaterial} from './street-moss-material.js';
@@ -37,6 +38,8 @@ export function createSatelliteCrashBlock(seed=2207){
  const antenna=mesh(new T.ConeGeometry(1.3,.35,16),metal);antenna.position.set(5,-2.2,3);antenna.rotation.set(1.1,.4,.7);
  root.userData={bossStage:true,size:72,houses,trees:[],cars:[],smallRides:[],debris:1100,walkBounds:35,groundBase:-3,connections:[{x:0,z:36,width:7}],mission:'전쟁위성 회수 · 보스 토벌 후 희귀 모듈',bossDefeated:false,previewBossDefeat:()=>{hatch.rotation.z=-1.1;hatch.position.y=1.9;reward.visible=true;root.userData.bossDefeated=true;}};
  function fireMaterial(hot){return new T.ShaderMaterial({uniforms:{time:{value:0},hot:{value:hot}},transparent:true,depthWrite:false,blending:T.AdditiveBlending,side:T.DoubleSide,vertexShader:'uniform float time; varying vec2 vUv; void main(){vUv=uv;vec3 p=position;p.x+=sin(p.y*5.0+time*8.0)*max(0.0,p.y+.85)*.12;gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);}',fragmentShader:'uniform float time; uniform float hot; varying vec2 vUv; void main(){float wave=.65+.35*sin(vUv.x*28.0+vUv.y*19.0-time*9.0);float alpha=wave*(1.0-smoothstep(.55,1.0,vUv.y))*.8;vec3 color=mix(vec3(1.0,.16,.015),vec3(1.0,.85,.25),hot+(1.0-vUv.y)*.25);gl_FragColor=vec4(color,alpha);}'});}
+ const cars=[],coverSlots=[[-5.4,31],[5.4,27],[-5.4,22],[5.4,17],[-10,8],[10,8],[-11,-6],[11,-7]],coverPool=fleet.filter(v=>v.length<=4.7);
+ coverSlots.forEach(([x,z],i)=>{const d=coverPool[Math.floor(r()*coverPool.length)],car=createFleetVehicle(d,{seed:`crash-cover:${seed}:${i}`});car.rotation.set((r()-.5)*.12,(r()-.5)*1.5,i%3===0?1.45:.06);car.updateMatrixWorld(true);const b=new T.Box3().setFromObject(car);car.position.set(x,height(x,z)+.04-b.min.y,z);car.userData.ownedMaterial=true;car.userData.collisionKind='car';mossMaterial(car.material,.35);root.add(car);cars.push({id:d.id,x,z});});root.userData.cars=cars;
  const flames=new T.Group(),flameMat=fireMaterial(.1),innerMat=fireMaterial(.7),flameGeo=new T.ConeGeometry(.3,1.7,5);
  for(const [x,z] of [[-5,-3],[4,2],[-7,8],[9,-6],[-12,-3],[13,10],[0,-10]]){const fire=new T.Group();fire.position.set(x,height(x,z)+.5,z);for(let j=0;j<3;j++){const f=new T.Mesh(flameGeo,j===1?innerMat:flameMat);f.position.set((j-1)*.22,j===1?.35:.1,0);f.scale.setScalar(j===1?.65:1);fire.add(f);}fire.userData.phase=r()*6.28;flames.add(fire);}root.add(flames);flames.userData.ownedMaterials=[flameMat,innerMat];flames.children[0].children[0].userData.ownedGeometry=true;
  root.userData.updateImpactFire=time=>{flameMat.uniforms.time.value=innerMat.uniforms.time.value=time;for(const fire of flames.children){fire.scale.set(1,.8+Math.sin(time*7+fire.userData.phase)*.17,1);fire.rotation.y=time*.2+fire.userData.phase;}};

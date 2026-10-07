@@ -10,7 +10,7 @@ import {addGroundDamage} from './street-ground-damage.js';
 import {addCityBackdrop} from './street-city-backdrop.js';
 import {addStreetLife} from './street-life.js';
 export const BLOCK_SIZE=72;
-export const streetLayouts=[{name:'버려진 주거 거리',cars:9,trees:14,debris:30},{name:'붕괴 잔해가 많은 거리',cars:6,trees:10,debris:55},{name:'차량이 밀집한 상점 거리',cars:14,trees:12,debris:35}];
+export const streetLayouts=[{name:'버려진 주거 거리',cars:15,trees:14,debris:30},{name:'붕괴 잔해가 많은 거리',cars:12,trees:10,debris:55},{name:'차량이 밀집한 상점 거리',cars:20,trees:12,debris:35}];
 function rng(seed){return()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
 let materials;
 function mats(){if(materials)return materials;const textured=(file)=>{const m=new T.MeshStandardMaterial({color:0xffffff,roughness:1});if(typeof document!=='undefined'){m.map=new T.TextureLoader().load(new URL('./textures/'+file,document.baseURI).href);m.map.wrapS=m.map.wrapT=T.RepeatWrapping;m.map.colorSpace=T.SRGBColorSpace;m.map.anisotropy=4;}return m;};materials={wood:textured('houses/aged-wood-floor.jpg'),asphalt:textured('street/mossy-asphalt.jpg'),sidewalk:textured('street/overgrown-sidewalk.jpg'),brick:textured('houses/red-brick-weathered.jpg'),stone:new T.MeshStandardMaterial({color:0x898578,roughness:1}),curb:new T.MeshStandardMaterial({color:0x99978b,roughness:1}),soil:new T.MeshStandardMaterial({color:0x4d4b36,roughness:1}),paint:new T.MeshStandardMaterial({color:0xc8c6ab,roughness:1})};for(const name of ['brick','stone','curb','paint'])mossMaterial(materials[name],name==='paint'?1.0:.95);return materials;}
