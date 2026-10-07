@@ -44,5 +44,5 @@ export function addStreetOvergrowth(root,options={}){
   if(kind)windMaterial(material,kind);
   for(const cell of cells.values()){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(cell.p,3));g.setAttribute('color',new T.Float32BufferAttribute(cell.c,3));if(tex)g.setAttribute('uv',new T.Float32BufferAttribute(cell.uv,2));g.computeVertexNormals();g.computeBoundingSphere();g.boundingSphere.radius+=.25;const o=new T.Mesh(g,material);o.receiveShadow=true;o.userData.ownedGeometry=true;o.userData.vegetation=true;o.userData.grass=kind==='grass';root.add(o);}
  }
- const stemsMaterial=new T.MeshStandardMaterial({color:0xffffff,vertexColors:true,side:T.DoubleSide,roughness:1});mesh(sp,sc,stemsMaterial);root.children.at(-1).userData.ownedMaterial=true;mesh(gp,gc,grassMaterial(),gu,'grass');mesh(lp,lc,leaves(),uv,'leaves');root.userData.overgrowth={patches,vines,triangles:(gp.length+lp.length)/9};
+ const stemsMaterial=new T.MeshStandardMaterial({color:0xffffff,vertexColors:true,side:T.DoubleSide,roughness:1});if(sp.length){mesh(sp,sc,stemsMaterial);root.children.at(-1).userData.ownedMaterial=true;}else stemsMaterial.dispose();mesh(gp,gc,grassMaterial(),gu,'grass');mesh(lp,lc,leaves(),uv,'leaves');root.userData.overgrowth={patches,vines,triangles:(gp.length+lp.length)/9};
 }
