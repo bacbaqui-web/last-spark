@@ -1,11 +1,11 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
-export function addCityBackdrop(root){
+export function addCityBackdrop(root, options={}){
  let seed=(root.userData.seed^0x74b921)>>>0;
  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
  const pieces=[],buildings=[],flatPieces=[];
- const ground=new T.Mesh(new T.PlaneGeometry(700,700),new T.MeshStandardMaterial({color:0x65695b,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.12;ground.userData.ownedGeometry=ground.userData.ownedMaterial=true;root.add(ground);
+ const ground=new T.Mesh(new T.PlaneGeometry(700,700),new T.MeshStandardMaterial({color:0x65695b,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=options.groundY??-.12;ground.userData.ownedGeometry=ground.userData.ownedMaterial=true;root.add(ground);
  function block(x,y,z,w,h,d,color){const g=new T.BoxGeometry(w,h,d);g.translate(x,y+h/2,z);const colors=[];for(let i=0;i<g.attributes.position.count;i++)colors.push(color.r,color.g,color.b);g.setAttribute('color',new T.Float32BufferAttribute(colors,3));const uv=g.attributes.uv;for(let i=0;i<uv.count;i++){const face=Math.floor(i/4);uv.setXY(i,uv.getX(i)*(face<2?d:w)/3,uv.getY(i)*h/3);}pieces.push(g);}
  // A distant ring leaves the playable street open, including its northward sightline.
  for(let i=0;i<42;i++){

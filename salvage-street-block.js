@@ -26,7 +26,7 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
  for(let z=-34;z<36;z+=6){if(r()<.2)continue;box((r()-.5)*.035,.027,z,.10,.006,2.2+r()*.3,m.paint);}
  // Small alleys separate the buildings; facades follow the narrower single-lane road.
  for(const side of [-1,1]){
-  const pool=layoutIndex===2?[1,5,6,9,13,14,15,16]:layoutIndex===1?[2,3,7,8,12,17,18,19]:[0,2,3,4,7,8,1,10,11,12,17,18,19],indices=Array.from({length:7},()=>pool[Math.floor(r()*pool.length)]),total=indices.reduce((n,i)=>n+houseVariants[i].width,0),gap=.32,scale=(72-gap*6)/total;let cursor=-36;
+  const pool=layoutIndex===2?[1,5,6,9,13,14,15,16]:layoutIndex===1?[2,3,7,8,12,17,18,19]:[0,2,3,4,7,8,1,10,11,12,17,18,19],indices=Array.from({length:7},()=>pool[Math.floor(r()*pool.length)]),total=indices.reduce((n,i)=>n+houseVariants[i].width,0),gap=.14,scale=(72-gap*6)/total;let cursor=-36;
   for(let j=0;j<7;j++){
    const collapse=j===2||j===5;const i=indices[j],d=houseVariants[i],width=d.width*scale,z=cursor+width/2,depth=d.depth*scale,h=createBrickHouse(i);h.scale.setScalar(scale);h.rotation.y=-side*Math.PI/2;h.position.set(side*(8.5+depth/2),.205,z);h.traverse(o=>{if(o.material){const list=Array.isArray(o.material)?o.material:[o.material];const cloned=list.map(mat=>mossMaterial(mat.clone(),.78));o.material=Array.isArray(o.material)?cloned:cloned[0];o.userData.ownedMaterials=cloned;}});if(collapse){h.traverse(o=>{if(!o.geometry)return;const g=o.geometry,attrs={},p=g.attributes.position;for(const name of Object.keys(g.attributes))attrs[name]=[];for(let n=0;n<p.count;n+=3){const x=(p.getX(n)+p.getX(n+1)+p.getX(n+2))/3,y=(p.getY(n)+p.getY(n+1)+p.getY(n+2))/3,zz=(p.getZ(n)+p.getZ(n+1)+p.getZ(n+2))/3;if(zz>depth/scale/2-.7&&y>1.8+Math.abs(x)*.45&&Math.abs(x)<width/scale*.35)continue;for(const [name,a] of Object.entries(g.attributes))for(let k=0;k<3;k++)for(let c=0;c<a.itemSize;c++)attrs[name].push(a.array[(n+k)*a.itemSize+c]);}const next=new T.BufferGeometry();for(const [name,a] of Object.entries(g.attributes))next.setAttribute(name,new T.Float32BufferAttribute(attrs[name],a.itemSize));next.computeBoundingSphere();o.geometry=next;o.userData.ownedGeometry=true;});const wall=box(side*6.2,1.1,z, .34,3.8,width*.52,m.brick);wall.userData.collisionKind='rubble';wall.rotation.z=side*.95;const floor=box(side*4.8,.48,z+1,2.8,.25,2.6,m.stone,.25*side);floor.userData.collisionKind='rubble';floor.rotation.z=side*.19;for(let n=0;n<120;n++){const x=side*(2.4+r()*5.9),size=.3+r()*.8;debris.push({x,y:.12+size*.4,z:z+(r()-.5)*width*.7,sx:size*1.5,sy:size*.7,sz:size,rx:r()*.6,ry:r()*Math.PI,rz:r()*.6,stone:r()<.4});}}h.userData.collisionKind='building';root.add(h);houses.push({variant:i,x:h.position.x,z,width,depth,collapsed:collapse});cursor+=width+gap;
    obstacles.push({kind:'building',x:h.position.x,z,w:depth,d:width});
@@ -46,9 +46,9 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
   const index=10+Math.floor(rearRandom()*10),d=houseVariants[index],scale=.85+rearRandom()*.18,width=d.width*scale,z=cursor+width/2;
   const nearby=houses.filter(h=>Math.sign(h.x)===side&&h.row!==2&&Math.abs(h.z-z)<h.width/2+width/2);
   const rear=Math.max(18,...nearby.map(h=>Math.abs(h.x)+h.depth/2)),h=createBrickHouse(index);
-  h.scale.setScalar(scale);h.rotation.y=-side*Math.PI/2;h.position.set(side*(rear+(rowIndex%2?1.8:.65)+d.depth*scale/2),.205,z);
+  h.scale.setScalar(scale);h.rotation.y=-side*Math.PI/2;h.position.set(side*(rear+(rowIndex%2?.35:.14)+d.depth*scale/2),.205,z);
   h.traverse(o=>{if(o.material){o.material=o.material.clone();mossMaterial(o.material,.65);o.userData.ownedMaterials=[o.material];}});
-  h.userData.collisionKind='building';root.add(h);houses.push({variant:index,x:h.position.x,z,width,depth:d.depth*scale,row:2});cursor+=width+.32;rowIndex++;
+  h.userData.collisionKind='building';root.add(h);houses.push({variant:index,x:h.position.x,z,width,depth:d.depth*scale,row:2});cursor+=width+.14;rowIndex++;
  }}
  // Close the seams with weathered timber barricades.
  const seamRandom=rng(seed^0x731b21),seamWalls=[],seamTransform=new T.Object3D();
