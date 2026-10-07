@@ -48,9 +48,14 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
   const car=createFleetVehicle(d);car.scale.setScalar(1.12);car.rotation.set(pitch,angle,roll);car.updateMatrixWorld(true);
   const bounds=new T.Box3().setFromObject(car),halfW=(bounds.max.x-bounds.min.x)/2,halfD=(bounds.max.z-bounds.min.z)/2;
   if(halfW>3.4||halfD>4.5){car.material.dispose();continue;}
-  const x=side*(.9+halfW+r()*.4),z=(r()-.5)*(66-halfD*2);
+  // Guarantee central wrecks and both sidewalk zones, then vary the rest.
+  const placement=cars.length===0?'center':cars.length<3?'sidewalk':r()<.4?'center':r()<.5?'sidewalk':'edge';
+  const placementSide=cars.length===1?-1:cars.length===2?1:side;
+  const x=placement==='center'?(r()-.5)*1.6:placement==='sidewalk'?placementSide*(5.6+r()*.4):side*(2.6+r()*.6),z=(r()-.5)*(66-halfD*2);
+  if(Math.abs(x)+halfW>8.3||treeSlots.some(t=>Math.abs(t.x-x)<halfW+.5&&Math.abs(t.z-z)<halfD+.5)){car.material.dispose();continue;}
   if(cars.some(c=>Math.abs(c.x-x)<c.halfW+halfW+.35&&Math.abs(c.z-z)<c.halfD+halfD+.5)){car.material.dispose();continue;}
-  car.position.set(x-(bounds.min.x+bounds.max.x)/2,.04-bounds.min.y,z-(bounds.min.z+bounds.max.z)/2);car.castShadow=car.receiveShadow=true;car.userData.ownedMaterial=true;mossMaterial(car.material,.72);root.add(car);cars.push({id:d.id,x,z,halfW,halfD,roll,pitch,angle});obstacles.push({kind:'car',x,z,w:halfW*2,d:halfD*2});
+  const ground=Math.abs(x)+halfW>3.65?.215:.04;
+  car.position.set(x-(bounds.min.x+bounds.max.x)/2,ground-bounds.min.y,z-(bounds.min.z+bounds.max.z)/2);car.castShadow=car.receiveShadow=true;car.userData.ownedMaterial=true;mossMaterial(car.material,.72);root.add(car);cars.push({id:d.id,x,z,halfW,halfD,roll,pitch,angle,placement});obstacles.push({kind:'car',x,z,w:halfW*2,d:halfD*2});
  }
  // A few abandoned motorcycles, bicycles and scooters, grounded on the road or sidewalk.
  for(let attempts=0;smallRides.length<5&&attempts<150;attempts++){
