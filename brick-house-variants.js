@@ -1,16 +1,16 @@
 import * as T from 'three';
 
 export const houseVariants=[
- {name:'벽돌 연립주택',use:'주택',width:8,depth:8.5,floors:3,columns:3,damage:[3,3,3],seed:31,escape:true},
- {name:'지붕이 무너진 주택',use:'주택',width:8.4,depth:8,floors:3,columns:3,damage:[3,3,2],seed:73},
- {name:'코너 식료품점',use:'가게 · GROCERY',width:10,depth:9,floors:3,columns:4,damage:[3,3,3,2],seed:117,shop:'GROCERY'},
- {name:'폐업한 세탁소',use:'가게 · LAUNDRY',width:9,depth:8,floors:2,columns:3,damage:[2,2,2],seed:159,shop:'LAUNDRY'},
- {name:'외벽이 뜯긴 주택',use:'주택 · 내부 노출',width:8.6,depth:8.8,floors:4,columns:3,damage:[4,2,3],seed:203,escape:true,sideHole:true},
- {name:'무너진 작은 식당',use:'가게 · DINER',width:9.5,depth:9,floors:2,columns:3,damage:[2,2,1],seed:247,shop:'DINER'},
- {name:'한쪽이 붕괴한 아파트',use:'주택 · 반파',width:10.4,depth:9.5,floors:4,columns:4,damage:[4,3,1,1],seed:293,sideHole:true},
- {name:'폐허가 된 서점',use:'가게 · BOOKS',width:8.8,depth:8.4,floors:3,columns:3,damage:[2,1,1],seed:337,shop:'BOOKS',sideHole:true},
- {name:'벽만 남은 주택',use:'주택 · 잔존 벽',width:8.3,depth:8.6,floors:3,columns:3,damage:[1,0,1],seed:379,ruin:true,sideHole:true},
- {name:'완전히 붕괴한 건물',use:'완전 붕괴 · 잔해',width:10,depth:9,floors:3,columns:4,damage:[0,1,0,0],seed:421,ruin:true,sideHole:true},
+ {name:'지붕이 무너진 주택',use:'주택 · 기존 02 기반',width:8.4,depth:8,floors:3,columns:3,damage:[3,3,2],seed:73,basis:2},
+ {name:'코너 식료품점',use:'가게 · GROCERY · 기존 03 기반',width:10,depth:9,floors:3,columns:4,damage:[3,3,3,2],seed:117,shop:'GROCERY',basis:3},
+ {name:'외벽이 뜯긴 주택',use:'주택 · 내부 노출 · 기존 05 기반',width:8.6,depth:8.8,floors:4,columns:3,damage:[4,2,3],seed:203,escape:true,sideHole:true,basis:5},
+ {name:'한쪽이 붕괴한 아파트',use:'주택 · 반파 · 기존 07 기반',width:10.4,depth:9.5,floors:4,columns:4,damage:[4,3,1,1],seed:293,sideHole:true,basis:7},
+ {name:'왼쪽 지붕이 무너진 주택',use:'주택 · 기존 02 변형',width:9.2,depth:8.6,floors:3,columns:4,damage:[2,2,3,3],seed:511,escape:true,basis:2},
+ {name:'지붕이 무너진 세탁소',use:'가게 · LAUNDRY · 기존 03 변형',width:9.3,depth:8.4,floors:3,columns:3,damage:[2,3,3],seed:557,shop:'LAUNDRY',basis:3},
+ {name:'외벽이 무너진 작은 식당',use:'가게 · DINER · 기존 03 변형',width:11.2,depth:9.2,floors:3,columns:4,damage:[3,3,2,1],seed:601,shop:'DINER',sideHole:true,basis:3},
+ {name:'중앙이 뜯긴 연립주택',use:'주택 · 내부 노출 · 기존 05 변형',width:11.4,depth:9.4,floors:4,columns:4,damage:[4,3,2,4],seed:647,escape:true,sideHole:true,basis:5},
+ {name:'왼쪽이 붕괴한 아파트',use:'주택 · 반파 · 기존 07 변형',width:12,depth:9,floors:4,columns:4,damage:[1,1,3,4],seed:691,sideHole:true,basis:7},
+ {name:'반파된 벽돌 서점',use:'가게 · BOOKS · 기존 07 변형',width:10.8,depth:9.8,floors:4,columns:4,damage:[4,3,2,1],seed:739,shop:'BOOKS',sideHole:true,basis:7},
 ];
 const cache=new Map();let materials;
 function random(seed){return ()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
