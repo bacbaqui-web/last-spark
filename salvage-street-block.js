@@ -6,6 +6,7 @@ import {createFleetVehicle as createRide,fleet as rides} from './ride-fleet-mode
 import {addStreetOvergrowth} from './street-overgrowth.js';
 import {mossMaterial} from './street-moss-material.js';
 import {addGroundDamage} from './street-ground-damage.js';
+import {addStreetLife} from './street-life.js';
 export const BLOCK_SIZE=72;
 export const streetLayouts=[{name:'버려진 주거 거리',cars:9,trees:14,debris:30},{name:'붕괴 잔해가 많은 거리',cars:6,trees:10,debris:55},{name:'차량이 밀집한 상점 거리',cars:14,trees:12,debris:35}];
 function rng(seed){return()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
@@ -68,6 +69,6 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
  for(const stone of [false,true]){
   const items=debris.filter(d=>d.stone===stone),mesh=new T.InstancedMesh(stone?rockGeo:boxGeo,stone?m.stone:m.brick,items.length),o=new T.Object3D();items.forEach((d,i)=>{o.position.set(d.x,d.y,d.z);o.scale.set(d.sx,d.sy,d.sz);o.rotation.set(d.rx,d.ry,d.rz);o.updateMatrix();mesh.setMatrixAt(i,o.matrix);});mesh.castShadow=mesh.receiveShadow=true;mesh.instanceMatrix.needsUpdate=true;root.add(mesh);mesh.userData.ownedInstances=true;
  }
- root.userData={seed,layout:layoutIndex,size:72,houses,cars,smallRides,trees:treeSlots,debris:debris.length,obstacles,blockages,connections:[{x:0,z:-36,width:7},{x:0,z:36,width:7}]};addGroundDamage(root);addStreetOvergrowth(root);return root;
+ root.userData={seed,layout:layoutIndex,size:72,houses,cars,smallRides,trees:treeSlots,debris:debris.length,obstacles,blockages,connections:[{x:0,z:-36,width:7},{x:0,z:36,width:7}]};addGroundDamage(root);addStreetOvergrowth(root);addStreetLife(root);return root;
 }
 export function disposeStreetBlock(root){root.traverse(o=>{if(o.userData.ownedMaterial)o.material.dispose();if(o.userData.ownedMaterials)o.userData.ownedMaterials.forEach(m=>m.dispose());if(o.userData.ownedGeometry)o.geometry.dispose();if(o.userData.ownedInstances)o.dispose();});}
