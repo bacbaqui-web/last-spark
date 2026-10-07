@@ -13,8 +13,8 @@ export function addCollapsedRoadBlockade(root,brick,seed){
  function solid(g,mat,x,y,z,rx=0,ry=0,rz=0){const uv=g.attributes.uv,p=g.attributes.position;for(let i=0;i<uv.count;i++)uv.setXY(i,p.getX(i)/2+p.getZ(i)/2,p.getY(i)/2+p.getZ(i)/2);const mesh=new T.Mesh(g,mat);mesh.position.set(x,y,z);mesh.rotation.set(rx,ry,rz);mesh.castShadow=mesh.receiveShadow=true;mesh.userData={ownedGeometry:true,collisionKind:'rubble'};group.add(mesh);return mesh;}
  // Uneven broken masonry, rather than an intact facade at the end of the road.
  const outline=[[-10,0],[-10,2.5],[-8.5,3.2],[-7.7,2.7],[-6.6,4.3],[-5.4,3.7],[-4.2,5.3],[-3.1,4.6],[-1.7,5.7],[0,4.9],[1.1,5.8],[2.4,4.2],[3.5,4.7],[5.1,3.5],[6.4,4],[8,2.8],[10,2.3],[10,0]];
- const shape=new T.Shape();outline.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();
- solid(new T.ExtrudeGeometry(shape,{depth:4,bevelEnabled:false}),brick,0,.03,-9);
+ const shape=new T.Shape();outline.forEach(([x,y],i)=>i?shape.lineTo(x,y>0?y+2:y):shape.moveTo(x,y));shape.closePath();
+ const mass=solid(new T.ExtrudeGeometry(shape,{depth:4,bevelEnabled:false}),brick,0,.03,-9);mass.userData.collisionKind='building';
  // Large recognizable fallen wall and floor sections spill towards the player.
  for(let i=0;i<10;i++){const x=-8+i*1.8;solid(new T.BoxGeometry(3+random()*2,.4,4+random()*3),i%3?brick:plaster,x,1.1+random()*2,-4-random()*3,(random()-.5)*1.3,random()*2,(random()-.5)*.8);}
  const body=createBrickHouse(19);body.scale.set(1.3,1.1,1.3);body.position.set(-15,.205,-12);body.rotation.y=Math.PI/2;body.userData.collisionKind='building';group.add(body);
