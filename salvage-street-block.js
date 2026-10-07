@@ -24,7 +24,7 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
  for(const side of [-1,1]){
   const pool=layoutIndex===2?[1,1,5,6,6,9,0,2]:layoutIndex===1?[2,3,6,7,8,9]:[0,2,3,4,7,8,1],indices=Array.from({length:7},()=>pool[Math.floor(r()*pool.length)]),total=indices.reduce((n,i)=>n+houseVariants[i].width,0),gap=.7+r()*.5,scale=(72-gap*6)/total;let cursor=-36;
   for(let j=0;j<7;j++){
-   const i=indices[j],d=houseVariants[i],width=d.width*scale,z=cursor+width/2,depth=d.depth*scale,h=createBrickHouse(i);h.scale.setScalar(scale);h.rotation.y=-side*Math.PI/2;h.position.set(side*(8.5+depth/2),.205,z);h.traverse(o=>{if(o.material){const list=Array.isArray(o.material)?o.material:[o.material];const cloned=list.map(mat=>mossMaterial(mat.clone(),.85));o.material=Array.isArray(o.material)?cloned:cloned[0];o.userData.ownedMaterials=cloned;}});root.add(h);houses.push({variant:i,x:h.position.x,z,width,depth});cursor+=width+gap;
+   const i=indices[j],d=houseVariants[i],width=d.width*scale,z=cursor+width/2,depth=d.depth*scale,h=createBrickHouse(i);h.scale.setScalar(scale);h.rotation.y=-side*Math.PI/2;h.position.set(side*(8.5+depth/2),.205,z);h.traverse(o=>{if(o.material){const list=Array.isArray(o.material)?o.material:[o.material];const cloned=list.map(mat=>mossMaterial(mat.clone(),.78));o.material=Array.isArray(o.material)?cloned:cloned[0];o.userData.ownedMaterials=cloned;}});root.add(h);houses.push({variant:i,x:h.position.x,z,width,depth});cursor+=width+gap;
    obstacles.push({kind:'building',x:h.position.x,z,w:depth,d:width});
    for(let k=0;k<2;k++){
     const centerZ=z+(k-.5)*width*.45,count=layout.debris,heap=new T.Mesh(moundGeo,m.stone);heap.position.set(side*7.5,.53,centerZ);heap.receiveShadow=true;root.add(heap);
@@ -48,7 +48,7 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
   if(halfW>3.4||halfD>4.5){car.material.dispose();continue;}
   const x=side*(.9+halfW+r()*.4),z=(r()-.5)*(66-halfD*2);
   if(cars.some(c=>Math.abs(c.x-x)<c.halfW+halfW+.35&&Math.abs(c.z-z)<c.halfD+halfD+.5)){car.material.dispose();continue;}
-  car.position.set(x-(bounds.min.x+bounds.max.x)/2,.04-bounds.min.y,z-(bounds.min.z+bounds.max.z)/2);car.castShadow=car.receiveShadow=true;car.userData.ownedMaterial=true;root.add(car);cars.push({id:d.id,x,z,halfW,halfD,roll,pitch,angle});obstacles.push({kind:'car',x,z,w:halfW*2,d:halfD*2});
+  car.position.set(x-(bounds.min.x+bounds.max.x)/2,.04-bounds.min.y,z-(bounds.min.z+bounds.max.z)/2);car.castShadow=car.receiveShadow=true;car.userData.ownedMaterial=true;mossMaterial(car.material,.72);root.add(car);cars.push({id:d.id,x,z,halfW,halfD,roll,pitch,angle});obstacles.push({kind:'car',x,z,w:halfW*2,d:halfD*2});
  }
  // A few abandoned motorcycles, bicycles and scooters, grounded on the road or sidewalk.
  for(let attempts=0;smallRides.length<5&&attempts<150;attempts++){
@@ -56,7 +56,7 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
   const bounds=new T.Box3().setFromObject(ride),halfW=(bounds.max.x-bounds.min.x)/2,halfD=(bounds.max.z-bounds.min.z)/2,x=side*(2.1+r()*3.6),z=(r()-.5)*64;
   if([...cars,...smallRides].some(c=>Math.abs(c.x-x)<c.halfW+halfW+.25&&Math.abs(c.z-z)<c.halfD+halfD+.35)||treeSlots.some(t=>Math.abs(t.x-x)<halfW+.6&&Math.abs(t.z-z)<halfD+.6)){ride.geometry.dispose();ride.material.dispose();continue;}
   const ground=Math.abs(x)-halfW>3.65?.205: .03;
-  ride.position.set(x-(bounds.min.x+bounds.max.x)/2,ground-bounds.min.y,z-(bounds.min.z+bounds.max.z)/2);ride.castShadow=ride.receiveShadow=true;ride.userData.ownedGeometry=ride.userData.ownedMaterial=true;root.add(ride);smallRides.push({id:d.id,x,z,halfW,halfD});obstacles.push({kind:'ride',x,z,w:halfW*2,d:halfD*2});
+  ride.position.set(x-(bounds.min.x+bounds.max.x)/2,ground-bounds.min.y,z-(bounds.min.z+bounds.max.z)/2);ride.castShadow=ride.receiveShadow=true;ride.userData.ownedGeometry=ride.userData.ownedMaterial=true;mossMaterial(ride.material,.65);root.add(ride);smallRides.push({id:d.id,x,z,halfW,halfD});obstacles.push({kind:'ride',x,z,w:halfW*2,d:halfD*2});
  }
  // Collapse tongues spill into alternating sides of the road, forcing a winding route.
  const blockages=[];
