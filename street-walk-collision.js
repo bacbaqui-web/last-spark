@@ -20,11 +20,11 @@ export function buildWalkCollision(root){
  root.traverse(o=>{if(o.userData.collisionKind)o.traverse(m=>{if(m.isMesh&&m.visible)add(m,o.userData.collisionKind);});});
  const ray=new T.Ray(),hit=new T.Vector3(),center=new T.Vector3(),closest=new T.Vector3(),down=new T.Vector3(0,-1,0);const radius=.27,stepHeight=.7,rubbleStepHeight=1.3;
  // Probe the whole body footprint; clearance keeps sloping rubble edges out of the lower capsule.
- const probeRadius=radius+.08,probes=[[0,0],...Array.from({length:16},(_,i)=>[Math.cos(i*Math.PI/8)*probeRadius,Math.sin(i*Math.PI/8)*probeRadius])];
+ const probeRadius=radius+.08,probes=[[0,0],...[probeRadius*.5,probeRadius].flatMap(r=>Array.from({length:16},(_,i)=>[Math.cos(i*Math.PI/8)*r,Math.sin(i*Math.PI/8)*r]))];
  function nearby(x,z){const ids=new Set();for(let xx=Math.floor((x-probeRadius)/2);xx<=Math.floor((x+probeRadius)/2);xx++)for(let zz=Math.floor((z-probeRadius)/2);zz<=Math.floor((z+probeRadius)/2);zz++)for(const id of cells.get(xx+':'+zz)||[])ids.add(id);return ids;}
  function support(x,z,foot,ids){let height=Math.abs(x)>3.65?.205:.025;
   for(const [ox,oz] of probes){ray.set(center.set(x+ox,foot+rubbleStepHeight+.02,z+oz),down);
-  for(const id of ids){const t=triangles[id];const limit=t.kind==='rubble'?rubbleStepHeight:stepHeight;if(Math.abs(t.normal.y)<(t.kind==='rubble'?.15:.55)||t.minY>foot+limit+.02)continue;if(ray.intersectTriangle(t.triangle.a,t.triangle.b,t.triangle.c,false,hit)&&hit.y<=foot+limit+.001)height=Math.max(height,hit.y+(t.kind==='rubble'?.08:0));}
+  for(const id of ids){const t=triangles[id];const limit=t.kind==='rubble'?rubbleStepHeight:stepHeight;if(Math.abs(t.normal.y)<((t.kind==='rubble'||t.kind==='ground')?.15:.55)||t.minY>foot+limit+.02)continue;if(ray.intersectTriangle(t.triangle.a,t.triangle.b,t.triangle.c,false,hit)&&hit.y<=foot+limit+.001)height=Math.max(height,hit.y+((t.kind==='rubble'||t.kind==='ground')?.08:0));}
   }return height;
  }
  function blocked(x,z,foot,ids){for(const id of ids){const t=triangles[id];if(t.maxY<foot+.025||t.minY>foot+1.75)continue;

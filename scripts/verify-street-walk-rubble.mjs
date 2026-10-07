@@ -21,3 +21,19 @@ for(let seed=0;seed<20;seed++){
  assert.equal(cross(root,0,-.08,0),true,`straight crossing ${seed}`);
 }
 console.log('Street walking: 40 rotated pile crossings and 5 height/blocking checks passed.');
+// Actual generated ground geometry: cracked asphalt, exposed roots, and narrow curb blocks.
+const {addGroundDamage}=await import('../street-ground-damage.js');
+let groundCrossings=0;
+for(const seed of [2207,15,992,42,777]){
+ const root=new T.Group();root.userData={seed,trees:[{x:4.4,z:0},{x:-4.4,z:3}]};
+ for(const side of [-1,1])for(let z=-5;z<5;z+=1.2){
+  const mesh=new T.Mesh(new T.BoxGeometry(.18,.18,1.16));mesh.position.set(side*3.55,.115,z);mesh.userData.collisionKind='ground';root.add(mesh);
+ }
+ addGroundDamage(root);const collision=buildWalkCollision(root);
+ for(const side of [-1,1])for(const z of [-3,-2,-1,0,1,2,3]){
+  const position=new T.Vector3(side*2.5,1.7,z);let foot=.025;
+  for(let i=0;i<35;i++)foot=collision.move(position,side*.06,0,foot);
+  assert.ok(Math.abs(position.x)>4.5,`ground/curb crossing ${seed} ${side} ${z}`);groundCrossings++;
+ }
+}
+console.log(`Generated curb/cracked-ground crossings: ${groundCrossings} passed.`);
