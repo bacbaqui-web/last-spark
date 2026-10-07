@@ -4,7 +4,7 @@ function texture(file){if(!textures.has(file)){const map=new T.TextureLoader().l
 export function createRecolorableCarMaterial(color,rust){
  const material=new T.MeshStandardMaterial({color:0xffffff,roughness:.9,metalness:.12,vertexColors:true,side:T.DoubleSide}),paint={value:new T.Color(color)},amount={value:rust};material.userData.paint=paint;material.userData.rust=amount;
  if(typeof document==='undefined')return material;
- material.map=texture('suv-clean-atlas-v1.png');const rustMap=texture('rusted-paint-v1.png');
+ material.map=texture('suv-planar-atlas-v2.png');const rustMap=texture('rotten-steel-v2.png');
  material.onBeforeCompile=shader=>{
   shader.uniforms.carPaint=paint;shader.uniforms.carRustAmount=amount;shader.uniforms.carRustMap={value:rustMap};
   shader.vertexShader='varying vec3 carSurface;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ncarSurface=position;');
@@ -17,11 +17,14 @@ export function createRecolorableCarMaterial(color,rust){
    vec2 rustUV=abs(dFdx(carSurface.x))+abs(dFdy(carSurface.x))<abs(dFdx(carSurface.z))+abs(dFdy(carSurface.z))?carSurface.zy:carSurface.xy;
    if(abs(dFdx(carSurface.y))+abs(dFdy(carSurface.y))<.01)rustUV=carSurface.xz;
    vec3 corrosion=texture2D(carRustMap,rustUV/2.0+vec2(.37,.19)).rgb;
-   float rustMask=smoothstep(.03,.14,corrosion.r-corrosion.b)*(1.0-smoothstep(.18,.42,dot(corrosion,vec3(.2126,.7152,.0722))));
-   vec3 rustColor=mix(vec3(.075,.026,.009),vec3(.32,.105,.025),clamp(corrosion.r*2.0,0.0,1.0));
-   float lower=.35+.65*(1.0-clamp((carSurface.y-.3)/1.4,0.0,1.0));
-   surface=mix(surface,rustColor,rustMask*carRustAmount*lower*painted);
+   float grain=dot(corrosion,vec3(.2126,.7152,.0722));
+   float pattern=clamp(grain*3.0+.35+.15*sin(carSurface.y*3.0+carSurface.z*2.0),0.0,1.0);
+   float coverage=smoothstep(1.0-carRustAmount-.10,1.0-carRustAmount+.10,pattern);
+   coverage=max(coverage,smoothstep(.80,1.0,carRustAmount));
+   coverage*=smoothstep(0.0,.05,carRustAmount);
+   vec3 rustColor=corrosion;
+   surface=mix(surface,rustColor,coverage*painted);
    diffuseColor.rgb*=surface;
   #endif`);
- };material.customProgramCacheKey=()=> 'separate-car-paint-rust-v1';return material;
+ };material.customProgramCacheKey=()=> 'planar-car-paint-rotten-steel-v2';return material;
 }
