@@ -4,11 +4,12 @@ import {createStreetTree,treeVariants} from './street-tree-variants.js';
 import {createFleetVehicle,fleet} from './vehicle-fleet-models.js';
 import {createFleetVehicle as createRide,fleet as rides} from './ride-fleet-models.js';
 import {addStreetOvergrowth} from './street-overgrowth.js';
+import {mossMaterial} from './street-moss-material.js';
 export const BLOCK_SIZE=72;
 export const streetLayouts=[{name:'버려진 주거 거리',cars:9,trees:14,debris:30},{name:'붕괴 잔해가 많은 거리',cars:6,trees:10,debris:55},{name:'차량이 밀집한 상점 거리',cars:14,trees:12,debris:35}];
 function rng(seed){return()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
 let materials;
-function mats(){if(materials)return materials;const textured=(file)=>{const m=new T.MeshStandardMaterial({color:0xffffff,roughness:1});if(typeof document!=='undefined'){m.map=new T.TextureLoader().load(new URL('./textures/'+file,document.baseURI).href);m.map.wrapS=m.map.wrapT=T.RepeatWrapping;m.map.colorSpace=T.SRGBColorSpace;m.map.anisotropy=4;}return m;};return materials={asphalt:textured('street/mossy-asphalt.jpg'),sidewalk:textured('street/overgrown-sidewalk.jpg'),brick:textured('houses/red-brick-weathered.jpg'),stone:new T.MeshStandardMaterial({color:0x898578,roughness:1}),curb:new T.MeshStandardMaterial({color:0x99978b,roughness:1}),soil:new T.MeshStandardMaterial({color:0x4d4b36,roughness:1}),paint:new T.MeshStandardMaterial({color:0xa9a58e,roughness:1})};}
+function mats(){if(materials)return materials;const textured=(file)=>{const m=new T.MeshStandardMaterial({color:0xffffff,roughness:1});if(typeof document!=='undefined'){m.map=new T.TextureLoader().load(new URL('./textures/'+file,document.baseURI).href);m.map.wrapS=m.map.wrapT=T.RepeatWrapping;m.map.colorSpace=T.SRGBColorSpace;m.map.anisotropy=4;}return m;};materials={asphalt:textured('street/mossy-asphalt.jpg'),sidewalk:textured('street/overgrown-sidewalk.jpg'),brick:textured('houses/red-brick-weathered.jpg'),stone:new T.MeshStandardMaterial({color:0x898578,roughness:1}),curb:new T.MeshStandardMaterial({color:0x99978b,roughness:1}),soil:new T.MeshStandardMaterial({color:0x4d4b36,roughness:1}),paint:new T.MeshStandardMaterial({color:0xc8c6ab,roughness:1})};for(const name of ['brick','stone','curb','paint'])mossMaterial(materials[name],name==='paint'?.9:.72);return materials;}
 const boxGeo=new T.BoxGeometry(1,1,1),rockGeo=new T.IcosahedronGeometry(.5,0),soilGeo=new T.CylinderGeometry(.8,.8,.015,12),moundGeo=new T.ConeGeometry(1.8,.65,7);
 function plane(w,d,repeat=3){const g=new T.PlaneGeometry(w,d);g.rotateX(-Math.PI/2);const uv=g.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*w/repeat,uv.getY(i)*d/repeat);return g;}
 export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
@@ -23,7 +24,7 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
  for(const side of [-1,1]){
   const pool=layoutIndex===2?[1,1,5,6,6,9,0,2]:layoutIndex===1?[2,3,6,7,8,9]:[0,2,3,4,7,8,1],indices=Array.from({length:7},()=>pool[Math.floor(r()*pool.length)]),total=indices.reduce((n,i)=>n+houseVariants[i].width,0),gap=.7+r()*.5,scale=(72-gap*6)/total;let cursor=-36;
   for(let j=0;j<7;j++){
-   const i=indices[j],d=houseVariants[i],width=d.width*scale,z=cursor+width/2,depth=d.depth*scale,h=createBrickHouse(i);h.scale.setScalar(scale);h.rotation.y=-side*Math.PI/2;h.position.set(side*(8.5+depth/2),.205,z);root.add(h);houses.push({variant:i,x:h.position.x,z,width,depth});cursor+=width+gap;
+   const i=indices[j],d=houseVariants[i],width=d.width*scale,z=cursor+width/2,depth=d.depth*scale,h=createBrickHouse(i);h.scale.setScalar(scale);h.rotation.y=-side*Math.PI/2;h.position.set(side*(8.5+depth/2),.205,z);h.traverse(o=>{if(o.material){const list=Array.isArray(o.material)?o.material:[o.material];const cloned=list.map(mat=>mossMaterial(mat.clone(),.55));o.material=Array.isArray(o.material)?cloned:cloned[0];o.userData.ownedMaterials=cloned;}});root.add(h);houses.push({variant:i,x:h.position.x,z,width,depth});cursor+=width+gap;
    obstacles.push({kind:'building',x:h.position.x,z,w:depth,d:width});
    for(let k=0;k<2;k++){
     const centerZ=z+(k-.5)*width*.45,count=layout.debris,heap=new T.Mesh(moundGeo,m.stone);heap.position.set(side*7.5,.53,centerZ);heap.receiveShadow=true;root.add(heap);
@@ -68,4 +69,4 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
  }
  root.userData={seed,layout:layoutIndex,size:72,houses,cars,smallRides,trees:treeSlots,debris:debris.length,obstacles,blockages,connections:[{x:0,z:-36,width:7},{x:0,z:36,width:7}]};addStreetOvergrowth(root);return root;
 }
-export function disposeStreetBlock(root){root.traverse(o=>{if(o.userData.ownedMaterial)o.material.dispose();if(o.userData.ownedGeometry)o.geometry.dispose();if(o.userData.ownedInstances)o.dispose();});}
+export function disposeStreetBlock(root){root.traverse(o=>{if(o.userData.ownedMaterial)o.material.dispose();if(o.userData.ownedMaterials)o.userData.ownedMaterials.forEach(m=>m.dispose());if(o.userData.ownedGeometry)o.geometry.dispose();if(o.userData.ownedInstances)o.dispose();});}
