@@ -55,10 +55,10 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
   for(let i=0;i<front.length-1;i++){const left=front[i],right=front[i+1],z=(left.z+left.width/2+right.z-right.width/2)/2,rear=Math.max(Math.abs(left.x)+left.depth/2,Math.abs(right.x)+right.depth/2);
    const wall=box(side*(rear+.4),1.8,z,.3,3.6,1.2,m.brick);wall.userData.collisionKind='building';
    // Thin overlapping horizontal planks, two posts and a diagonal brace.
-   const span=1.85+seamRandom()*.15;
-   for(let row=0;row<11;row++)seamWalls.push({x:side*8.45,y:.34+row*.235,z:z+(seamRandom()-.5)*.10,w:.11,h:.25,d:span,rx:(seamRandom()-.5)*.025});
-   for(const offset of [-.72,.72])seamWalls.push({x:side*8.58,y:1.48,z:z+offset,w:.16,h:2.65,d:.16});
-   seamWalls.push({x:side*8.36,y:1.48,z,w:.10,h:.16,d:2.55,rx:.70*side});
+   const span=Math.max(.7,right.z-right.width/2-(left.z+left.width/2)+.5);
+   for(let row=0;row<11;row++)seamWalls.push({x:side*8.58,y:.34+row*.235,z,w:.11,h:.25,d:span,rx:(seamRandom()-.5)*.025});
+   for(const offset of [-span*.36,span*.36])seamWalls.push({x:side*8.70,y:1.48,z:z+offset,w:.16,h:2.65,d:.16});
+   seamWalls.push({x:side*8.49,y:1.48,z,w:.10,h:.16,d:Math.hypot(span*.8,1.8),rx:Math.atan2(1.8,span*.8)*side});
    for(let n=0;n<26;n++){
     const size=.16+seamRandom()*.3,x=side*(7.5+seamRandom()*1.3),zz=z+(seamRandom()-.5)*1.8;
     debris.push({x,y:.22+size*.3+seamRandom()*.3,z:zz,sx:size*1.4,sy:size*.6,sz:size,rx:seamRandom()*.5,ry:seamRandom()*Math.PI,rz:seamRandom()*.5,stone:seamRandom()<.25});
