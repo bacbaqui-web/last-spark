@@ -13,7 +13,7 @@ import {addStreetLife} from './street-life.js';
 import {addCityBackdrop} from './street-city-backdrop.js';
 export const roadShapes=[{name:'직선 · I',ports:[0,2]},{name:'오른쪽 꺾임 · L',ports:[0,3]},{name:'왼쪽 꺾임 · L',ports:[0,1]},{name:'세 갈래 · T',ports:[0,1,3]},{name:'네 갈래 · +',ports:[0,1,2,3]},{name:'막다른 길',ports:[0]}];
 let materials;
-function mats(){if(materials)return materials;const tex=(file)=>{const m=new T.MeshStandardMaterial({roughness:1});if(typeof document!=='undefined'){m.map=new T.TextureLoader().load(new URL('./textures/'+file,document.baseURI).href);m.map.colorSpace=T.SRGBColorSpace;m.map.wrapS=m.map.wrapT=T.RepeatWrapping;}return m;};return materials={road:tex('street/mossy-asphalt.jpg'),walk:tex('street/overgrown-sidewalk.jpg'),brick:mossMaterial(tex('houses/red-brick-weathered.jpg'),.7),paint:mossMaterial(new T.MeshStandardMaterial({color:0xd1cdb6,roughness:1}),.85),grass:tex('street/grass-blade.jpg'),soil:new T.MeshStandardMaterial({color:0x53604b,roughness:1})};}
+function mats(){if(materials)return materials;const tex=(file)=>{const m=new T.MeshStandardMaterial({roughness:1});if(typeof document!=='undefined'){m.map=new T.TextureLoader().load(new URL('./textures/'+file,document.baseURI).href);m.map.colorSpace=T.SRGBColorSpace;m.map.wrapS=m.map.wrapT=T.RepeatWrapping;}return m;};return materials={road:mossMaterial(tex('street/mossy-asphalt.jpg'),.82),walk:mossMaterial(tex('street/overgrown-sidewalk.jpg'),.88),brick:mossMaterial(tex('houses/red-brick-weathered.jpg'),.7),paint:mossMaterial(new T.MeshStandardMaterial({color:0xd1cdb6,roughness:1}),.85),grass:tex('street/grass-blade.jpg'),soil:new T.MeshStandardMaterial({color:0x53604b,roughness:1})};}
 export function createRoadShapeBlock(seed=2207,index=0){
  const shape=roadShapes[index%roadShapes.length],root=new T.Group(),m=mats(),houses=[],trees=[],cars=[],r=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;},originalSeed=seed;
  function surface(parent,w,d,x,z,y,mat){const g=new T.PlaneGeometry(w,d);g.rotateX(-Math.PI/2);const uv=g.attributes.uv,p=g.attributes.position,world=new T.Vector3();parent.updateWorldMatrix(true,false);for(let i=0;i<uv.count;i++){world.fromBufferAttribute(p,i).add(new T.Vector3(x,y,z)).applyMatrix4(parent.matrixWorld);uv.setXY(i,world.x/3,world.z/3);}const mesh=new T.Mesh(g,mat);mesh.position.set(x,y,z);mesh.receiveShadow=true;mesh.userData={ownedGeometry:true,collisionKind:'ground'};parent.add(mesh);return mesh;}
@@ -21,6 +21,17 @@ export function createRoadShapeBlock(seed=2207,index=0){
  surface(root,72,72,0,0,0,m.soil);const bend=index===1||index===2,start=bend?14:8.5,armLength=36-start;let debrisCount=0;
  if(!bend)surface(root,17,17,0,0,.025,m.road);
  const grassPositions=[],grassUV=[];
+ if(index===3||index===4){
+  const paint=(x,z,w,d)=>{const o=box(root,x,.038,z,w,.008,d,m.paint);o.userData.junctionPaint=true;};
+  // The through-road keeps its center dashes; the joining arm ends at its edge.
+  for(let x=-7.5;x<8;x+=3)paint(x,0,1.7,.12);
+  for(const port of shape.ports.filter(p=>p===0||p===2))for(const z of [5,8])paint(0,(port===0?1:-1)*z,.12,1.8);
+  for(const side of [-1,1])for(let x=-7.5;x<8;x+=1.5){if(side===1&&Math.abs(x)<3.6)continue;if(side===-1&&index===4&&Math.abs(x)<3.6)continue;paint(x,side*3.45,1.1,.08);}
+  // Textured grass clusters break up the bare junction without filling every lane.
+  for(let i=0;i<125;i++){const side=i%2?1:-1,x=side*(3.8+r()*4.1),z=(r()-.5)*16;for(let j=0;j<16;j++){const xx=x+(r()-.5)*.6,zz=z+(r()-.5)*.6,h=.3+r()*.65;grassPositions.push(xx-.035,.04,zz,xx+.035,.04,zz,xx+.13,.04+h,zz+.1);grassUV.push(0,0,1,0,.5,1);}}
+  for(let i=0;i<25;i++){const x=(r()-.5)*6,z=(r()-.5)*14;for(let j=0;j<8;j++){const xx=x+(r()-.5)*.35,zz=z+(r()-.5)*.35,h=.18+r()*.35;grassPositions.push(xx-.025,.04,zz,xx+.025,.04,zz,xx+.08,.04+h,zz+.05);grassUV.push(0,0,1,0,.5,1);}}
+ }
+
  for(const port of shape.ports){
   const arm=new T.Group();arm.rotation.y=-port*Math.PI/2;root.add(arm);
   surface(arm,7,armLength,0,(36+start)/2,.025,m.road);
