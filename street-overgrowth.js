@@ -12,7 +12,7 @@ export function addStreetOvergrowth(root){
   for(let i=0;i<310;i++){const x=side*(3.85+r()*4.4),z=(r()-.5)*71;grass(x,z,.21);if(r()<.55)for(let k=0;k<5;k++)leaf(x+(r()-.5)*.55,.3+r()*.3,z+(r()-.5)*.6,.11+r()*.1);}
   for(let i=0;i<65;i++)grass(side*(2.75+r()*.6),(r()-.5)*70,.034,.55);
  }
- for(const h of root.userData.houses){const side=Math.sign(h.x),front=side*8.43,height=3+r()*3;
+ for(const h of root.userData.houses){const side=Math.sign(h.x),front=side*8.22,height=3+r()*3;
   for(let j=0;j<4;j++){vines++;const baseZ=h.z+(r()-.5)*h.width*.85,length=height*(.55+r()*.45),width=.9+r()*1.1;
    for(let k=0;k<18;k++){const y0=.23+k*length/18,y1=.23+(k+1)*length/18,z0=baseZ+Math.sin(k/18*8+j)*.3,z1=baseZ+Math.sin((k+1)/18*8+j)*.3,x=front+side*.015;tri(gp,gc,[x,y0,z0-.022],[x,y0,z0+.022],[x,y1,z1+.022],[.16,.22,.08]);tri(gp,gc,[x,y0,z0-.022],[x,y1,z1+.022],[x,y1,z1-.022],[.16,.22,.08]);}
    for(let k=0;k<250;k++){const t=r(),y=.23+t*length,z=baseZ+Math.sin(t*8+j)*.3+(r()-.5)*width;leaf(front-side*r()*.09,y,z,.14+r()*.15,true);}
