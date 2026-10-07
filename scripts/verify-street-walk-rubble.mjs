@@ -6,7 +6,7 @@ function cross(root, dx=0, dz=-.07, startX=0){
  for(let i=0;i<65;i++)foot=collision.move(position,dx,dz,foot);
  return position.z< -1;
 }
-for(const [kind,height,pass] of [['rubble',1.1,true],['car',1.1,false],['ground',.6,true],['rubble',1.6,false],['building',2,false]]){
+for(const [kind,height,pass] of [['rubble',1.1,true],['car',1.1,true],['car',1.6,false],['ground',.6,true],['rubble',1.6,false],['building',2,false]]){
  const root=new T.Group(),mesh=new T.Mesh(new T.BoxGeometry(2,height,1));mesh.position.y=height/2;mesh.userData.collisionKind=kind;root.add(mesh);
  assert.equal(cross(root),pass,`${kind} ${height}m`);
 }
@@ -20,7 +20,7 @@ for(let seed=0;seed<20;seed++){
  assert.equal(cross(root,.01,-.08,-.5),true,`rotated pile ${seed}`);
  assert.equal(cross(root,0,-.08,0),true,`straight crossing ${seed}`);
 }
-console.log('Street walking: 40 rotated pile crossings and 5 height/blocking checks passed.');
+console.log('Street walking: 40 rotated pile crossings and 6 height/blocking checks passed.');
 // Actual generated ground geometry: cracked asphalt, exposed roots, and narrow curb blocks.
 const {addGroundDamage}=await import('../street-ground-damage.js');
 let groundCrossings=0;
@@ -37,3 +37,16 @@ for(const seed of [2207,15,992,42,777]){
  }
 }
 console.log(`Generated curb/cracked-ground crossings: ${groundCrossings} passed.`);
+// Pickup bed: step over a 1.2m tailgate, settle onto the .78m bed, stop at a high truck cab.
+{
+ const root=new T.Group();
+ for(const [w,h,d,y,z] of [[1.5,.78,2,.39,0],[1.5,1.2,.12,.6,1],[1.5,2.4,1,1.2,-1.5]]){
+  const mesh=new T.Mesh(new T.BoxGeometry(w,h,d));mesh.position.set(0,y,z);mesh.userData.collisionKind='car';root.add(mesh);
+ }
+ const collision=buildWalkCollision(root),position=new T.Vector3(0,1.7,2);let foot=.025;
+ for(let i=0;i<35;i++)foot=collision.move(position,0,-.05,foot);
+ assert.ok(position.z<.5,'enter pickup bed');assert.ok(foot>.75&&foot<.95,'stand on bed');
+ for(let i=0;i<50;i++)foot=collision.move(position,0,-.05,foot);
+ assert.ok(position.z>-2,'cab remains solid');
+}
+console.log('Pickup tailgate/bed entry passed.');
