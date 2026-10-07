@@ -50,3 +50,17 @@ console.log(`Generated curb/cracked-ground crossings: ${groundCrossings} passed.
  assert.ok(position.z>-2,'cab remains solid');
 }
 console.log('Pickup tailgate/bed entry passed.');
+// Step limits are relative to the current foot height, never absolute world elevation.
+{
+ const root=new T.Group();
+ for(const [height,z,kind] of [[.6,2,'ground'],[1.2,0,'ground'],[1.8,-2,'ground'],[2.8,-4,'car']]){
+  const mesh=new T.Mesh(new T.BoxGeometry(2,height,2));mesh.position.set(0,height/2,z);mesh.userData.collisionKind=kind;root.add(mesh);
+ }
+ const collision=buildWalkCollision(root),position=new T.Vector3(0,1.7,4);let foot=.025;
+ for(let i=0;i<145;i++)foot=collision.move(position,0,-.05,foot);
+ assert.ok(position.z< -3,'climb successive supports');assert.ok(foot>2.75,'reach globally high surface via smaller steps');
+ const direct=new T.Vector3(0,1.7,-6);let groundFoot=.025;
+ for(let i=0;i<40;i++)groundFoot=collision.move(direct,0,.05,groundFoot);
+ assert.ok(direct.z< -5,'same high surface blocks direct entry from ground');
+}
+console.log('Relative elevation: successive steps to 2.8m passed; direct ground entry blocked.');
