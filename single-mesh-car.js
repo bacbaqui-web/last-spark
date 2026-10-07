@@ -5,7 +5,9 @@ export function createSingleMeshCar(){
  function face(points,col,row,coords,shade=1){for(let i=1;i<points.length-1;i++)for(const j of [0,i,i+1]){positions.push(...points[j]);colors.push(shade,shade,shade);uvs.push(...tileUV(col,row,...coords[j]));}}
  const stations=[[-2.4,.82,.83],[-2.05,.92,1.0],[-1.2,.92,1.07],[1.05,.92,1.07],[2.12,.88,.97],[2.4,.82,.82]];
  const section=z=>{const i=Math.max(0,stations.findIndex((p,k)=>k<stations.length-1&&z<=stations[k+1][0])),a=stations[i],b=stations[i+1],t=T.MathUtils.clamp((z-a[0])/(b[0]-a[0]),0,1);return [T.MathUtils.lerp(a[1],b[1],t),T.MathUtils.lerp(a[2],b[2],t)];};
- const sideUV=([x,y,z])=>[(2.4-z)/4.8,y/2.5],topUV=([x,y,z])=>[(2.4-z)/4.8,(x+1.02)/2.04],endUV=([x,y,z])=>[(x+1.02)/2.04,(y-.25)];
+ const topStops=[[-2.4,.95],[-1.2,.84],[-.73,.72],[.38,.37],[1.05,.28],[2.4,.08]];
+ const topU=z=>{const i=Math.max(0,topStops.findIndex((p,k)=>k<topStops.length-1&&z<=topStops[k+1][0])),a=topStops[i],b=topStops[i+1];return T.MathUtils.lerp(a[1],b[1],T.MathUtils.clamp((z-a[0])/(b[0]-a[0]),0,1));};
+ const sideUV=([x,y,z])=>[(2.4-z)/4.8,y/2.5],topUV=([x,y,z])=>[topU(z),(x+1.02)/2.04],endUV=([x,y,z])=>[(x+1.02)/2.04,.08+(y-.4)/.43*.67];
  // One continuous fender skin: true wheel openings, no floating decorative boxes.
  const outline=[...stations.map(([z,w,y])=>new T.Vector2(z,y)),new T.Vector2(2.4,.40)];
  for(const center of [1.38,-1.38]){outline.push(new T.Vector2(center+.51,.40));for(let i=0;i<=16;i++){const a=i/16*Math.PI;outline.push(new T.Vector2(center+Math.cos(a)*.51,.40+Math.sin(a)*.51));}outline.push(new T.Vector2(center-.51,.40));}outline.push(new T.Vector2(-2.4,.40));
@@ -15,7 +17,7 @@ export function createSingleMeshCar(){
  for(let i=0;i<stations.length-1;i++){const [z,w,y]=stations[i],[z2,w2,y2]=stations[i+1],points=[[-w,y,z],[w,y,z],[w2,y2,z2],[-w2,y2,z2]];face(points,1,0,points.map(topUV));}
  const cabin=[[-1.2,section(-1.2)[0],section(-1.2)[1]],[-.73,.72,1.63],[.38,.72,1.65],[1.05,section(1.05)[0],section(1.05)[1]]];
  for(const side of [-1,1]){const points=cabin.map(([z,w,y])=>[side*w,y,z]);face(points,0,0,points.map(sideUV));}
- for(let i=0;i<cabin.length-1;i++){const [z,w,y]=cabin[i],[z2,w2,y2]=cabin[i+1],points=[[-w,y,z],[w,y,z],[w2,y2,z2],[-w2,y2,z2]];face(points,1,0,points.map(topUV));}
+ for(let i=0;i<cabin.length-1;i++){const [z,w,y]=cabin[i],[z2,w2,y2]=cabin[i+1],points=[[-w,y,z],[w,y,z],[w2,y2,z2],[-w2,y2,z2]];face(points,1,0,points.map(p=>i===1?[topU(p[2]),T.MathUtils.lerp(.22,.78,(p[0]+.72)/1.44)]:topUV(p)));}
  for(const [z,w,y]of [stations[0],stations.at(-1)]){const points=[[-w,.40,z],[w,.40,z],[w,y,z],[-w,y,z]];face(points,z>0?0:1,1,points.map(endUV));}
  // Solid dark inner body blocks sightlines through wheel wells and panel seams.
  const darkFace=points=>face(points,1,2,points.map(()=>[.1,.15]),.08);
