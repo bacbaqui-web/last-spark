@@ -1,0 +1,3 @@
+Generated using the built-in GPT image generation tool.
+Prompt: Production game UV texture atlas in six tiles (two columns, three rows). Orthographic diffuse surfaces of one dusty olive sedan: left side profile with front facing left, top view with front left, front face, rear face, circular steel wheel and rubber tread. Preserve roughly 80 percent paint; restrained rust at lower seams, subtle dust and scratches. No scene, perspective, labels or text. Actual generated row boundaries were measured and adapted in the UV mapping.
+Implementation: One BufferGeometry mesh, one material, 866 triangles. Glass, lamps, seams and wheel detail are painted in the atlas. Car outline and tires retain geometric volume. Prototype only, not yet substituted into the game map.
