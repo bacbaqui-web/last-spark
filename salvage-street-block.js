@@ -12,7 +12,7 @@ export const BLOCK_SIZE=72;
 export const streetLayouts=[{name:'버려진 주거 거리',cars:9,trees:14,debris:30},{name:'붕괴 잔해가 많은 거리',cars:6,trees:10,debris:55},{name:'차량이 밀집한 상점 거리',cars:14,trees:12,debris:35}];
 function rng(seed){return()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
 let materials;
-function mats(){if(materials)return materials;const textured=(file)=>{const m=new T.MeshStandardMaterial({color:0xffffff,roughness:1});if(typeof document!=='undefined'){m.map=new T.TextureLoader().load(new URL('./textures/'+file,document.baseURI).href);m.map.wrapS=m.map.wrapT=T.RepeatWrapping;m.map.colorSpace=T.SRGBColorSpace;m.map.anisotropy=4;}return m;};materials={asphalt:textured('street/mossy-asphalt.jpg'),sidewalk:textured('street/overgrown-sidewalk.jpg'),brick:textured('houses/red-brick-weathered.jpg'),stone:new T.MeshStandardMaterial({color:0x898578,roughness:1}),curb:new T.MeshStandardMaterial({color:0x99978b,roughness:1}),soil:new T.MeshStandardMaterial({color:0x4d4b36,roughness:1}),paint:new T.MeshStandardMaterial({color:0xc8c6ab,roughness:1})};for(const name of ['brick','stone','curb','paint'])mossMaterial(materials[name],name==='paint'?1.0:.95);return materials;}
+function mats(){if(materials)return materials;const textured=(file)=>{const m=new T.MeshStandardMaterial({color:0xffffff,roughness:1});if(typeof document!=='undefined'){m.map=new T.TextureLoader().load(new URL('./textures/'+file,document.baseURI).href);m.map.wrapS=m.map.wrapT=T.RepeatWrapping;m.map.colorSpace=T.SRGBColorSpace;m.map.anisotropy=4;}return m;};materials={wood:textured('houses/aged-wood-floor.jpg'),asphalt:textured('street/mossy-asphalt.jpg'),sidewalk:textured('street/overgrown-sidewalk.jpg'),brick:textured('houses/red-brick-weathered.jpg'),stone:new T.MeshStandardMaterial({color:0x898578,roughness:1}),curb:new T.MeshStandardMaterial({color:0x99978b,roughness:1}),soil:new T.MeshStandardMaterial({color:0x4d4b36,roughness:1}),paint:new T.MeshStandardMaterial({color:0xc8c6ab,roughness:1})};for(const name of ['brick','stone','curb','paint'])mossMaterial(materials[name],name==='paint'?1.0:.95);return materials;}
 const boxGeo=new T.BoxGeometry(1,1,1),rockGeo=new T.IcosahedronGeometry(.5,0),soilGeo=new T.CylinderGeometry(.8,.8,.015,12),moundGeo=new T.ConeGeometry(1.8,.65,7);
 function plane(w,d,repeat=3){const g=new T.PlaneGeometry(w,d);g.rotateX(-Math.PI/2);const uv=g.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*w/repeat,uv.getY(i)*d/repeat);return g;}
 export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
@@ -49,25 +49,25 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
   h.traverse(o=>{if(o.material){o.material=o.material.clone();mossMaterial(o.material,.65);o.userData.ownedMaterials=[o.material];}});
   h.userData.collisionKind='building';root.add(h);houses.push({variant:index,x:h.position.x,z,width,depth:d.depth*scale,row:2});cursor+=width+.32;rowIndex++;
  }}
- // Seal front-row seams with jagged masonry near the street as well as the rear wall.
+ // Close the seams with weathered timber barricades.
  const seamRandom=rng(seed^0x731b21),seamWalls=[],seamTransform=new T.Object3D();
  for(const side of [-1,1]){const front=houses.filter(h=>Math.sign(h.x)===side&&h.row!==2).sort((a,b)=>a.z-b.z);
   for(let i=0;i<front.length-1;i++){const left=front[i],right=front[i+1],z=(left.z+left.width/2+right.z-right.width/2)/2,rear=Math.max(Math.abs(left.x)+left.depth/2,Math.abs(right.x)+right.depth/2);
    const wall=box(side*(rear+.4),1.8,z,.3,3.6,1.2,m.brick);wall.userData.collisionKind='building';
-   // Overlap the facade edges so missing bricks in either house cannot reveal an empty slot.
-   for(let column=0;column<6;column++){
-    const height=2.15+seamRandom()*.85;
-    seamWalls.push({x:side*8.65,y:.205+height/2,z:z+(column-2.5)*.30,w:1.15,h:height,d:.32});
-   }
+   // Thin overlapping horizontal planks, two posts and a diagonal brace.
+   const span=1.85+seamRandom()*.15;
+   for(let row=0;row<11;row++)seamWalls.push({x:side*8.45,y:.34+row*.235,z:z+(seamRandom()-.5)*.10,w:.11,h:.25,d:span,rx:(seamRandom()-.5)*.025});
+   for(const offset of [-.72,.72])seamWalls.push({x:side*8.58,y:1.48,z:z+offset,w:.16,h:2.65,d:.16});
+   seamWalls.push({x:side*8.36,y:1.48,z,w:.10,h:.16,d:2.55,rx:.70*side});
    for(let n=0;n<26;n++){
     const size=.16+seamRandom()*.3,x=side*(7.5+seamRandom()*1.3),zz=z+(seamRandom()-.5)*1.8;
     debris.push({x,y:.22+size*.3+seamRandom()*.3,z:zz,sx:size*1.4,sy:size*.6,sz:size,rx:seamRandom()*.5,ry:seamRandom()*Math.PI,rz:seamRandom()*.5,stone:seamRandom()<.25});
    }
   }
  }
- const seamMesh=new T.InstancedMesh(boxGeo,m.brick,seamWalls.length);
- seamWalls.forEach((p,i)=>{seamTransform.position.set(p.x,p.y,p.z);seamTransform.scale.set(p.w,p.h,p.d);seamTransform.rotation.set(0,0,0);seamTransform.updateMatrix();seamMesh.setMatrixAt(i,seamTransform.matrix);});
- seamMesh.castShadow=seamMesh.receiveShadow=true;seamMesh.userData={collisionKind:'building',ownedInstances:true};root.add(seamMesh);root.userData.seamBlockers=seamWalls.length/6;
+ const seamMesh=new T.InstancedMesh(boxGeo,m.wood,seamWalls.length);
+ seamWalls.forEach((p,i)=>{seamTransform.position.set(p.x,p.y,p.z);seamTransform.scale.set(p.w,p.h,p.d);seamTransform.rotation.set(p.rx||0,0,0);seamTransform.updateMatrix();seamMesh.setMatrixAt(i,seamTransform.matrix);seamMesh.setColorAt(i,new T.Color().setRGB(.65+seamRandom()*.25,.63+seamRandom()*.20,.57+seamRandom()*.18));});
+ seamMesh.castShadow=seamMesh.receiveShadow=true;seamMesh.userData={collisionKind:'building',ownedInstances:true};root.add(seamMesh);root.userData.seamBlockers=seamWalls.length/14;
  // Trees are spread within planting strips; their crowns use the approved broad-canopy variants.
  for(const side of [-1,1])for(let j=0;j<layout.trees/2;j++){
   const z=-31+j*62/(layout.trees/2-1)+(r()-.5)*2,x=side*(4.25+r()*.25),variant=Math.floor(r()*10),tree=createStreetTree(variant,{lod:'far'});tree.scale.set(1.45,12.5/treeVariants[variant].height,1.45);const bark=tree.children[0];bark.material=mossMaterial(bark.material.clone(),.72);bark.userData.ownedMaterials=[bark.material];tree.position.set(x,.215,z);tree.rotation.y=r()*Math.PI*2;const broken=j===1||(j>2&&r()<.2);if(broken){const stump=new T.CylinderGeometry(.24,.34,1.6,10);stump.translate(0,.8,0);const pos=stump.attributes.position;for(let n=0;n<pos.count;n++)if(pos.getY(n)>1.5)pos.setY(n,pos.getY(n)+Math.sin(pos.getX(n)*31+pos.getZ(n)*23)*.12);stump.computeVertexNormals();bark.geometry=stump;bark.userData.ownedGeometry=true;tree.children[1].visible=false;const start=new T.Vector3(x,.46,z),end=new T.Vector3(side*(1.8+r()),.21,z+(r()-.5)*4),direction=end.clone().sub(start),log=new T.Mesh(new T.CylinderGeometry(.15,.38,direction.length(),10),bark.material);log.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),direction.clone().normalize());log.position.copy(start).lerp(end,.5);log.userData.ownedGeometry=true;log.castShadow=log.receiveShadow=true;log.userData.collisionKind='tree';root.add(log);tree.userData.broken=true;}bark.userData.collisionKind='tree';root.add(tree);treeSlots.push({x,z,variant,broken});const soil=new T.Mesh(soilGeo,m.soil);soil.position.set(x,.207,z);root.add(soil);obstacles.push({kind:'tree',x,z,w:.7,d:.7});
@@ -104,6 +104,6 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
  for(const stone of [false,true]){
   const items=debris.filter(d=>d.stone===stone),mesh=new T.InstancedMesh(stone?rockGeo:boxGeo,stone?m.stone:m.brick,items.length),o=new T.Object3D();items.forEach((d,i)=>{o.position.set(d.x,d.y,d.z);o.scale.set(d.sx,d.sy,d.sz);o.rotation.set(d.rx,d.ry,d.rz);o.updateMatrix();mesh.setMatrixAt(i,o.matrix);});mesh.castShadow=mesh.receiveShadow=true;mesh.instanceMatrix.needsUpdate=true;root.add(mesh);mesh.userData.ownedInstances=true;mesh.userData.collisionKind='rubble';
  }
- root.userData={seamBlockers:seamWalls.length/6,seed,layout:layoutIndex,size:72,houses,cars,smallRides,trees:treeSlots,debris:debris.length,obstacles,blockages,connections:[{x:0,z:-36,width:7},{x:0,z:36,width:7}]};addCityBackdrop(root,m.brick);addGroundDamage(root);addStreetOvergrowth(root);addStreetLife(root);return root;
+ root.userData={seamBlockers:seamWalls.length/14,seed,layout:layoutIndex,size:72,houses,cars,smallRides,trees:treeSlots,debris:debris.length,obstacles,blockages,connections:[{x:0,z:-36,width:7},{x:0,z:36,width:7}]};addCityBackdrop(root,m.brick);addGroundDamage(root);addStreetOvergrowth(root);addStreetLife(root);return root;
 }
 export function disposeStreetBlock(root){root.traverse(o=>{if(o.userData.ownedMaterial)o.material.dispose();if(o.userData.ownedMaterials)o.userData.ownedMaterials.forEach(m=>m.dispose());if(o.userData.ownedGeometry)o.geometry.dispose();if(o.userData.ownedInstances)o.dispose();});}
