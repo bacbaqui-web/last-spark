@@ -38,10 +38,11 @@ document.addEventListener('mousemove',e=>{if(!walking||(document.pointerLockElem
 document.addEventListener('keydown',e=>{if(!walking||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;if(e.code==='Escape'){exitWalk();return;}if(['KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight'].includes(e.code)){e.preventDefault();walkKeys.add(e.code);}});
 document.addEventListener('keyup',e=>walkKeys.delete(e.code));window.addEventListener('blur',()=>walkKeys.clear());
 document.addEventListener('pointerlockchange',()=>{if(walking&&document.pointerLockElement!==canvas)walkKeys.clear();});
-function walkStep(dt){if(!walking)return;const forward=Number(walkKeys.has('KeyW'))-Number(walkKeys.has('KeyS')),side=Number(walkKeys.has('KeyD'))-Number(walkKeys.has('KeyA')),length=Math.hypot(forward,side);if(!length)return;
+function walkStep(dt){if(!walking)return;const forward=Number(walkKeys.has('KeyW'))-Number(walkKeys.has('KeyS')),side=Number(walkKeys.has('KeyD'))-Number(walkKeys.has('KeyA')),length=Math.hypot(forward,side);if(length){
  const speed=walkKeys.has('ShiftLeft')||walkKeys.has('ShiftRight')?5:2.8,step=speed*dt/length;
  const dx=(side*Math.cos(yaw)-forward*Math.sin(yaw))*step,dz=(-forward*Math.cos(yaw)-side*Math.sin(yaw))*step;
  walkFoot=walkCollision.move(camera.position,dx,dz,walkFoot);
+ }
  const targetY=walkFoot+1.675;camera.position.y=T.MathUtils.lerp(camera.position.y,targetY,Math.min(1,dt*12));
 }
 let lastFrame=0;function animate(now){requestAnimationFrame(animate);if(document.hidden||now-lastFrame<33.3)return;const dt=Math.min(.05,(now-lastFrame)*.001);lastFrame=now;walkStep(dt);vegetationUpdate?.(now*.001,camera,walking);root?.userData.updateLife?.(now*.001,walking?camera:null);render();}requestAnimationFrame(animate);
