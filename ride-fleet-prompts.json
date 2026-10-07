@@ -1,0 +1,122 @@
+[
+  {
+    "id": "kawasaki-ninja-h2r",
+    "mode": "edit/reference-guided",
+    "prompt": "Create a square 1024x1024 photorealistic UV texture atlas for a ruined, abandoned sport vehicle. Reference 1 is an exact atlas layout guide, reference 2 is a real structural diagram. Use diagram for proportions and mechanical structure only. No logos, watermarks, arrows, dimensions, letters or labels. Top half (0-50% image height) contains a perfectly orthographic side elevation of this sport, front to LEFT, centered against solid dark charcoal, heavily weathered, original faded pale cyan paint mostly chipped off, brown deep corrosion and grime, damaged finish, absolutely NO perspective or shadows cast outside shape. It is a flat texture, not a scene or render. Bottom half EXACTLY 4 columns by 2 rows of material swatches occupying whole cells with no gaps or borders. Row at 50-75% height LEFT TO RIGHT: 1 chipped muted cyan paint with big ragged rusty brown patches, 2 rusty dark steel with oily worn edges, 3 black cracked seat leather with dirty stitching, 4 dusty dark charcoal rubber grip. Row at 75-100% height LEFT TO RIGHT: 1 tarnished silver wheel rim metal with rust pits, 2 dark worn tire tread filled with mud, 3 filthy yellowed headlight glass with scratches and fine cracks, 4 oily charcoal engine casing with corroded bolts. The swatches must fill their square cells uniformly, photographed straight on under neutral diffuse light with no lighting gradients. All rust/dirt are permanently baked into atlas, substantial irregular flakes not vertical stripes. This is for individual polygon UV islands on a real 3D mesh. Keep the exact guide layout. Strong readable material differences; realistic aged surfaces. NO texture of an entire wheel in the rim or tire cells: continuous close-up materials only.",
+    "referenced_image_paths": [
+      "/tmp/last-spark-rides/atlas-guide.png",
+      "/tmp/last-spark-rides/kawasaki-ninja-h2r.gif"
+    ],
+    "output": "public/textures/vehicles/rides/kawasaki-ninja-h2r.jpg",
+    "source": "https://drawingdatabase.com/kawasaki-ninja-h2r/",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-64906e77-dc72-47b0-b291-d08ca4b42fb7.png"
+  },
+  {
+    "id": "royal-enfield-lightning-350",
+    "mode": "edit/reference-guided",
+    "prompt": "Create a square 1024x1024 photorealistic UV texture atlas for a ruined, abandoned cruiser vehicle. Reference 1 is an exact atlas layout guide, reference 2 is a real structural diagram. Use diagram for proportions and mechanical structure only. No logos, watermarks, arrows, dimensions, letters or labels. Top half (0-50% image height) contains a perfectly orthographic side elevation of this cruiser, front to LEFT, centered against solid dark charcoal, heavily weathered, original faded pale cyan paint mostly chipped off, brown deep corrosion and grime, damaged finish, absolutely NO perspective or shadows cast outside shape. It is a flat texture, not a scene or render. Bottom half EXACTLY 4 columns by 2 rows of material swatches occupying whole cells with no gaps or borders. Row at 50-75% height LEFT TO RIGHT: 1 chipped muted cyan paint with big ragged rusty brown patches, 2 rusty dark steel with oily worn edges, 3 black cracked seat leather with dirty stitching, 4 dusty dark charcoal rubber grip. Row at 75-100% height LEFT TO RIGHT: 1 tarnished silver wheel rim metal with rust pits, 2 dark worn tire tread filled with mud, 3 filthy yellowed headlight glass with scratches and fine cracks, 4 oily charcoal engine casing with corroded bolts. The swatches must fill their square cells uniformly, photographed straight on under neutral diffuse light with no lighting gradients. All rust/dirt are permanently baked into atlas, substantial irregular flakes not vertical stripes. This is for individual polygon UV islands on a real 3D mesh. Keep the exact guide layout. Strong readable material differences; realistic aged surfaces. NO texture of an entire wheel in the rim or tire cells: continuous close-up materials only.",
+    "referenced_image_paths": [
+      "/tmp/last-spark-rides/atlas-guide.png",
+      "/tmp/last-spark-rides/royal-enfield-lightning-350.gif"
+    ],
+    "output": "public/textures/vehicles/rides/royal-enfield-lightning-350.jpg",
+    "source": "https://drawingdatabase.com/royal-enfield-lightning-350/",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-ca2d0086-8eaa-4f1e-bdbe-c99fea9ab321.png"
+  },
+  {
+    "id": "honda-crf300l",
+    "mode": "edit/reference-guided",
+    "prompt": "Create a square 1024x1024 photorealistic UV texture atlas for a ruined, abandoned dirt vehicle. Reference 1 is an exact atlas layout guide, reference 2 is a real structural diagram. Use diagram for proportions and mechanical structure only. No logos, watermarks, arrows, dimensions, letters or labels. Top half (0-50% image height) contains a perfectly orthographic side elevation of this dirt, front to LEFT, centered against solid dark charcoal, heavily weathered, original faded pale cyan paint mostly chipped off, brown deep corrosion and grime, damaged finish, absolutely NO perspective or shadows cast outside shape. It is a flat texture, not a scene or render. Bottom half EXACTLY 4 columns by 2 rows of material swatches occupying whole cells with no gaps or borders. Row at 50-75% height LEFT TO RIGHT: 1 chipped muted cyan paint with big ragged rusty brown patches, 2 rusty dark steel with oily worn edges, 3 black cracked seat leather with dirty stitching, 4 dusty dark charcoal rubber grip. Row at 75-100% height LEFT TO RIGHT: 1 tarnished silver wheel rim metal with rust pits, 2 dark worn tire tread filled with mud, 3 filthy yellowed headlight glass with scratches and fine cracks, 4 oily charcoal engine casing with corroded bolts. The swatches must fill their square cells uniformly, photographed straight on under neutral diffuse light with no lighting gradients. All rust/dirt are permanently baked into atlas, substantial irregular flakes not vertical stripes. This is for individual polygon UV islands on a real 3D mesh. Keep the exact guide layout. Strong readable material differences; realistic aged surfaces. NO texture of an entire wheel in the rim or tire cells: continuous close-up materials only.",
+    "referenced_image_paths": [
+      "/tmp/last-spark-rides/atlas-guide.png",
+      "/tmp/last-spark-rides/honda-crf300l.gif"
+    ],
+    "output": "public/textures/vehicles/rides/honda-crf300l.jpg",
+    "source": "https://drawingdatabase.com/honda-crf300l/",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-7d607a57-5f54-488e-854e-48da868b1e54.png"
+  },
+  {
+    "id": "vyatka-vp-150m-1976",
+    "mode": "edit/reference-guided",
+    "prompt": "Create a square 1024x1024 photorealistic UV texture atlas for a ruined, abandoned scooter vehicle. Reference 1 is an exact atlas layout guide, reference 2 is a real structural diagram. Use diagram for proportions and mechanical structure only. No logos, watermarks, arrows, dimensions, letters or labels. Top half (0-50% image height) contains a perfectly orthographic side elevation of this scooter, front to LEFT, centered against solid dark charcoal, heavily weathered, original faded pale cyan paint mostly chipped off, brown deep corrosion and grime, damaged finish, absolutely NO perspective or shadows cast outside shape. It is a flat texture, not a scene or render. Bottom half EXACTLY 4 columns by 2 rows of material swatches occupying whole cells with no gaps or borders. Row at 50-75% height LEFT TO RIGHT: 1 chipped muted cyan paint with big ragged rusty brown patches, 2 rusty dark steel with oily worn edges, 3 black cracked seat leather with dirty stitching, 4 dusty dark charcoal rubber grip. Row at 75-100% height LEFT TO RIGHT: 1 tarnished silver wheel rim metal with rust pits, 2 dark worn tire tread filled with mud, 3 filthy yellowed headlight glass with scratches and fine cracks, 4 oily charcoal engine casing with corroded bolts. The swatches must fill their square cells uniformly, photographed straight on under neutral diffuse light with no lighting gradients. All rust/dirt are permanently baked into atlas, substantial irregular flakes not vertical stripes. This is for individual polygon UV islands on a real 3D mesh. Keep the exact guide layout. Strong readable material differences; realistic aged surfaces. NO texture of an entire wheel in the rim or tire cells: continuous close-up materials only.",
+    "referenced_image_paths": [
+      "/tmp/last-spark-rides/atlas-guide.png",
+      "/tmp/last-spark-rides/vyatka-vp-150m-1976.gif"
+    ],
+    "output": "public/textures/vehicles/rides/vyatka-vp-150m-1976.jpg",
+    "source": "https://drawingdatabase.com/vyatka-vp-150m-1976/",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-50ceec9c-f5af-4c8a-aec0-7ce117f93445.png"
+  },
+  {
+    "id": "road-bicycle",
+    "mode": "edit/reference-guided",
+    "prompt": "Create a square 1024x1024 photorealistic UV texture atlas for a ruined, abandoned road vehicle. Reference 1 is an exact atlas layout guide, reference 2 is a real structural diagram. Use diagram for proportions and mechanical structure only. No logos, watermarks, arrows, dimensions, letters or labels. Top half (0-50% image height) contains a perfectly orthographic side elevation of this road, front to LEFT, centered against solid dark charcoal, heavily weathered, original faded pale cyan paint mostly chipped off, brown deep corrosion and grime, damaged finish, absolutely NO perspective or shadows cast outside shape. It is a flat texture, not a scene or render. Bottom half EXACTLY 4 columns by 2 rows of material swatches occupying whole cells with no gaps or borders. Row at 50-75% height LEFT TO RIGHT: 1 chipped muted cyan paint with big ragged rusty brown patches, 2 rusty dark steel with oily worn edges, 3 black cracked seat leather with dirty stitching, 4 dusty dark charcoal rubber grip. Row at 75-100% height LEFT TO RIGHT: 1 tarnished silver wheel rim metal with rust pits, 2 dark worn tire tread filled with mud, 3 filthy yellowed headlight glass with scratches and fine cracks, 4 oily charcoal engine casing with corroded bolts. The swatches must fill their square cells uniformly, photographed straight on under neutral diffuse light with no lighting gradients. All rust/dirt are permanently baked into atlas, substantial irregular flakes not vertical stripes. This is for individual polygon UV islands on a real 3D mesh. Keep the exact guide layout. Strong readable material differences; realistic aged surfaces. NO texture of an entire wheel in the rim or tire cells: continuous close-up materials only.",
+    "referenced_image_paths": [
+      "/tmp/last-spark-rides/atlas-guide.png",
+      "/tmp/last-spark-rides/bicycle-2.png"
+    ],
+    "output": "public/textures/vehicles/rides/road-bicycle.jpg",
+    "source": "https://aicma.org/wp-content/uploads/2019/07/BICYCLE_FORMS_AND_PARTS.pdf",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-8ebca79e-bc53-40f5-980f-1e08f8b747fa.png"
+  },
+  {
+    "id": "mountain-bicycle",
+    "mode": "edit/reference-guided",
+    "prompt": "Create a square 1024x1024 photorealistic UV texture atlas for a ruined, abandoned mtb vehicle. Reference 1 is an exact atlas layout guide, reference 2 is a real structural diagram. Use diagram for proportions and mechanical structure only. No logos, watermarks, arrows, dimensions, letters or labels. Top half (0-50% image height) contains a perfectly orthographic side elevation of this mtb, front to LEFT, centered against solid dark charcoal, heavily weathered, original faded pale cyan paint mostly chipped off, brown deep corrosion and grime, damaged finish, absolutely NO perspective or shadows cast outside shape. It is a flat texture, not a scene or render. Bottom half EXACTLY 4 columns by 2 rows of material swatches occupying whole cells with no gaps or borders. Row at 50-75% height LEFT TO RIGHT: 1 chipped muted cyan paint with big ragged rusty brown patches, 2 rusty dark steel with oily worn edges, 3 black cracked seat leather with dirty stitching, 4 dusty dark charcoal rubber grip. Row at 75-100% height LEFT TO RIGHT: 1 tarnished silver wheel rim metal with rust pits, 2 dark worn tire tread filled with mud, 3 filthy yellowed headlight glass with scratches and fine cracks, 4 oily charcoal engine casing with corroded bolts. The swatches must fill their square cells uniformly, photographed straight on under neutral diffuse light with no lighting gradients. All rust/dirt are permanently baked into atlas, substantial irregular flakes not vertical stripes. This is for individual polygon UV islands on a real 3D mesh. Keep the exact guide layout. Strong readable material differences; realistic aged surfaces. NO texture of an entire wheel in the rim or tire cells: continuous close-up materials only.",
+    "referenced_image_paths": [
+      "/tmp/last-spark-rides/atlas-guide.png",
+      "/tmp/last-spark-rides/bicycle-2.png"
+    ],
+    "output": "public/textures/vehicles/rides/mountain-bicycle.jpg",
+    "source": "https://aicma.org/wp-content/uploads/2019/07/BICYCLE_FORMS_AND_PARTS.pdf",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-9a323c39-9f46-436b-81fb-77948e671cbd.png"
+  },
+  {
+    "id": "bmx-bicycle",
+    "mode": "edit/reference-guided",
+    "prompt": "Create a square 1024x1024 photorealistic UV texture atlas for a ruined, abandoned bmx vehicle. Reference 1 is an exact atlas layout guide, reference 2 is a real structural diagram. Use diagram for proportions and mechanical structure only. No logos, watermarks, arrows, dimensions, letters or labels. Top half (0-50% image height) contains a perfectly orthographic side elevation of this bmx, front to LEFT, centered against solid dark charcoal, heavily weathered, original faded pale cyan paint mostly chipped off, brown deep corrosion and grime, damaged finish, absolutely NO perspective or shadows cast outside shape. It is a flat texture, not a scene or render. Bottom half EXACTLY 4 columns by 2 rows of material swatches occupying whole cells with no gaps or borders. Row at 50-75% height LEFT TO RIGHT: 1 chipped muted cyan paint with big ragged rusty brown patches, 2 rusty dark steel with oily worn edges, 3 black cracked seat leather with dirty stitching, 4 dusty dark charcoal rubber grip. Row at 75-100% height LEFT TO RIGHT: 1 tarnished silver wheel rim metal with rust pits, 2 dark worn tire tread filled with mud, 3 filthy yellowed headlight glass with scratches and fine cracks, 4 oily charcoal engine casing with corroded bolts. The swatches must fill their square cells uniformly, photographed straight on under neutral diffuse light with no lighting gradients. All rust/dirt are permanently baked into atlas, substantial irregular flakes not vertical stripes. This is for individual polygon UV islands on a real 3D mesh. Keep the exact guide layout. Strong readable material differences; realistic aged surfaces. NO texture of an entire wheel in the rim or tire cells: continuous close-up materials only.",
+    "referenced_image_paths": [
+      "/tmp/last-spark-rides/atlas-guide.png",
+      "/tmp/last-spark-rides/bmx.jpg"
+    ],
+    "output": "public/textures/vehicles/rides/bmx-bicycle.jpg",
+    "source": "https://www.the-blueprints.com/vectordrawings/show/15830/bmx_bike/",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-fafeaef2-bff5-4c22-997a-c803d7f67a30.png"
+  },
+  {
+    "id": "folding-bicycle",
+    "mode": "edit/reference-guided",
+    "prompt": "Create a square 1024x1024 photorealistic UV texture atlas for a ruined, abandoned folding vehicle. Reference 1 is an exact atlas layout guide, reference 2 is a real structural diagram. Use diagram for proportions and mechanical structure only. No logos, watermarks, arrows, dimensions, letters or labels. Top half (0-50% image height) contains a perfectly orthographic side elevation of this folding, front to LEFT, centered against solid dark charcoal, heavily weathered, original faded pale cyan paint mostly chipped off, brown deep corrosion and grime, damaged finish, absolutely NO perspective or shadows cast outside shape. It is a flat texture, not a scene or render. Bottom half EXACTLY 4 columns by 2 rows of material swatches occupying whole cells with no gaps or borders. Row at 50-75% height LEFT TO RIGHT: 1 chipped muted cyan paint with big ragged rusty brown patches, 2 rusty dark steel with oily worn edges, 3 black cracked seat leather with dirty stitching, 4 dusty dark charcoal rubber grip. Row at 75-100% height LEFT TO RIGHT: 1 tarnished silver wheel rim metal with rust pits, 2 dark worn tire tread filled with mud, 3 filthy yellowed headlight glass with scratches and fine cracks, 4 oily charcoal engine casing with corroded bolts. The swatches must fill their square cells uniformly, photographed straight on under neutral diffuse light with no lighting gradients. All rust/dirt are permanently baked into atlas, substantial irregular flakes not vertical stripes. This is for individual polygon UV islands on a real 3D mesh. Keep the exact guide layout. Strong readable material differences; realistic aged surfaces. NO texture of an entire wheel in the rim or tire cells: continuous close-up materials only.",
+    "referenced_image_paths": [
+      "/tmp/last-spark-rides/atlas-guide.png",
+      "/tmp/last-spark-rides/folding-diagram.png"
+    ],
+    "output": "public/textures/vehicles/rides/folding-bicycle.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Colourful-brompton-layered-handlebars-adjusted-wp.svg",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-5c537d55-f84d-428b-ad62-4162efc34194.png"
+  },
+  {
+    "id": "manual-kick-scooter",
+    "mode": "edit/reference-guided",
+    "prompt": "Create a square 1024x1024 photorealistic UV texture atlas for a ruined, abandoned kick vehicle. Reference 1 is an exact atlas layout guide, reference 2 is a real structural diagram. Use diagram for proportions and mechanical structure only. No logos, watermarks, arrows, dimensions, letters or labels. Top half (0-50% image height) contains a perfectly orthographic side elevation of this kick, front to LEFT, centered against solid dark charcoal, heavily weathered, original faded pale cyan paint mostly chipped off, brown deep corrosion and grime, damaged finish, absolutely NO perspective or shadows cast outside shape. It is a flat texture, not a scene or render. Bottom half EXACTLY 4 columns by 2 rows of material swatches occupying whole cells with no gaps or borders. Row at 50-75% height LEFT TO RIGHT: 1 chipped muted cyan paint with big ragged rusty brown patches, 2 rusty dark steel with oily worn edges, 3 black cracked seat leather with dirty stitching, 4 dusty dark charcoal rubber grip. Row at 75-100% height LEFT TO RIGHT: 1 tarnished silver wheel rim metal with rust pits, 2 dark worn tire tread filled with mud, 3 filthy yellowed headlight glass with scratches and fine cracks, 4 oily charcoal engine casing with corroded bolts. The swatches must fill their square cells uniformly, photographed straight on under neutral diffuse light with no lighting gradients. All rust/dirt are permanently baked into atlas, substantial irregular flakes not vertical stripes. This is for individual polygon UV islands on a real 3D mesh. Keep the exact guide layout. Strong readable material differences; realistic aged surfaces. NO texture of an entire wheel in the rim or tire cells: continuous close-up materials only.",
+    "referenced_image_paths": [
+      "/tmp/last-spark-rides/atlas-guide.png",
+      "/tmp/last-spark-rides/manual-3.png"
+    ],
+    "output": "public/textures/vehicles/rides/manual-kick-scooter.jpg",
+    "source": "https://global.razor.com/uk/wp-content/uploads/sites/2/2020/08/A5_LUX_US_MAN_200121.pdf",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-77b14aae-a1b1-488b-b247-88bf09779c62.png"
+  },
+  {
+    "id": "electric-kick-scooter",
+    "mode": "edit/reference-guided",
+    "prompt": "Create a square 1024x1024 photorealistic UV texture atlas for a ruined, abandoned electric vehicle. Reference 1 is an exact atlas layout guide, reference 2 is a real structural diagram. Use diagram for proportions and mechanical structure only. No logos, watermarks, arrows, dimensions, letters or labels. Top half (0-50% image height) contains a perfectly orthographic side elevation of this electric, front to LEFT, centered against solid dark charcoal, heavily weathered, original faded pale cyan paint mostly chipped off, brown deep corrosion and grime, damaged finish, absolutely NO perspective or shadows cast outside shape. It is a flat texture, not a scene or render. Bottom half EXACTLY 4 columns by 2 rows of material swatches occupying whole cells with no gaps or borders. Row at 50-75% height LEFT TO RIGHT: 1 chipped muted cyan paint with big ragged rusty brown patches, 2 rusty dark steel with oily worn edges, 3 black cracked seat leather with dirty stitching, 4 dusty dark charcoal rubber grip. Row at 75-100% height LEFT TO RIGHT: 1 tarnished silver wheel rim metal with rust pits, 2 dark worn tire tread filled with mud, 3 filthy yellowed headlight glass with scratches and fine cracks, 4 oily charcoal engine casing with corroded bolts. The swatches must fill their square cells uniformly, photographed straight on under neutral diffuse light with no lighting gradients. All rust/dirt are permanently baked into atlas, substantial irregular flakes not vertical stripes. This is for individual polygon UV islands on a real 3D mesh. Keep the exact guide layout. Strong readable material differences; realistic aged surfaces. NO texture of an entire wheel in the rim or tire cells: continuous close-up materials only.",
+    "referenced_image_paths": [
+      "/tmp/last-spark-rides/atlas-guide.png",
+      "/tmp/last-spark-rides/electric-06.png"
+    ],
+    "output": "public/textures/vehicles/rides/electric-kick-scooter.jpg",
+    "source": "https://www.segwayisrael.com/wp-content/uploads/2023/01/MAX-G30E-guide-2022.pdf",
+    "generatedOriginal": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-df8a5099-7e76-4882-a3ea-4d1b7c684a99.png"
+  }
+]
