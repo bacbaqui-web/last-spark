@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {windMaterial} from './street-vegetation-runtime.js';
 let leafMat;
 let grassLoaded=false;
 function grassMaterial(){if(!grassLoaded&&typeof document!=='undefined'){grassMat.map=new T.TextureLoader().load(new URL('./textures/street/grass-blade.jpg',document.baseURI).href);grassMat.map.colorSpace=T.SRGBColorSpace;grassLoaded=true;}return grassMat;}
@@ -37,6 +38,10 @@ export function addStreetOvergrowth(root){
   for(let j=0;j<35;j++){const x=b.min.x+r()*size.x,z=b.min.z+r()*size.z;ray.set(new T.Vector3(x,b.max.y+1,z),down);const hit=ray.intersectObject(object,false)[0];if(!hit)continue;normalMatrix.getNormalMatrix(object.matrixWorld);const normal=hit.face.normal.clone().applyMatrix3(normalMatrix).normalize(),p=hit.point.clone().addScaledVector(normal,.012);leaf(p.x,p.y,p.z,.06+r()*.09,false,normal);}
   for(let j=0;j<16;j++){const x=(j%2?b.min.x:b.max.x)+(r()-.5)*.16,z=b.min.z+r()*size.z;grass(x,z,Math.abs(x)>3.65?.21:.035,.75);}
  }
- function mesh(p,c,material,tex){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setAttribute('color',new T.Float32BufferAttribute(c,3));if(tex)g.setAttribute('uv',new T.Float32BufferAttribute(tex,2));g.computeVertexNormals();g.computeBoundingSphere();const o=new T.Mesh(g,material);o.receiveShadow=true;o.userData.ownedGeometry=true;root.add(o);}
- mesh(sp,sc,new T.MeshStandardMaterial({color:0xffffff,vertexColors:true,side:T.DoubleSide,roughness:1}));root.children.at(-1).userData.ownedMaterial=true;mesh(gp,gc,grassMaterial(),gu);mesh(lp,lc,leaves(),uv);root.userData.overgrowth={patches,vines,triangles:(gp.length+lp.length)/9};
+ function mesh(p,c,material,tex,kind){
+  const cells=new Map();for(let i=0;i<p.length;i+=9){const x=(p[i]+p[i+3]+p[i+6])/3,z=(p[i+2]+p[i+5]+p[i+8])/3,key=Math.floor(x/12)+':'+Math.floor(z/12);if(!cells.has(key))cells.set(key,{p:[],c:[],uv:[]});const cell=cells.get(key);cell.p.push(...p.slice(i,i+9));cell.c.push(...c.slice(i,i+9));if(tex)cell.uv.push(...tex.slice(i/3*2,i/3*2+6));}
+  if(kind)windMaterial(material,kind);
+  for(const cell of cells.values()){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(cell.p,3));g.setAttribute('color',new T.Float32BufferAttribute(cell.c,3));if(tex)g.setAttribute('uv',new T.Float32BufferAttribute(cell.uv,2));g.computeVertexNormals();g.computeBoundingSphere();g.boundingSphere.radius+=.25;const o=new T.Mesh(g,material);o.receiveShadow=true;o.userData.ownedGeometry=true;o.userData.vegetation=true;o.userData.grass=kind==='grass';root.add(o);}
+ }
+ const stemsMaterial=new T.MeshStandardMaterial({color:0xffffff,vertexColors:true,side:T.DoubleSide,roughness:1});mesh(sp,sc,stemsMaterial);root.children.at(-1).userData.ownedMaterial=true;mesh(gp,gc,grassMaterial(),gu,'grass');mesh(lp,lc,leaves(),uv,'leaves');root.userData.overgrowth={patches,vines,triangles:(gp.length+lp.length)/9};
 }
