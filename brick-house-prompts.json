@@ -1,0 +1,16 @@
+[
+  {
+    "id": "brick",
+    "prompt": "Use case: photorealistic-natural. Asset type: seamless square diffuse albedo texture for old New York red brick rowhouse exterior wall in a real-time 3D abandoned city. Entire image is a flat frontal orthographic wall surface, no perspective, no scenery, no windows, no doors, no text. Weathered deep warm muted red/brown small horizontal masonry bricks with thin grey-beige mortar, realistic rough chips and spalling, scattered dark soot and faint water staining, a few subtle hairline cracks but most bricks intact. Consistent small brick scale, roughly 12 bricks across, 20 courses tall. Even neutral diffuse lighting, no baked directional shadow or reflection. Seamless repeat on four edges, edge-to-edge coverage. Fine tactile photographic detail suitable for clear daytime ruins, not cartoon, not orange painted plaster, no moss covering brick structure.",
+    "mode": "built-in generate",
+    "originalOutput": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-fefc9c24-72bb-4f4d-8ef4-6c91e1c1741a.png",
+    "savedAsset": "public/textures/houses/red-brick.jpg"
+  },
+  {
+    "id": "details",
+    "prompt": "Use case: photorealistic-natural. Asset type: square 3D game building detail texture atlas. EXACT 3 columns by 2 rows of SIX equal rectangular tile cells, fills square edge-to-edge. Completely front facing orthographic architectural surface, no perspective. Shared weathered New York red brick rowhouse material, dark interior visible through damaged openings, neutral flat lighting. TOP ROW left: old tall double-hung sash window with dirty cracked glass and missing triangular glass shards; center: same tall double-hung window with broken glass partly boarded with aged wood; right: empty tall broken window, decayed narrow frame and pitch dark room, some glass shards at edges. BOTTOM ROW left: derelict shop storefront display window, black iron narrow frame, large smashed dusty pane and dark interior; center: old glass shop entry door with narrow metal frame and broken filthy glass, dark interior; right: weathered residential wooden entry door, cracked brown paint and simple surround. Each object fills 80 percent of its own cell, small border of worn dark red bricks. Tile edges align exactly with the 3x2 grid, no crossing cells, no gaps between cells. No roof, no street, no people, no signs, no labels, no typography, no text, no logos, no watermark. Photographic realistic aged surfaces; these are flat albedo decals, no strong light gradients, no 3D mockup.",
+    "mode": "built-in generate",
+    "originalOutput": "/Users/bacbaqui/.codex/generated_images/01a0f6e3-5eb2-7dd1-be2d-848976fc66c8/exec-f055d6e0-d73e-4602-9a67-0b6849682189.png",
+    "savedAsset": "public/textures/houses/ruined-details.jpg"
+  }
+]
