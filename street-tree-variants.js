@@ -24,7 +24,7 @@ class Surface{
  geometry(){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(this.p,3));g.setAttribute('uv',new T.Float32BufferAttribute(this.uv,2));g.setAttribute('color',new T.Float32BufferAttribute(this.c,3));g.computeVertexNormals();g.computeBoundingBox();g.computeBoundingSphere();return g;}
 }
 function build(index,lod){const d=treeVariants[index],random=rng(d.seed),wood=new Surface(),green=new Surface(),rx=d.width/2,ry=(d.height-d.base)/2,cy=d.base+ry,lean=d.lean||0,bias=d.bias||0,centers=[],depth=d.depth||1;
- const trunk=y=>new T.Vector3(lean*(y/d.height)**1.4+Math.sin(y*1.5)*.035,y,Math.sin(y*.9)*.05),thick=d.young?.105:.19+(d.width-4)*.017;
+ const trunk=y=>new T.Vector3(lean*(y/d.height)**1.4+Math.sin(y*1.5)*.035,y,Math.sin(y*.9)*.05),thick=(d.young?.105:.19+(d.width-4)*.017)*1.4;
  // A continuous trunk skirt, slightly buried, flares only close to the ground.
  const levels=[-.08,0,.10,.24,.42,d.base*.57,d.base,d.base+ry*.65],sides=10;
  const rings=levels.map(y=>{const center=trunk(Math.max(0,y));center.y=y;const fade=Math.max(0,1-Math.max(0,y)/.42)**2;return Array.from({length:sides},(_,i)=>{const a=i/sides*Math.PI*2,flare=1+fade*(.42+.06*Math.sin(a*3+d.seed));const r=thick*(1-Math.max(0,y)/d.height*.8)*flare;return [center.x+Math.cos(a)*r,y,center.z+Math.sin(a)*r];});});
@@ -36,8 +36,8 @@ function build(index,lod){const d=treeVariants[index],random=rng(d.seed),wood=ne
  }
  // Fill the apex with irregular leafy branches; leave the trunk readable below.
  for(let i=0;i<5;i++){const a=random()*Math.PI*2,tip=new T.Vector3(Math.cos(a)*rx*.35+bias*.5+lean,cy+ry*.64+random()*ry*.1,Math.sin(a)*rx*.35*depth);wood.tube(trunk(d.base+ry*.6),tip,.026,.008,5);centers.push({p:tip,scale:.85});}
- const near=lod==='near',cards=near?13:5;
- for(const cl of centers)for(let i=0;i<cards;i++){const a=random()*Math.PI*2,rad=Math.sqrt(random())*(d.young?.55:.72)*cl.scale,dy=(random()-.5)*(near?1.25:1.0),p=cl.p.clone().add(new T.Vector3(Math.cos(a)*rad,dy,Math.sin(a)*rad));const normal=new T.Vector3(Math.cos(a)*(.35+random()),.35+random()*.8,Math.sin(a)*(.35+random())).normalize(),q=new T.Quaternion().setFromUnitVectors(new T.Vector3(0,0,1),normal);q.multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,0,1),random()*Math.PI*2));const tint=.82+random()*.18;green.leaf(p,(near?.72:1.04)*(d.young?.78:1)*(.8+random()*.35),q,Math.floor(random()*4),[tint*.92,tint,tint*.88]);}
+ const near=lod==='near',cards=near?34:18;
+ for(const cl of centers)for(let i=0;i<cards;i++){const a=random()*Math.PI*2,rad=Math.sqrt(random())*(d.young?.55:.72)*cl.scale,dy=(random()-.5)*(near?1.25:1.0),p=cl.p.clone().add(new T.Vector3(Math.cos(a)*rad,dy,Math.sin(a)*rad));const normal=new T.Vector3(Math.cos(a)*(.35+random()),.35+random()*.8,Math.sin(a)*(.35+random())).normalize(),q=new T.Quaternion().setFromUnitVectors(new T.Vector3(0,0,1),normal);q.multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,0,1),random()*Math.PI*2));const tint=.82+random()*.18;green.leaf(p,(near?.46:.58)*(d.young?.78:1)*(.8+random()*.35),q,Math.floor(random()*4),[tint*.92,tint,tint*.88]);}
  return {wood:wood.geometry(),leaves:green.geometry()};
 }
 /** Reuse cached geometry/materials. Only the returned placement group is new. */
