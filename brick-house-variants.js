@@ -11,6 +11,16 @@ export const houseVariants=[
  {name:'중앙이 뜯긴 연립주택',use:'주택 · 내부 노출 · 기존 05 변형',width:11.4,depth:9.4,floors:4,columns:4,damage:[4,3,2,4],seed:647,escape:true,sideHole:true,basis:5},
  {name:'비상계단이 남은 주택',use:'주택 · 지붕 파손 · 기존 05 변형',width:9.6,depth:9.1,floors:4,columns:3,damage:[4,3,2],seed:811,escape:true,sideHole:true,basis:5},
  {name:'반파된 벽돌 서점',use:'가게 · BOOKS · 기존 07 변형',width:10.8,depth:9.8,floors:4,columns:4,damage:[4,3,2,1],seed:739,shop:'BOOKS',sideHole:true,basis:7},
+ {name:'길쭉한 벽돌 연립주택',use:'주택과 상점 · 확장 디자인',width:12.8,depth:9,floors:4,columns:5,damage:[4, 4, 3, 2, 3],seed:1001,escape:true,sideHole:true},
+ {name:'좁은 골목 주택',use:'주택과 상점 · 확장 디자인',width:6.4,depth:8,floors:3,columns:2,damage:[3, 2],seed:1080,escape:false,sideHole:true},
+ {name:'다섯층 모퉁이 아파트',use:'주택과 상점 · 확장 디자인',width:11,depth:10,floors:5,columns:4,damage:[5, 4, 3, 4],seed:1159,escape:true,sideHole:true},
+ {name:'붕괴한 식료품 창고',use:'주택과 상점 · 확장 디자인',width:13,depth:12,floors:2,columns:5,damage:[2, 1, 2, 2, 1],seed:1238,escape:false,sideHole:true,shop:'GROCERY'},
+ {name:'작은 벽돌 서점',use:'주택과 상점 · 확장 디자인',width:7.1,depth:8.5,floors:3,columns:2,damage:[3, 2],seed:1317,escape:false,sideHole:true,shop:'BOOKS'},
+ {name:'넓은 세탁소 건물',use:'주택과 상점 · 확장 디자인',width:12.4,depth:9.7,floors:4,columns:5,damage:[3, 4, 4, 2, 3],seed:1396,escape:true,sideHole:true,shop:'LAUNDRY'},
+ {name:'지붕이 뜯긴 식당',use:'주택과 상점 · 확장 디자인',width:8,depth:10,floors:2,columns:3,damage:[2, 1, 2],seed:1475,escape:false,sideHole:true,shop:'DINER'},
+ {name:'계단이 남은 고층 주택',use:'주택과 상점 · 확장 디자인',width:9.3,depth:10.5,floors:5,columns:3,damage:[5, 3, 4],seed:1554,escape:true,sideHole:true},
+ {name:'낮은 반파 연립주택',use:'주택과 상점 · 확장 디자인',width:10.6,depth:8,floors:2,columns:4,damage:[2, 2, 1, 1],seed:1633,escape:false,sideHole:true},
+ {name:'중정 쪽이 무너진 아파트',use:'주택과 상점 · 확장 디자인',width:14,depth:11,floors:5,columns:5,damage:[5, 4, 2, 3, 5],seed:1712,escape:true,sideHole:true},
 ];
 const cache=new Map();let materials;
 function random(seed){return ()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
