@@ -19,7 +19,14 @@ function rebuildCollisionOverlay(){
  if(collisionOverlay){scene.remove(collisionOverlay);collisionOverlay.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});}
  collisionOverlay=new T.Group();
  const colors={building:0xffad45,car:0xff4b55,tree:0x64ff88,ride:0x58bfff};
- for(const o of root.userData.obstacles){const height=o.kind==='building'?3:o.kind==='tree'?2:1.5;const box=new T.BoxGeometry(o.w,height,o.d),g=new T.EdgesGeometry(box),mat=new T.LineBasicMaterial({color:colors[o.kind]??0xd68cff,depthTest:false,transparent:true,opacity:.9});box.dispose();const lines=new T.LineSegments(g,mat);lines.position.set(o.x,height/2+.22,o.z);lines.renderOrder=100;collisionOverlay.add(lines);}
+ root.updateMatrixWorld(true);
+ // The debug surfaces use the same local geometry and world transform as each solid model.
+ root.traverse(object=>{const kind=object.userData.collisionKind;if(!kind)return;
+ object.traverse(mesh=>{if(!mesh.isMesh||!mesh.visible)return;
+  const g=new T.EdgesGeometry(mesh.geometry,28),mat=new T.LineBasicMaterial({color:colors[kind]??0xd68cff,depthTest:true,transparent:true,opacity:.95});
+  const lines=new T.LineSegments(g,mat);lines.matrixAutoUpdate=false;lines.matrix.copy(mesh.matrixWorld);lines.renderOrder=100;collisionOverlay.add(lines);
+ });
+ });
  collisionOverlay.visible=showCollision;scene.add(collisionOverlay);
 }
 const collisionButton=document.querySelector('#collision');collisionButton.onclick=()=>{showCollision=!showCollision;collisionOverlay.visible=showCollision;collisionButton.setAttribute('aria-pressed',String(showCollision));collisionButton.classList.toggle('active',showCollision);collisionButton.textContent=showCollision?'충돌 영역 숨기기':'충돌 영역 보기';document.querySelector('#collision-note').hidden=!showCollision;render();};
