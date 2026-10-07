@@ -20,6 +20,11 @@ export function createRoadShapeBlock(seed=2207,index=0){
  function box(parent,x,y,z,w,h,d,mat,kind='ground'){const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),mat);mesh.position.set(x,y,z);mesh.castShadow=mesh.receiveShadow=true;mesh.userData={ownedGeometry:true,collisionKind:kind};parent.add(mesh);return mesh;}
  surface(root,72,72,0,0,0,m.walk);const bend=index===1||index===2,start=bend?14:8.5,armLength=36-start;let debrisCount=0;
  if(!bend)surface(root,17,17,0,0,.025,m.road);
+ // Straight roads use one marking sequence through the central join.
+ if(index===0){
+  for(const side of [-1,1]){box(root,side*6,.10,0,5,.20,17,m.walk);surface(root,5,17,side*6,0,.205,m.walk);for(let z=-8.4;z<8.5;z+=1.2)box(root,side*3.55,.115,z,.18,.18,1.16,m.walk);}
+  for(let z=-34;z<=34;z+=6){const stripe=box(root,0,.039,z,.12,.008,2,m.paint);stripe.userData.straightRoadPaint=true;}
+ }
  const grassPositions=[],grassUV=[];
  if(index===3||index===4){
   const paint=(x,z,w,d)=>{const o=box(root,x,.038,z,w,.008,d,m.paint);o.userData.junctionPaint=true;};
@@ -54,7 +59,7 @@ export function createRoadShapeBlock(seed=2207,index=0){
 
   }
   for(const side of [-1,1])for(let j=0;j<2;j++){const variant=10+Math.floor(r()*10),data=houseVariants[variant],h=createBrickHouse(variant),scale=9.86/data.width;h.scale.setScalar(scale);h.rotation.y=-side*Math.PI/2;h.position.set(side*(8.64+Math.max(...houses.filter(h=>h.port===port&&!h.back&&Math.sign(h.x)===side).map(h=>h.depth))+data.depth*scale/2),.205,start+5+j*10);h.userData.collisionKind='building';arm.add(h);houses.push({variant,x:h.position.x,z:h.position.z,width:9.86,depth:data.depth*scale,port,back:true});}
-  for(let z=start+2;z<36;z+=6)box(arm,0,.03,z,.1,.006,2,m.paint);
+  if(index!==0)for(let z=start+2;z<36;z+=6)box(arm,0,.039,z,.1,.008,2,m.paint);
   for(let j=0;j<4;j++){const pool=fleet.filter(v=>v.length<=4.7),d=pool[Math.floor(r()*pool.length)],car=createFleetVehicle(d);car.rotation.set((r()-.5)*.1,(r()-.5)*1.2,r()<.35?1.45:.08*(r()-.5));car.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(car);car.position.set([-2.2,2.2,0,2.6][j],.03-bounds.min.y,start+3+j*(armLength-6)/3);mossMaterial(car.material,.72);car.userData={...car.userData,ownedMaterial:true,collisionKind:'car'};arm.add(car);cars.push({id:d.id});}
   for(let j=0;j<2;j++){const ride=createRide(rideFleet[Math.floor(r()*rideFleet.length)]);ride.rotation.set(0,r()*6.28,1.4);ride.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(ride);ride.position.set((j?1:-1)*5,.21-bounds.min.y,start+7+j*9);mossMaterial(ride.material,.65);ride.userData={ownedGeometry:true,ownedMaterial:true};arm.add(ride);}
   addNYCStreetProps(arm,{junction:true,minZ:start,maxZ:36});
