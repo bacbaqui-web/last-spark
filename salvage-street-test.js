@@ -48,4 +48,4 @@ function walkStep(dt){if(!walking)return;const forward=Number(walkKeys.has('KeyW
  }
  const targetY=walkFoot+1.675;camera.position.y=T.MathUtils.lerp(camera.position.y,targetY,Math.min(1,dt*12));
 }
-let lastFrame=0;function animate(now){requestAnimationFrame(animate);if(document.hidden||now-lastFrame<33.3)return;const dt=Math.min(.05,(now-lastFrame)*.001);lastFrame=now;walkStep(dt);vegetationUpdate?.(now*.001,camera,walking);root?.userData.updateLife?.(now*.001,walking?camera:null);render();}requestAnimationFrame(animate);
+let lastFrame=0;function animate(now){requestAnimationFrame(animate);if(document.hidden||now-lastFrame<33.3)return;const dt=Math.min(.05,(now-lastFrame)*.001);lastFrame=now;walkStep(dt);vegetationUpdate?.(now*.001,camera,walking);root?.userData.updateLife?.(now*.001,walking?camera:null);root?.userData.updateImpactFire?.(now*.001);render();}requestAnimationFrame(animate);
