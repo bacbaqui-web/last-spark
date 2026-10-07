@@ -14,10 +14,10 @@ export const houseVariants=[
 ];
 const cache=new Map();let materials;
 function random(seed){return ()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
-function mats(){if(materials)return materials;const brick=new T.MeshStandardMaterial({color:0xffffff,roughness:1,vertexColors:true}),detail=new T.MeshStandardMaterial({color:0xffffff,roughness:1,side:T.DoubleSide,vertexColors:true});if(typeof document!=='undefined'){const loader=new T.TextureLoader();brick.map=loader.load(new URL('./textures/houses/red-brick.jpg',document.baseURI).href);brick.map.wrapS=brick.map.wrapT=T.RepeatWrapping;brick.map.colorSpace=T.SRGBColorSpace;brick.map.anisotropy=4;detail.map=loader.load(new URL('./textures/houses/ruined-details.jpg',document.baseURI).href);detail.map.colorSpace=T.SRGBColorSpace;detail.map.anisotropy=4;}const signMaterial=new T.MeshStandardMaterial({color:0xffffff,roughness:1,vertexColors:true});if(typeof document!=='undefined'){const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;const ctx=canvas.getContext('2d');['GROCERY','LAUNDRY','DINER','BOOKS'].forEach((word,i)=>{ctx.fillStyle=['#343e32','#283b41','#5a3330','#46342c'][i];ctx.fillRect(0,i*64,1024,64);ctx.strokeStyle='#b9a98d';ctx.strokeRect(10,i*64+6,1004,52);ctx.fillStyle='#bbae92';ctx.font='bold 45px Georgia';ctx.textAlign='center';ctx.fillText(word,512,i*64+49);for(let j=0;j<140;j++){ctx.fillStyle='rgba(20,17,15,.24)';ctx.fillRect((j*137+i*73)%1024,i*64+(j*31)%64,3+(j%8),2);}});signMaterial.map=new T.CanvasTexture(canvas);signMaterial.map.colorSpace=T.SRGBColorSpace;}materials=[brick,detail,new T.MeshStandardMaterial({color:0x827d70,roughness:1,vertexColors:true}),new T.MeshStandardMaterial({color:0x28282a,roughness:1,vertexColors:true}),new T.MeshStandardMaterial({color:0x514439,roughness:1,vertexColors:true}),signMaterial];return materials;}
+function mats(){if(materials)return materials;const brick=new T.MeshStandardMaterial({color:0xffffff,roughness:1,vertexColors:true}),detail=new T.MeshStandardMaterial({color:0xffffff,roughness:1,side:T.DoubleSide,vertexColors:true});if(typeof document!=='undefined'){const loader=new T.TextureLoader();brick.map=loader.load(new URL('./textures/houses/red-brick-weathered.jpg',document.baseURI).href);brick.map.wrapS=brick.map.wrapT=T.RepeatWrapping;brick.map.colorSpace=T.SRGBColorSpace;brick.map.anisotropy=4;detail.map=loader.load(new URL('./textures/houses/ruined-details.jpg',document.baseURI).href);detail.map.colorSpace=T.SRGBColorSpace;detail.map.anisotropy=4;}const signMaterial=new T.MeshStandardMaterial({color:0xffffff,roughness:1,vertexColors:true});if(typeof document!=='undefined'){const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;const ctx=canvas.getContext('2d');['GROCERY','LAUNDRY','DINER','BOOKS'].forEach((word,i)=>{ctx.fillStyle=['#343e32','#283b41','#5a3330','#46342c'][i];ctx.fillRect(0,i*64,1024,64);ctx.strokeStyle='#b9a98d';ctx.strokeRect(10,i*64+6,1004,52);ctx.fillStyle='#bbae92';ctx.font='bold 45px Georgia';ctx.textAlign='center';ctx.fillText(word,512,i*64+49);for(let j=0;j<140;j++){ctx.fillStyle='rgba(20,17,15,.24)';ctx.fillRect((j*137+i*73)%1024,i*64+(j*31)%64,3+(j%8),2);}});signMaterial.map=new T.CanvasTexture(canvas);signMaterial.map.colorSpace=T.SRGBColorSpace;}const plaster=new T.MeshStandardMaterial({color:0xffffff,roughness:1,vertexColors:true});if(typeof document!=='undefined'){plaster.map=new T.TextureLoader().load(new URL('./textures/houses/aged-white-plaster.jpg',document.baseURI).href);plaster.map.wrapS=plaster.map.wrapT=T.RepeatWrapping;plaster.map.colorSpace=T.SRGBColorSpace;plaster.map.anisotropy=4;}materials=[brick,detail,new T.MeshStandardMaterial({color:0x827d70,roughness:1,vertexColors:true}),new T.MeshStandardMaterial({color:0x28282a,roughness:1,vertexColors:true}),new T.MeshStandardMaterial({color:0x514439,roughness:1,vertexColors:true}),signMaterial,plaster];return materials;}
 class Parts{
  constructor(){this.p=[];this.uv=[];this.c=[];this.faces=[];this.group=0;this.active=null;}
- face(points,uv,tint=[1,1,1]){this.faces.push({group:this.active,verts:points.map((p,i)=>({p,uv:uv[i],c:tint}))});for(const k of [0,1,2,0,2,3]){this.p.push(...points[k]);this.uv.push(...uv[k]);this.c.push(...tint);}}
+ face(points,uv,tint=[1,1,1]){if(this.worldUV){const n=new T.Vector3(...points[1]).sub(new T.Vector3(...points[0])).cross(new T.Vector3(...points[2]).sub(new T.Vector3(...points[0])));const axis=Math.abs(n.x)>Math.abs(n.y)&&Math.abs(n.x)>Math.abs(n.z)?0:Math.abs(n.y)>Math.abs(n.z)?1:2;uv=points.map(p=>axis===0?[p[2]/2.2,p[1]/2.2]:axis===1?[p[0]/2.2,p[2]/2.2]:[p[0]/2.2,p[1]/2.2]);}this.faces.push({group:this.active,verts:points.map((p,i)=>({p,uv:uv[i],c:tint}))});for(const k of [0,1,2,0,2,3]){this.p.push(...points[k]);this.uv.push(...uv[k]);this.c.push(...tint);}}
  box(x,y,z,w,h,d,tint=[1,1,1],rotation=0){this.active=++this.group;const points=[[-w/2,-h/2,-d/2],[w/2,-h/2,-d/2],[w/2,h/2,-d/2],[-w/2,h/2,-d/2],[-w/2,-h/2,d/2],[w/2,-h/2,d/2],[w/2,h/2,d/2],[-w/2,h/2,d/2]].map(([a,b,c])=>[x+a*Math.cos(rotation)+c*Math.sin(rotation),y+b,z-a*Math.sin(rotation)+c*Math.cos(rotation)]);for(const [face,u,v] of [[[4,5,6,7],w,h],[[1,0,3,2],w,h],[[5,1,2,6],d,h],[[0,4,7,3],d,h],[[7,6,2,3],w,d],[[0,1,5,4],w,d]])this.face(face.map(k=>points[k]),[[0,0],[u/2.2,0],[u/2.2,v/2.2],[0,v/2.2]],tint);this.active=null;}
  wedge(x,outline,thickness,tint=[1,1,1]){this.active=++this.group;const a=outline.map(([y,z])=>[x-thickness/2,y,z]),b=outline.map(([y,z])=>[x+thickness/2,y,z]);const signed=outline.reduce((n,p,i)=>n+p[0]*outline[(i+1)%3][1]-p[1]*outline[(i+1)%3][0],0);if(signed<0){a.reverse();b.reverse();}const tri=(points)=>{const uv=points.map(p=>[p[2]/2.2,p[1]/2.2]);this.faces.push({group:this.active,verts:points.map((p,i)=>({p,uv:uv[i],c:tint}))});for(let i=0;i<3;i++){this.p.push(...points[i]);this.uv.push(...uv[i]);this.c.push(...tint);}};tri([a[2],a[1],a[0]]);tri(b);for(let i=0;i<3;i++){const j=(i+1)%3;this.face([a[i],a[j],b[j],b[i]],[[0,0],[1,0],[1,.14],[0,.14]],tint);}this.active=null;}
  decal(x,y,z,w,h,tile,tint=[1,1,1]){const col=tile%3,row=Math.floor(tile/3),pad=.004,u=col/3,v=1-(row+1)/2;this.face([[x-w/2,y-h/2,z],[x+w/2,y-h/2,z],[x+w/2,y+h/2,z],[x-w/2,y+h/2,z]],[[u+pad,v+pad],[u+1/3-pad,v+pad],[u+1/3-pad,v+.5-pad],[u+pad,v+.5-pad]],tint);}
@@ -34,7 +34,7 @@ function clipSolid(polys,normal,limit,cap,dark=false){const out=[],edges=[],dot=
  return out;
 }
 function collapseCut(d,masonry=false){const story=3.2,w=d.width,count=masonry?Math.ceil(w/.22):24,zSlope=masonry?0:.075;const height=x=>{const t=(x/w+.5)*(d.columns-1),i=Math.min(d.columns-2,Math.max(0,Math.floor(t))),f=Math.max(0,Math.min(1,t-i)),base=(d.damage[i]*(1-f)+d.damage[i+1]*f)*story+.78;return base+Math.sin((x+w)*5.7+d.seed)*.12+Math.sin(x*13.1+d.seed)*.065;};const bands=[];for(let j=0;j<count;j++){const left=-w/2+w*j/count,right=-w/2+w*(j+1)/count,a=masonry?Math.floor((height((left+right)/2)+Math.sin(j*7.3+d.seed)*.16)/.12)*.12:height(left)-.12,b=height(right)-.12,slope=masonry?0:(b-a)/(right-left);bands.push({left:left-(j===0?1:0),right:right+(j===count-1?1:0),slope,intercept:a-slope*left});}return {bands,zSlope};}
-function build(index){const d=houseVariants[index],r=random(d.seed),parts=Array.from({length:6},()=>new Parts()),[brick,detail,stone,iron,wood,sign]=parts,w=d.width,depth=d.depth,cw=w/d.columns,story=3.2,front=depth/2,shade=.9+(index%3)*.04;
+function build(index){const d=houseVariants[index],r=random(d.seed),parts=Array.from({length:7},()=>new Parts()),[brick,detail,stone,iron,wood,sign,plaster]=parts,w=d.width,depth=d.depth,cw=w/d.columns,story=3.2,front=depth/2,shade=.9+(index%3)*.04;
  stone.box(0,.12,0,w+.5,.24,depth+.5);
  if(d.ruin){
   const height=index===8?1.7:1.05;
@@ -54,30 +54,31 @@ function build(index){const d=houseVariants[index],r=random(d.seed),parts=Array.
  }
  if(height>0){const cap=.24+height*story;const broken=d.damage[c]<d.floors,roofDepth=d.ruin?depth*.25:broken?depth*.42:depth*.94;iron.box(x,cap+.05,-depth/2+roofDepth/2+.2,cw-.06,.14,roofDepth);if(!broken){brick.box(x,cap+.27,front,cw,.38,.34,[shade,shade,shade]);stone.box(x,cap+.49,front+.03,cw+.08,.11,.46);}}
  }
+ plaster.worldUV=true;
  // Window bays become rooms, connected through doorways to a rear corridor.
  const corridorZ=-depth*.20,roomDepth=front-.18-corridorZ,roomCut=collapseCut(d,true);
  for(let f=0;f<d.floors;f++){
   const floorY=.24+f*story,wallH=story-.16,wallY=floorY+.16+wallH/2;
   for(let c=1;c<d.columns;c++){
    const x=-w/2+cw*c,cut=roomCut,band=cut.bands.find(b=>x>=b.left&&x<=b.right),exposed=floorY+wallH>=band.intercept-story*.9,count=Math.ceil(roomDepth/.22);
-   if(!exposed){brick.box(x,wallY,corridorZ+roomDepth/2,.18,wallH,roomDepth,[.82,.78,.73]);continue;}
+   if(!exposed){plaster.box(x,wallY,corridorZ+roomDepth/2,.18,wallH,roomDepth,[.88,.88,.86]);continue;}
    // Brick-sized columns retain the same jagged cap and solid closure as exterior walls.
    for(let k=0;k<count;k++){
     const t=(k+.5)/count,zz=corridorZ+t*roomDepth,dip=Math.max(0,1-Math.abs(t-(.36+(c%2)*.22))/.28),h=Math.max(.24,Math.floor((wallH-.12-dip*(.65+(c%3)*.25)+Math.sin(k*5.3+d.seed)*.10)/.12)*.12);
-    brick.box(x,floorY+.16+h/2,zz,.18,h,roomDepth/count,[.82,.78,.73]);
+    plaster.box(x,floorY+.16+h/2,zz,.18,h,roomDepth/count,[.88,.88,.86]);
    }
   }
   for(let c=0;c<d.columns;c++){
    const x=-w/2+cw*(c+.5),doorW=.82,doorH=2.15,pier=(cw-doorW)/2;
    for(const side of [-1,1]){
     const center=x+side*(doorW+pier)/2,n=Math.ceil(pier/.22),safe=roomCut.bands.filter(b=>b.right>=center-pier/2&&b.left<=center+pier/2).every(b=>floorY+wallH<b.intercept-story*.9);
-    if(safe){brick.box(center,wallY,corridorZ,pier,wallH,.18,[.82,.78,.73]);continue;}
+    if(safe){plaster.box(center,wallY,corridorZ,pier,wallH,.18,[.88,.88,.86]);continue;}
     for(let k=0;k<n;k++){
      const xx=center-pier/2+(k+.5)*pier/n,band=roomCut.bands.find(b=>xx>=b.left&&xx<=b.right),exposed=floorY+wallH>=band.intercept-story*.9,h=exposed?Math.max(.24,Math.floor((wallH-.15-Math.max(0,Math.sin((k+.5)/n*Math.PI))*.55+Math.sin(k*4.8+d.seed+c)*.12)/.12)*.12):wallH;
-     brick.box(xx,floorY+.16+h/2,corridorZ,pier/n,h,.18,[.82,.78,.73]);
+     plaster.box(xx,floorY+.16+h/2,corridorZ,pier/n,h,.18,[.88,.88,.86]);
     }
    }
-   brick.box(x,floorY+.16+doorH+(wallH-doorH)/2,corridorZ,doorW,wallH-doorH,.18,[.82,.78,.73]);
+   plaster.box(x,floorY+.16+doorH+(wallH-doorH)/2,corridorZ,doorW,wallH-doorH,.18,[.88,.88,.86]);
    for(const side of [-1,1])wood.box(x+side*(doorW/2+.035),floorY+.16+doorH/2,corridorZ+.085,.055,doorH,.06,[.9,.85,.8]);
    wood.box(x,floorY+.16+doorH,corridorZ+.085,doorW+.10,.07,.06,[.9,.85,.8]);
   }
@@ -89,7 +90,7 @@ for(let k=0;k<10;k++){const zz=z-edge/2+(k+.5)*edge/10,hLow=Math.max(.12,Math.fl
  const debris=d.ruin?85:d.sideHole?40:22;for(let i=0;i<debris;i++){const x=(r()-.5)*(w+2.2),z=(r()-.5)*(depth+2.2),h=.14+r()*.35;const material=i%4===0?stone:brick;material.box(x,.24+h/2,z,.25+r()*.48,h,.24+r()*.52,[.7+r()*.2,.7,.68],r()*Math.PI);}
  if(d.escape){const x=-w/2+cw*.5;for(let f=1;f<d.damage[0];f++){const y=.24+f*story+.56;iron.box(x,y,front+.65,1.8,.10,1.2);for(const sign of [-1,1]){iron.box(x+sign*.87,y+.46,front+1.19,.05,.90,.05);iron.box(x+sign*.87,y+.92,front+.65,.05,.05,1.2);}iron.box(x,y+.92,front+1.19,1.8,.05,.05);for(let k=0;k<6;k++)iron.box(x-.75+k*.30,y+.46,front+1.19,.035,.9,.035);for(const sign of [-1,1])iron.box(x+sign*.34,y-1.25,front+.80,.06,2.7,.07);for(let k=0;k<9;k++)iron.box(x,y-2.4+k*.29,front+.80,.75,.05,.08);}}
  if(d.shop){iron.box(0,3.15,front+.23,w*.84,.40,.10);const row=['GROCERY','LAUNDRY','DINER','BOOKS'].indexOf(d.shop),v=1-(row+1)/4;sign.face([[-w*.41,2.98,front+.29],[w*.41,2.98,front+.29],[w*.41,3.32,front+.29],[-w*.41,3.32,front+.29]],[[0,v],[1,v],[1,v+.25],[0,v+.25]]);}
- if(d.damage.some(n=>n<d.floors)){const cut=collapseCut(d);parts.forEach(p=>p.cut=cut);brick.cut=collapseCut(d,true);}
+ if(d.damage.some(n=>n<d.floors)){const cut=collapseCut(d);parts.forEach(p=>p.cut=cut);brick.cut=collapseCut(d,true);plaster.cut=brick.cut;}
  return parts.map(p=>p.geometry());
 }
 export function createBrickHouse(index=0){index=((index%10)+10)%10;if(!cache.has(index))cache.set(index,build(index));const root=new T.Group(),materials=mats();cache.get(index).forEach((g,i)=>{if(!g.attributes.position.count)return;const mesh=new T.Mesh(g,materials[i]);mesh.castShadow=mesh.receiveShadow=true;root.add(mesh);});root.name=houseVariants[index].name;root.userData={variant:index,triangles:root.children.reduce((n,m)=>n+m.geometry.attributes.position.count/3,0)};return root;}

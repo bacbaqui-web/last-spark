@@ -1,0 +1,13 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "id": "interior",
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square game albedo texture for abandoned interior walls. Flat orthographic front view of an old white painted plaster wall, creamy chalk white remains dominant, peeling paint islands, fine hairline cracks, dusty beige gray water stains and faint damp mildew mottling, small areas exposing gray plaster underneath. Quiet large-scale weathering with restrained contrast, no brick pattern. Even diffuse illumination without directional shadows, no perspective, no objects, no floor, no borders, no text, seamless tileable edges. Detailed realistic surface, not overly busy."
+    },
+    {
+      "id": "exterior",
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square game albedo texture for ruined New York red brick exterior. Flat orthographic close-up, 12 bricks across and about 20 horizontal courses, staggered running-bond reddish brown clay bricks with recessed dirty gray mortar. Aged abandoned city surface with broad soot and dust patches, dark rain streaks, faded gritty faces, mortar stains, small chipped edges, sparse desaturated olive mildew moss in damp joints. Muted brick red still legible, visibly neglected but not uniformly black. Seamless tileable edges. Even diffuse neutral light without cast shadows, no perspective, no plants in front, no windows, no text, no border."
+    }
+  ]
+}
