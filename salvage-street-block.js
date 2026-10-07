@@ -20,7 +20,7 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
  const surface=(w,d,x,y,z,material,scale)=>{const mesh=new T.Mesh(plane(w,d,scale),material);mesh.position.set(x,y,z);mesh.receiveShadow=true;root.add(mesh);mesh.userData.ownedGeometry=true;};
  surface(72,72,0,0,0,m.soil,4);surface(7,72,0,.025,0,m.asphalt,4);for(const side of [-1,1])surface(5,72,side*6,.205,0,m.sidewalk,3.2);
  function box(x,y,z,w,h,d,mat,rotation=0){const mesh=new T.Mesh(boxGeo,mat);mesh.position.set(x,y,z);mesh.scale.set(w,h,d);mesh.rotation.y=rotation;mesh.receiveShadow=true;root.add(mesh);return mesh;}
- for(const side of [-1,1])for(let z=-35.4;z<36;z+=1.2)box(side*3.55,.115,z,.18,.18,1.16,m.curb);
+ for(const side of [-1,1])for(let z=-35.4;z<36;z+=1.2)box(side*3.55,.115,z,.18,.18,1.16,m.curb).userData.collisionKind='ground';
  for(const side of [-1,1]){box(side*6,.10,0,5,.20,72,m.curb);box(side*3.25,.03,0,.12,.008,72,m.paint);}
  for(let z=-34;z<36;z+=6){if(r()<.2)continue;box((r()-.5)*.035,.027,z,.10,.006,2.2+r()*.3,m.paint);}
  // Small alleys separate the buildings; facades follow the narrower single-lane road.
@@ -83,7 +83,7 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
   for(let n=0;n<85;n++){const xx=x+(r()-.5)*3.6,zz=z+(r()-.5)*4,size=.25+r()*.65;debris.push({x:xx,y:.13+size*.28+Math.max(0,1-Math.hypot(xx-x,zz-z)/2)*.55,z:zz,sx:size*(1+r()),sy:size*.6,sz:size,rx:r()*.7,ry:r()*Math.PI,rz:r()*.6,stone:r()<.55});}
  }
  for(const stone of [false,true]){
-  const items=debris.filter(d=>d.stone===stone),mesh=new T.InstancedMesh(stone?rockGeo:boxGeo,stone?m.stone:m.brick,items.length),o=new T.Object3D();items.forEach((d,i)=>{o.position.set(d.x,d.y,d.z);o.scale.set(d.sx,d.sy,d.sz);o.rotation.set(d.rx,d.ry,d.rz);o.updateMatrix();mesh.setMatrixAt(i,o.matrix);});mesh.castShadow=mesh.receiveShadow=true;mesh.instanceMatrix.needsUpdate=true;root.add(mesh);mesh.userData.ownedInstances=true;
+  const items=debris.filter(d=>d.stone===stone),mesh=new T.InstancedMesh(stone?rockGeo:boxGeo,stone?m.stone:m.brick,items.length),o=new T.Object3D();items.forEach((d,i)=>{o.position.set(d.x,d.y,d.z);o.scale.set(d.sx,d.sy,d.sz);o.rotation.set(d.rx,d.ry,d.rz);o.updateMatrix();mesh.setMatrixAt(i,o.matrix);});mesh.castShadow=mesh.receiveShadow=true;mesh.instanceMatrix.needsUpdate=true;root.add(mesh);mesh.userData.ownedInstances=true;mesh.userData.collisionKind='rubble';
  }
  root.userData={seed,layout:layoutIndex,size:72,houses,cars,smallRides,trees:treeSlots,debris:debris.length,obstacles,blockages,connections:[{x:0,z:-36,width:7},{x:0,z:36,width:7}]};addCityBackdrop(root,m.brick);addGroundDamage(root);addStreetOvergrowth(root);addStreetLife(root);return root;
 }
