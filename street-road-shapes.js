@@ -18,7 +18,7 @@ export function createRoadShapeBlock(seed=2207,index=0){
  const shape=roadShapes[index%roadShapes.length],root=new T.Group(),m=mats(),houses=[],trees=[],cars=[],r=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;},originalSeed=seed;
  function surface(parent,w,d,x,z,y,mat){const g=new T.PlaneGeometry(w,d);g.rotateX(-Math.PI/2);const uv=g.attributes.uv,p=g.attributes.position,world=new T.Vector3();parent.updateWorldMatrix(true,false);for(let i=0;i<uv.count;i++){world.fromBufferAttribute(p,i).add(new T.Vector3(x,y,z)).applyMatrix4(parent.matrixWorld);uv.setXY(i,world.x/3,world.z/3);}const mesh=new T.Mesh(g,mat);mesh.position.set(x,y,z);mesh.receiveShadow=true;mesh.userData={ownedGeometry:true,collisionKind:'ground'};parent.add(mesh);return mesh;}
  function box(parent,x,y,z,w,h,d,mat,kind='ground'){const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),mat);mesh.position.set(x,y,z);mesh.castShadow=mesh.receiveShadow=true;mesh.userData={ownedGeometry:true,collisionKind:kind};parent.add(mesh);return mesh;}
- surface(root,72,72,0,0,0,m.soil);const bend=index===1||index===2,start=bend?14:8.5,armLength=36-start;let debrisCount=0;
+ surface(root,72,72,0,0,0,m.walk);const bend=index===1||index===2,start=bend?14:8.5,armLength=36-start;let debrisCount=0;
  if(!bend)surface(root,17,17,0,0,.025,m.road);
  const grassPositions=[],grassUV=[];
  if(index===3||index===4){
@@ -67,12 +67,15 @@ export function createRoadShapeBlock(seed=2207,index=0){
  if(bend){
   const sign=shape.ports.includes(3)?1:-1;
   function band(inner,outer,y,mat,from=0,to=Math.PI/2){const pos=[],uv=[];for(let i=0;i<48;i++){const a=from+i/48*(to-from),b=from+(i+1)/48*(to-from),points=[[inner,a],[outer,a],[outer,b],[inner,b]].map(([radius,t])=>[sign*(14-radius*Math.cos(t)),y,14-radius*Math.sin(t)]);for(const k of (sign>0?[0,2,1,0,3,2]:[0,1,2,0,2,3])){pos.push(...points[k]);uv.push(points[k][0]/3,points[k][2]/3);}}const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.computeVertexNormals();const mesh=new T.Mesh(g,mat);mesh.receiveShadow=true;mesh.userData={ownedGeometry:true,collisionKind:'ground',curvedSurface:true};root.add(mesh);}
-  band(10.5,17.5,.025,m.road);band(5.5,10.5,.205,m.walk);band(17.5,22.5,.205,m.walk);
+  band(10.5,17.5,.025,m.road);band(0,10.5,.205,m.walk);band(17.5,23.3,.205,m.walk);
   for(let i=0;i<24;i++){const t=(i+.5)/24*Math.PI/2;for(const radius of [10.45,17.55]){const curb=box(root,sign*(14-radius*Math.cos(t)),.115,14-radius*Math.sin(t),.18,.18,radius*Math.PI/48,m.walk);curb.rotation.y=-sign*t;}}
   for(let i=0;i<7;i++){const a=i/7*Math.PI/2;band(13.95,14.05,.035,m.paint,a,a+.065);}
   for(let n=0;n<180;n++){const t=r()*Math.PI/2,rad=(n%2?19:8)+r()*2;for(let k=0;k<12;k++){const x=sign*(14-rad*Math.cos(t))+(r()-.5)*.6,z=14-rad*Math.sin(t)+(r()-.5)*.6,h=.5+r()*.9;grassPositions.push(x-.04,.21,z,x+.04,.21,z,x+.12,.21+h,z+.1);grassUV.push(0,0,1,0,.5,1);}}
 
-  for(const degrees of [10,27.5,45,62.5,80]){const t=degrees*Math.PI/180,variant=Math.floor(r()*20),data=houseVariants[variant],corner=createBrickHouse(variant),scale=8.82/data.width;corner.scale.setScalar(scale);corner.rotation.y=sign*(Math.PI/2-t);corner.position.set(sign*(14-28.5*Math.cos(t)),.205,14-28.5*Math.sin(t));corner.traverse(o=>{if(o.material){o.material=mossMaterial(o.material.clone(),.78);o.userData.ownedMaterials=[o.material];}});corner.userData.collisionKind='building';root.add(corner);houses.push({});}
+  for(const degrees of [10,27.5,45,62.5,80]){const t=degrees*Math.PI/180,variant=Math.floor(r()*20),data=houseVariants[variant],corner=createBrickHouse(variant),scale=8.82/data.width;corner.scale.setScalar(scale);corner.rotation.y=sign*(Math.PI/2-t);corner.position.set(sign*(14-(22.48+data.depth*scale/2)*Math.cos(t)),.205,14-(22.48+data.depth*scale/2)*Math.sin(t));corner.traverse(o=>{if(o.material){o.material=mossMaterial(o.material.clone(),.78);o.userData.ownedMaterials=[o.material];}});corner.userData.collisionKind='building';root.add(corner);houses.push({});}
+  const curveDebris=new T.InstancedMesh(new T.BoxGeometry(1,1,1),m.brick,260),fragment=new T.Object3D();
+  for(let i=0;i<260;i++){const t=r()*Math.PI/2,rad=i%4===0?8+r()*1.8:20.2+r()*2.7,size=.16+r()*.48;fragment.position.set(sign*(14-rad*Math.cos(t)),.205+size*.3,14-rad*Math.sin(t));fragment.scale.set(size*1.5,size*.6,size);fragment.rotation.set(r()*.6,r()*6.28,r()*.6);fragment.updateMatrix();curveDebris.setMatrixAt(i,fragment.matrix);}
+  curveDebris.castShadow=curveDebris.receiveShadow=true;curveDebris.userData={ownedGeometry:true,ownedInstances:true,collisionKind:'rubble',curveDebris:true};root.add(curveDebris);debrisCount+=260;
   const inner=createBrickHouse(4);inner.rotation.y=-sign*Math.PI*.75;inner.position.set(sign*19,.205,19);inner.userData.collisionKind='building';root.add(inner);houses.push({});
 
  }
