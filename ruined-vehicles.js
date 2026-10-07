@@ -1,3 +1,4 @@
+import {weatherVehicleMaterial,vehicleSurfaceUV} from './vehicle-weathering.js';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 export const VEHICLE_PAINTS=[{name:'퇴색한 붉은색',color:0x984d43},{name:'청록색',color:0x497f79},{name:'회청색',color:0x56748e},{name:'황토색',color:0xb69b55},{name:'아이보리',color:0xbab7a3},{name:'올리브',color:0x687756},{name:'남색',color:0x3e5268},{name:'검회색',color:0x525654}];
@@ -16,10 +17,10 @@ export const VEHICLE_TYPES=[
  {id:'wreck-truck',name:'대형 화물트럭',length:7}
 ];
 const cache=new Map(),materialCache=new Map();
-function sharedMaterial(name,color){const key=name+color;if(!materialCache.has(key))materialCache.set(key,new T.MeshStandardMaterial({color,roughness:1,flatShading:true}));return materialCache.get(key);}
+function sharedMaterial(name,color){const key=name+color;if(!materialCache.has(key))materialCache.set(key,['body','rust','metal'].includes(name)?weatherVehicleMaterial(new T.MeshStandardMaterial({color,roughness:1,flatShading:true}),{paint:name==='body'}):new T.MeshStandardMaterial({color,roughness:1,flatShading:true}));return materialCache.get(key);}
 export function getRuinedVehicle(id,paint=0){const info=VEHICLE_TYPES.find(v=>v.id===id);if(!info?.style)return null;const key=id+':'+paint;if(cache.has(key))return cache.get(key);
  const colors={body:VEHICLE_PAINTS[paint%VEHICLE_PAINTS.length].color,glass:0x273a39,rubber:0x262923,rust:0x78513a,metal:0x8a8c7d,light:0xada47f,red:0x964b3e},materials=new Map(),groups=new Map();for(const [name,color]of Object.entries(colors))materials.set(name,sharedMaterial(name,color));
- function add(g,name='body',x=0,y=0,z=0){g.translate(x,y,z);const geo=g.index?g.toNonIndexed():g;if(g!==geo)g.dispose();if(!groups.has(name))groups.set(name,[]);groups.get(name).push(geo);}
+ function add(g,name='body',x=0,y=0,z=0){g.translate(x,y,z);const geo=g.index?g.toNonIndexed():g;if(g!==geo)g.dispose();if(['body','rust','metal'].includes(name))vehicleSurfaceUV(geo);if(!groups.has(name))groups.set(name,[]);groups.get(name).push(geo);}
  function box(w,h,d,x,y,z,name='body'){add(new T.BoxGeometry(w,h,d),name,x,y,z);}
  const {width:W,length:L,height:H,style}=info,tall=['van','ambulance','delivery','minibus'].includes(style),wheel=style==='suv'||style==='pickup'?.43:.35;
  // A shaped side silhouette creates a hood, cabin and roof, rather than one scaled body box.

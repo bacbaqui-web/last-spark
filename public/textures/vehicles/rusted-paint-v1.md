@@ -1,0 +1,2 @@
+Generated with the built-in GPT image generation tool for LAST SPARK.
+Prompt: Seamless square base-color texture, flat orthographic weathered automotive steel. Faded neutral cream paint, flaking chips exposing dark burnt orange/brown rust, corrosion islands, pitting, scratches and dusty grime. Roughly 45 percent rust. Uniform diffuse lighting, no cast shadows, no perspective, no lettering or watermark. Preserve existing car geometry; UV projection uses physical surface coordinates. Paint tint is applied only to pale paint, keeping rust brown.

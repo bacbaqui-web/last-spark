@@ -1,8 +1,10 @@
+import {weatherVehicleMaterial,vehicleSurfaceUV} from './vehicle-weathering.js';
 import * as T from 'three';
 export function createThreeSedan(){
  const root=new T.Group();root.name='ThreeJS_Vertex_Sedan';
  const mats={paint:new T.MeshStandardMaterial({color:0x548b83,roughness:.72,metalness:.18,flatShading:true}),glass:new T.MeshStandardMaterial({color:0x263e49,roughness:.22,metalness:.28,side:T.DoubleSide}),trim:new T.MeshStandardMaterial({color:0x25302f,roughness:.85}),rim:new T.MeshStandardMaterial({color:0xb9b9a5,roughness:.5,metalness:.65}),lamp:new T.MeshStandardMaterial({color:0xf3d8a0,roughness:.3}),red:new T.MeshStandardMaterial({color:0x9e4935}),rust:new T.MeshStandardMaterial({color:0x965f43,roughness:1})};
- function mesh(name,verts,faces,material){const positions=[];for(const face of faces)for(let i=1;i<face.length-1;i++)for(const j of[face[0],face[i],face[i+1]])positions.push(...verts[j]);const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.computeVertexNormals();const m=new T.Mesh(geo,material);m.name=name;m.castShadow=m.receiveShadow=true;root.add(m);return m;}
+ for(const name of ['paint','rim','rust'])weatherVehicleMaterial(mats[name],{paint:name==='paint'});
+ function mesh(name,verts,faces,material){const positions=[];for(const face of faces)for(let i=1;i<face.length-1;i++)for(const j of[face[0],face[i],face[i+1]])positions.push(...verts[j]);const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.computeVertexNormals();vehicleSurfaceUV(geo);const m=new T.Mesh(geo,material);m.name=name;m.castShadow=m.receiveShadow=true;root.add(m);return m;}
  function panel(name,points,material){return mesh(name,points,[points.map((_,i)=>i)],material);}
  function loft(name,rings,material){const verts=rings.flatMap(([z,w,bottom,top])=>[[-w,bottom,z],[w,bottom,z],[w,top,z],[-w,top,z]]),faces=[[3,2,1,0]];for(let i=0;i<rings.length-1;i++)for(let k=0;k<4;k++)faces.push([i*4+k,i*4+(k+1)%4,(i+1)*4+(k+1)%4,(i+1)*4+k]);const n=(rings.length-1)*4;faces.push([n,n+1,n+2,n+3]);return mesh(name,verts,faces,material);}
  // Side skins are triangulated polygons with true wheel-arch openings.
