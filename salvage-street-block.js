@@ -49,12 +49,25 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
   h.traverse(o=>{if(o.material){o.material=o.material.clone();mossMaterial(o.material,.65);o.userData.ownedMaterials=[o.material];}});
   h.userData.collisionKind='building';root.add(h);houses.push({variant:index,x:h.position.x,z,width,depth:d.depth*scale,row:2});cursor+=width+.32;rowIndex++;
  }}
- // The narrow front-row seams terminate at a solid rear wall instead of opening into a passage.
+ // Seal front-row seams with jagged masonry near the street as well as the rear wall.
+ const seamRandom=rng(seed^0x731b21),seamWalls=[],seamTransform=new T.Object3D();
  for(const side of [-1,1]){const front=houses.filter(h=>Math.sign(h.x)===side&&h.row!==2).sort((a,b)=>a.z-b.z);
   for(let i=0;i<front.length-1;i++){const left=front[i],right=front[i+1],z=(left.z+left.width/2+right.z-right.width/2)/2,rear=Math.max(Math.abs(left.x)+left.depth/2,Math.abs(right.x)+right.depth/2);
    const wall=box(side*(rear+.4),1.8,z,.3,3.6,1.2,m.brick);wall.userData.collisionKind='building';
+   // Overlap the facade edges so missing bricks in either house cannot reveal an empty slot.
+   for(let column=0;column<6;column++){
+    const height=2.15+seamRandom()*.85;
+    seamWalls.push({x:side*8.65,y:.205+height/2,z:z+(column-2.5)*.30,w:1.15,h:height,d:.32});
+   }
+   for(let n=0;n<26;n++){
+    const size=.16+seamRandom()*.3,x=side*(7.5+seamRandom()*1.3),zz=z+(seamRandom()-.5)*1.8;
+    debris.push({x,y:.22+size*.3+seamRandom()*.3,z:zz,sx:size*1.4,sy:size*.6,sz:size,rx:seamRandom()*.5,ry:seamRandom()*Math.PI,rz:seamRandom()*.5,stone:seamRandom()<.25});
+   }
   }
  }
+ const seamMesh=new T.InstancedMesh(boxGeo,m.brick,seamWalls.length);
+ seamWalls.forEach((p,i)=>{seamTransform.position.set(p.x,p.y,p.z);seamTransform.scale.set(p.w,p.h,p.d);seamTransform.rotation.set(0,0,0);seamTransform.updateMatrix();seamMesh.setMatrixAt(i,seamTransform.matrix);});
+ seamMesh.castShadow=seamMesh.receiveShadow=true;seamMesh.userData={collisionKind:'building',ownedInstances:true};root.add(seamMesh);root.userData.seamBlockers=seamWalls.length/6;
  // Trees are spread within planting strips; their crowns use the approved broad-canopy variants.
  for(const side of [-1,1])for(let j=0;j<layout.trees/2;j++){
   const z=-31+j*62/(layout.trees/2-1)+(r()-.5)*2,x=side*(4.25+r()*.25),variant=Math.floor(r()*10),tree=createStreetTree(variant,{lod:'far'});tree.scale.set(1.45,12.5/treeVariants[variant].height,1.45);const bark=tree.children[0];bark.material=mossMaterial(bark.material.clone(),.72);bark.userData.ownedMaterials=[bark.material];tree.position.set(x,.215,z);tree.rotation.y=r()*Math.PI*2;const broken=j===1||(j>2&&r()<.2);if(broken){const stump=new T.CylinderGeometry(.24,.34,1.6,10);stump.translate(0,.8,0);const pos=stump.attributes.position;for(let n=0;n<pos.count;n++)if(pos.getY(n)>1.5)pos.setY(n,pos.getY(n)+Math.sin(pos.getX(n)*31+pos.getZ(n)*23)*.12);stump.computeVertexNormals();bark.geometry=stump;bark.userData.ownedGeometry=true;tree.children[1].visible=false;const start=new T.Vector3(x,.46,z),end=new T.Vector3(side*(1.8+r()),.21,z+(r()-.5)*4),direction=end.clone().sub(start),log=new T.Mesh(new T.CylinderGeometry(.15,.38,direction.length(),10),bark.material);log.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),direction.clone().normalize());log.position.copy(start).lerp(end,.5);log.userData.ownedGeometry=true;log.castShadow=log.receiveShadow=true;log.userData.collisionKind='tree';root.add(log);tree.userData.broken=true;}bark.userData.collisionKind='tree';root.add(tree);treeSlots.push({x,z,variant,broken});const soil=new T.Mesh(soilGeo,m.soil);soil.position.set(x,.207,z);root.add(soil);obstacles.push({kind:'tree',x,z,w:.7,d:.7});
