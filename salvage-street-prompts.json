@@ -1,0 +1,13 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "id": "asphalt",
+      "prompt": "Photorealistic seamless square game ground albedo texture for an abandoned city asphalt roadway. Orthographic straight overhead, matte charcoal gray faded asphalt with fine aggregate pebbles, dusty muted patches, branching irregular cracks and slight crumbling at cracks, a few dry brown grit accumulations. Restrained contrast, realistic road wear. NO lane markings, NO curbs, NO vehicles, NO grass blades, NO puddles or shadows, NO text or borders. Flat neutral diffuse lighting, no perspective, seamless tileable edges."
+    },
+    {
+      "id": "sidewalk",
+      "prompt": "Photorealistic seamless square game ground albedo texture for a neglected New York sidewalk. Orthographic overhead square paving slab surface, four large concrete slabs across and four down, desaturated warm gray concrete, thin dirty expansion joints, small chipped corners, fine cracks, dark dirt and subtle olive damp stains in some joints, dusty foot worn texture. Low contrast. NO curb, NO road, NO objects, NO vegetation standing up, NO cast shadows, NO perspective, NO text or borders. Flat diffuse neutral light and seamless tileable edges."
+    }
+  ]
+}
