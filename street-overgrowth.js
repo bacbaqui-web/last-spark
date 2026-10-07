@@ -5,15 +5,16 @@ let grassLoaded=false;
 function grassMaterial(){if(!grassLoaded&&typeof document!=='undefined'){grassMat.map=new T.TextureLoader().load(new URL('./textures/street/grass-blade.jpg',document.baseURI).href);grassMat.map.colorSpace=T.SRGBColorSpace;grassLoaded=true;}return grassMat;}
 const grassMat=new T.MeshStandardMaterial({color:0xffffff,vertexColors:true,side:T.DoubleSide,roughness:1});
 function leaves(){if(leafMat)return leafMat;leafMat=new T.MeshStandardMaterial({color:0x87965b,vertexColors:true,side:T.DoubleSide,roughness:1,alphaTest:.48});if(typeof document!=='undefined'){leafMat.map=new T.TextureLoader().load(new URL('./textures/trees/street-leaves.png',document.baseURI).href);leafMat.map.colorSpace=T.SRGBColorSpace;}return leafMat;}
-export function addStreetOvergrowth(root){
+export function addStreetOvergrowth(root,options={}){
+ const minZ=options.minZ??-35.5,maxZ=options.maxZ??35.5,span=maxZ-minZ,randomZ=()=>minZ+r()*span;
  let seed=(root.userData.seed^0x91eb5387)>>>0;const r=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
  const sp=[],sc=[],gp=[],gc=[],gu=[],lp=[],lc=[],uv=[];let patches=0,vines=0;
  function tri(dst,colors,a,b,c,tint){dst.push(...a,...b,...c);if(dst===gp)gu.push(0,0,1,0,.5,1);for(let k=0;k<3;k++)colors.push(...tint);}
  function leaf(x,y,z,size,wall=false,normal=null){const angle=r()*Math.PI*2,s=Math.sin(angle),c=Math.cos(angle),tile=Math.floor(r()*4),u=(tile%2)*.5,v=Math.floor(tile/2)*.5,q=normal?new T.Quaternion().setFromUnitVectors(new T.Vector3(0,0,1),normal):null;const points=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b])=>{a*=size;b*=size;const aa=a*c-b*s,bb=a*s+b*c;if(q)return new T.Vector3(aa,bb,0).applyQuaternion(q).add(new T.Vector3(x,y,z)).toArray();return wall?[x,y+bb,z+aa]:[x+aa,y,z+bb];});const tint=.65+r()*.35;for(const i of [0,1,2,0,2,3]){lp.push(...points[i]);lc.push(tint*.93,tint,tint*.83);const [a,b]=[[0,0],[1,0],[1,1],[0,1]][i];uv.push(u+.012+a*.476,v+.012+b*.476);}}
  function grass(x,z,y=.21,strength=1){patches++;const h=(.60+r()*.85)*strength;for(let j=0;j<24;j++){const a=r()*Math.PI*2,xx=x+(r()-.5)*.7,zz=z+(r()-.5)*.7,w=.035+r()*.055,hh=h*(.4+r()*.6),lean=.12+r()*.2,tint=[.72+r()*.18,.8+r()*.18,.65+r()*.2];tri(gp,gc,[xx-Math.cos(a)*w,y,zz-Math.sin(a)*w],[xx+Math.cos(a)*w,y,zz+Math.sin(a)*w],[xx+Math.sin(a)*lean,y+hh,zz+Math.cos(a)*lean],tint);}}
  for(const side of [-1,1]){
-  for(let i=0;i<480;i++){const x=side*(3.85+r()*4.4),z=(r()-.5)*71;grass(x,z,.21);if(r()<.55)for(let k=0;k<5;k++)leaf(x+(r()-.5)*.55,.218,z+(r()-.5)*.6,.11+r()*.1);}
-  for(let i=0;i<100;i++)grass(side*(2.75+r()*.6),(r()-.5)*70,.034,.55);
+  for(let i=0;i<(options.grassPatches??480);i++){const x=side*(3.85+r()*4.4),z=randomZ();grass(x,z,.21);if(r()<.55)for(let k=0;k<5;k++)leaf(x+(r()-.5)*.55,.218,z+(r()-.5)*.6,.11+r()*.1);}
+  for(let i=0;i<(options.roadPatches??100);i++)grass(side*(2.75+r()*.6),randomZ(),.034,.55);
  }
  // Slender decorative tendrils: more paths, smaller spaced leaves and visible stems.
  function stem(a,b){const dir=b.clone().sub(a);if(dir.length()>.6)return;dir.normalize();let side=dir.clone().cross(new T.Vector3(1,0,0));if(side.length()<.1)side=dir.clone().cross(new T.Vector3(0,1,0));side.normalize().multiplyScalar(.009);const p=a.clone().sub(side),q=a.clone().add(side),u=b.clone().add(side),v=b.clone().sub(side);tri(sp,sc,p.toArray(),q.toArray(),u.toArray(),[.20,.25,.10]);tri(sp,sc,p.toArray(),u.toArray(),v.toArray(),[.20,.25,.10]);}
