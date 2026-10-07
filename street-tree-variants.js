@@ -25,8 +25,11 @@ class Surface{
 }
 function build(index,lod){const d=treeVariants[index],random=rng(d.seed),wood=new Surface(),green=new Surface(),rx=d.width/2,ry=(d.height-d.base)/2,cy=d.base+ry,lean=d.lean||0,bias=d.bias||0,centers=[];
  const trunk=y=>new T.Vector3(lean*(y/d.height)**1.4+Math.sin(y*1.5)*.035,y,Math.sin(y*.9)*.05),thick=d.young?.105:.19+(d.width-4)*.017;
- const knots=[0,.35,d.base*.57,d.base,d.base+ry*.65];for(let i=0;i<knots.length-1;i++)wood.tube(trunk(knots[i]),trunk(knots[i+1]),thick*(1-knots[i]/d.height*.8),thick*(1-knots[i+1]/d.height*.8));
- for(let i=0;i<5;i++){const a=i/5*Math.PI*2;wood.tube(new T.Vector3(Math.cos(a)*thick*2.5,.04,Math.sin(a)*thick*2.5),trunk(.45),thick*.43,thick*.62);}
+ // A continuous trunk skirt, slightly buried, flares only close to the ground.
+ const levels=[-.08,0,.10,.24,.42,d.base*.57,d.base,d.base+ry*.65],sides=10;
+ const rings=levels.map(y=>{const center=trunk(Math.max(0,y));center.y=y;const fade=Math.max(0,1-Math.max(0,y)/.42)**2;return Array.from({length:sides},(_,i)=>{const a=i/sides*Math.PI*2,flare=1+fade*(.42+.06*Math.sin(a*3+d.seed));const r=thick*(1-Math.max(0,y)/d.height*.8)*flare;return [center.x+Math.cos(a)*r,y,center.z+Math.sin(a)*r];});});
+ for(let k=0;k<levels.length-1;k++)for(let i=0;i<sides;i++){const j=(i+1)%sides;wood.quad(rings[k][i],rings[k+1][i],rings[k+1][j],rings[k][j],[[i/sides,levels[k]*.8],[i/sides,levels[k+1]*.8],[(i+1)/sides,levels[k+1]*.8],[(i+1)/sides,levels[k]*.8]],[1,1,1]);}
+ const top=trunk(levels.at(-1)).toArray();for(let i=0;i<sides;i++){const j=(i+1)%sides;wood.tri(top,rings.at(-1)[j],rings.at(-1)[i],[[.5,.5],[1,0],[0,0]],[1,1,1]);wood.tri([0,levels[0],0],rings[0][i],rings[0][j],[[.5,.5],[0,0],[1,0]],[1,1,1]);}
  if(d.fork)wood.tube(trunk(1.55),new T.Vector3(-.62,d.base+ry*.4,.08),thick*.75,.065);
  for(let i=0;i<d.branches;i++){const angle=i/d.branches*Math.PI*2+random()*.35;if(d.gap&&angle>.60&&angle<1.55)continue;const start=trunk(d.base+random()*.7),sweep=random()*.5-.25,branchY=cy+(random()-.45)*ry*.9,end=new T.Vector3(Math.cos(angle)*rx*.63+bias*.7+lean,branchY,Math.sin(angle)*rx*.58),mid=start.clone().lerp(end,.55);mid.y-=.25;wood.tube(start,mid,thick*.55,.045);wood.tube(mid,end,.045,.020);centers.push({p:end.clone(),scale:.75});
    for(let j=0;j<4;j++){const a=angle+(j-1.5)*.27+sweep,rad=rx*(.70+random()*.25),h=cy+Math.sin(j*1.85+i*.7)*ry*.43+(random()-.5)*.35,tip=new T.Vector3(Math.cos(a)*rad+bias+lean*.9,h,Math.sin(a)*rad*.85),split=mid.clone().lerp(end,.55);wood.tube(split,tip,.024,.007,5);centers.push({p:tip,scale:.75+random()*.25});}
