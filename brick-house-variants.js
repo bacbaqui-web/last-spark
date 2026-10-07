@@ -9,7 +9,7 @@ export const houseVariants=[
  {name:'지붕이 무너진 세탁소',use:'가게 · LAUNDRY · 기존 03 변형',width:9.3,depth:8.4,floors:3,columns:3,damage:[2,3,3],seed:557,shop:'LAUNDRY',basis:3},
  {name:'외벽이 무너진 작은 식당',use:'가게 · DINER · 기존 03 변형',width:11.2,depth:9.2,floors:3,columns:4,damage:[3,3,2,1],seed:601,shop:'DINER',sideHole:true,basis:3},
  {name:'중앙이 뜯긴 연립주택',use:'주택 · 내부 노출 · 기존 05 변형',width:11.4,depth:9.4,floors:4,columns:4,damage:[4,3,2,4],seed:647,escape:true,sideHole:true,basis:5},
- {name:'왼쪽이 붕괴한 아파트',use:'주택 · 반파 · 기존 07 변형',width:12,depth:9,floors:4,columns:4,damage:[1,1,3,4],seed:691,sideHole:true,basis:7},
+ {name:'비상계단이 남은 주택',use:'주택 · 지붕 파손 · 기존 05 변형',width:9.6,depth:9.1,floors:4,columns:3,damage:[4,3,2],seed:811,escape:true,sideHole:true,basis:5},
  {name:'반파된 벽돌 서점',use:'가게 · BOOKS · 기존 07 변형',width:10.8,depth:9.8,floors:4,columns:4,damage:[4,3,2,1],seed:739,shop:'BOOKS',sideHole:true,basis:7},
 ];
 const cache=new Map();let materials;
@@ -53,6 +53,19 @@ function build(index){const d=houseVariants[index],r=random(d.seed),parts=Array.
    stone.box(x,y+.10,0,cw-.12,.16,depth-.38,[.7,.7,.7]);for(let j=0;j<2;j++)wood.box(x+(j-.5)*cw*.44,y+.23,0,.10,.17,depth-.48);
  }
  if(height>0){const cap=.24+height*story;const broken=d.damage[c]<d.floors,roofDepth=d.ruin?depth*.25:broken?depth*.42:depth*.94;iron.box(x,cap+.05,-depth/2+roofDepth/2+.2,cw-.06,.14,roofDepth);if(!broken){brick.box(x,cap+.27,front,cw,.38,.34,[shade,shade,shade]);stone.box(x,cap+.49,front+.03,cw+.08,.11,.46);}}
+ }
+ // Window bays become rooms, connected through doorways to a rear corridor.
+ const corridorZ=-depth*.20,roomDepth=front-.18-corridorZ;
+ for(let f=0;f<d.floors;f++){
+  const floorY=.24+f*story,wallH=story-.16,wallY=floorY+.16+wallH/2;
+  for(let c=1;c<d.columns;c++)stone.box(-w/2+cw*c,wallY,corridorZ+roomDepth/2,.15,wallH,roomDepth,[1.13,1.08,.98]);
+  for(let c=0;c<d.columns;c++){
+   const x=-w/2+cw*(c+.5),doorW=.82,doorH=2.15,pier=(cw-doorW)/2;
+   for(const side of [-1,1])stone.box(x+side*(doorW+pier)/2,wallY,corridorZ,pier,wallH,.15,[1.13,1.08,.98]);
+   stone.box(x,floorY+.16+doorH+(wallH-doorH)/2,corridorZ,doorW,wallH-doorH,.15,[1.13,1.08,.98]);
+   for(const side of [-1,1])wood.box(x+side*(doorW/2+.035),floorY+.16+doorH/2,corridorZ+.085,.055,doorH,.06,[.9,.85,.8]);
+   wood.box(x,floorY+.16+doorH,corridorZ+.085,doorW+.10,.07,.06,[.9,.85,.8]);
+  }
  }
  // Side/back walls are subdivided so damage produces real open silhouettes.
  for(const sign of [-1,1])for(let j=0;j<4;j++){const z=-depth/2+depth/4*(j+.5);let levels=d.floors;if(d.ruin)levels=j%2?0:1;for(let f=0;f<levels;f++){if(d.sideHole&&((j===2&&f===1)||(j===1&&f===2))){const bottom=.24+f*story,edge=depth/4;// Missing masonry follows individual brick courses rather than a smooth diagonal cut.
