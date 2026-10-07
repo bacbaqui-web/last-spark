@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {addCollapsedRoadBlockade} from './street-collapsed-blockade.js';
-import {addNYCStreetProps} from './nyc-street-props.js';
+import {addNYCStreetProps,createNYCStreetProp} from './nyc-street-props.js';
 import {createBrickHouse,houseVariants} from './brick-house-variants.js';
 import {createStreetTree,treeVariants} from './street-tree-variants.js';
 import {createFleetVehicle,fleet} from './vehicle-fleet-models.js';
@@ -27,9 +27,18 @@ export function createRoadShapeBlock(seed=2207,index=0){
   for(let x=-7.5;x<8;x+=3)paint(x,0,1.7,.12);
   for(const port of shape.ports.filter(p=>p===0||p===2))for(const z of [5,8])paint(0,(port===0?1:-1)*z,.12,1.8);
   for(const side of [-1,1])for(let x=-7.5;x<8;x+=1.5){if(side===1&&Math.abs(x)<3.6)continue;if(side===-1&&index===4&&Math.abs(x)<3.6)continue;paint(x,side*3.45,1.1,.08);}
+  // Zebra crossings and stop bars are oriented to each open road mouth.
+  for(const port of shape.ports){
+   const a=-port*Math.PI/2,c=Math.cos(a),s=Math.sin(a),rotate=(x,z)=>[x*c+z*s,-x*s+z*c];
+   for(let x=-3;x<=3;x+=.75){const [xx,zz]=rotate(x,6.3);const stripe=box(root,xx,.043,zz,.42,.008,2.4,m.paint);stripe.rotation.y=a;stripe.userData.crosswalk=true;}
+   const [xx,zz]=rotate(0,8.05),stop=box(root,xx,.045,zz,6.6,.008,.20,m.paint);stop.rotation.y=a;stop.userData.stopLine=true;
+   for(const side of [-1,1]){const [px,pz]=rotate(side*4.05,7.85),signal=createNYCStreetProp(side===1?0:1);signal.position.set(px,.205,pz);signal.rotation.y=a+(side===1?Math.PI:0);signal.userData.junctionSignal=true;root.add(signal);}
+  }
+  // Dashed left-turn paths connect approach lanes instead of crossing the footpaths.
+  if(index===3)for(const sign of [-1,1])for(let n=1;n<8;n+=2){const t=n/8*Math.PI/2,radius=4.4,x=sign*(radius-radius*Math.cos(t)),z=radius-radius*Math.sin(t);const guide=box(root,x,.046,z,.10,.008,.65,m.paint);guide.rotation.y=-sign*t;guide.userData.turnGuide=true;}
   // Textured grass clusters break up the bare junction without filling every lane.
-  for(let i=0;i<125;i++){const side=i%2?1:-1,x=side*(3.8+r()*4.1),z=(r()-.5)*16;for(let j=0;j<16;j++){const xx=x+(r()-.5)*.6,zz=z+(r()-.5)*.6,h=.3+r()*.65;grassPositions.push(xx-.035,.04,zz,xx+.035,.04,zz,xx+.13,.04+h,zz+.1);grassUV.push(0,0,1,0,.5,1);}}
-  for(let i=0;i<25;i++){const x=(r()-.5)*6,z=(r()-.5)*14;for(let j=0;j<8;j++){const xx=x+(r()-.5)*.35,zz=z+(r()-.5)*.35,h=.18+r()*.35;grassPositions.push(xx-.025,.04,zz,xx+.025,.04,zz,xx+.08,.04+h,zz+.05);grassUV.push(0,0,1,0,.5,1);}}
+  for(let i=0;i<125;i++){const side=i%2?1:-1,x=side*(3.8+r()*4.1),z=(r()-.5)*16;for(let j=0;j<16;j++){const xx=x+(r()-.5)*.6,zz=z+(r()-.5)*.6,h=.3+r()*.65,y=index===3&&zz< -3.5?.215:.04;grassPositions.push(xx-.035,y,zz,xx+.035,y,zz,xx+.13,y+h,zz+.1);grassUV.push(0,0,1,0,.5,1);}}
+  for(let i=0;i<25;i++){const x=(r()-.5)*6,z=(r()-.5)*14;for(let j=0;j<8;j++){const xx=x+(r()-.5)*.35,zz=z+(r()-.5)*.35,h=.18+r()*.35,y=index===3&&zz< -3.5?.215:.04;grassPositions.push(xx-.025,y,zz,xx+.025,y,zz,xx+.08,y+h,zz+.05);grassUV.push(0,0,1,0,.5,1);}}
  }
 
  for(const port of shape.ports){
@@ -69,9 +78,10 @@ export function createRoadShapeBlock(seed=2207,index=0){
  }
 
  // Close unused ports with facades; corner blocks frame the junction without covering exits.
- for(let port=0;!bend&&port<4;port++)if(!shape.ports.includes(port)&&!(index===5&&port===2)){const h=createBrickHouse(10+Math.floor(r()*10));h.rotation.y=Math.PI-port*Math.PI/2;h.position.set(-Math.sin(port*Math.PI/2)*13,.205,Math.cos(port*Math.PI/2)*13);h.userData.collisionKind='building';root.add(h);houses.push({});}
- for(const x of (bend?[]:[-1,1]))for(const z of [-1,1]){surface(root,5,5,x*6,z*6,.205,m.walk);const variant=Math.floor(r()*20),data=houseVariants[variant],h=createBrickHouse(variant),scale=8.86/data.width;h.scale.setScalar(scale);h.rotation.y=x>0?-Math.PI/2:Math.PI/2;h.position.set(x*(8.5+data.depth*scale/2),.205,z*(index===5?4:8.07));h.userData.collisionKind='building';root.add(h);houses.push({});}
+ for(let port=0;!bend&&port<4;port++)if(!shape.ports.includes(port)&&!(index===5&&port===2)){const variant=10+Math.floor(r()*10),data=houseVariants[variant],h=createBrickHouse(variant),scale=index===3&&port===2?17.14/data.width:1;h.scale.set(scale,1,scale);h.rotation.y=Math.PI-port*Math.PI/2;const distance=8.64+data.depth*scale/2;h.position.set(-Math.sin(port*Math.PI/2)*distance,.205,Math.cos(port*Math.PI/2)*distance);h.userData.junctionBuilding=true;h.userData.collisionKind='building';root.add(h);houses.push({});}
+ for(const x of (bend?[]:[-1,1]))for(const z of [-1,1]){surface(root,5,5,x*6,z*6,.205,m.walk);if(index!==5&&shape.ports.includes(z>0?0:2))continue;const variant=Math.floor(r()*20),data=houseVariants[variant],h=createBrickHouse(variant),scale=8.86/data.width;h.scale.setScalar(scale);h.rotation.y=x>0?-Math.PI/2:Math.PI/2;h.position.set(x*(8.5+data.depth*scale/2),.205,z*(index===5?4:13.07));h.userData.collisionKind='building';root.add(h);houses.push({});}
  if(index===5){surface(root,7,27.5,0,-22.25,.025,m.road);for(const side of [-1,1]){surface(root,5,27.5,side*6,-22.25,.205,m.walk);for(let z=-35;z<0;z+=1.2)box(root,side*3.55,.115,z,.18,.18,1.16,m.walk);}for(let z=-34;z<0;z+=6)box(root,0,.031,z,.1,.006,2,m.paint);const collapsed=addCollapsedRoadBlockade(root,m.brick,originalSeed^0x389a);debrisCount+=collapsed.debris;houses.push({collapsed:true},...Array.from({length:4},()=>({behindBlockade:true})));}
+ if(index===3){surface(root,17,5,0,-6,.205,m.walk);for(let x=-8;x<8.5;x+=1.2)box(root,x,.115,-3.55,1.16,.18,.18,m.walk);}
  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(grassPositions,3));g.setAttribute('uv',new T.Float32BufferAttribute(grassUV,2));g.computeVertexNormals();m.grass.side=T.DoubleSide;windMaterial(m.grass,'grass');const grass=new T.Mesh(g,m.grass);grass.userData.ownedGeometry=true;root.add(grass);
  root.userData={seed:originalSeed,shape:index,size:72,houses,trees,cars,smallRides:Array.from({length:shape.ports.length*2},()=>({})),debris:debrisCount,walkBounds:35,groundBase:.025,connections:shape.ports.map(p=>({x:-Math.sin(p*Math.PI/2)*36,z:Math.cos(p*Math.PI/2)*36,width:7}))};addCityBackdrop(root,m.brick);addStreetLife(root);return root;
 }
