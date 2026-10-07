@@ -38,7 +38,7 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
  }
  // Trees are spread within planting strips; their crowns use the approved broad-canopy variants.
  for(const side of [-1,1])for(let j=0;j<layout.trees/2;j++){
-  const z=-31+j*62/(layout.trees/2-1)+(r()-.5)*2,x=side*(4.25+r()*.25),variant=Math.floor(r()*10),tree=createStreetTree(variant,{lod:'far'});tree.scale.set(1.45,12.5/treeVariants[variant].height,1.45);tree.position.set(x,.215,z);tree.rotation.y=r()*Math.PI*2;root.add(tree);treeSlots.push({x,z,variant});const soil=new T.Mesh(soilGeo,m.soil);soil.position.set(x,.207,z);root.add(soil);obstacles.push({kind:'tree',x,z,w:.7,d:.7});
+  const z=-31+j*62/(layout.trees/2-1)+(r()-.5)*2,x=side*(4.25+r()*.25),variant=Math.floor(r()*10),tree=createStreetTree(variant,{lod:'far'});tree.scale.set(1.45,12.5/treeVariants[variant].height,1.45);const bark=tree.children[0];bark.material=mossMaterial(bark.material.clone(),.72);bark.userData.ownedMaterials=[bark.material];tree.position.set(x,.215,z);tree.rotation.y=r()*Math.PI*2;root.add(tree);treeSlots.push({x,z,variant});const soil=new T.Mesh(soilGeo,m.soil);soil.position.set(x,.207,z);root.add(soil);obstacles.push({kind:'tree',x,z,w:.7,d:.7});
  }
  // Wrecks have full 3D attitudes. Grounding uses transformed geometry bounds.
  let attempts=0;while(cars.length<layout.cars&&attempts++<600){
