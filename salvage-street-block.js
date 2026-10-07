@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {addNYCStreetProps} from './nyc-street-props.js';
 import {createBrickHouse,houseVariants} from './brick-house-variants.js';
 import {createStreetTree,treeVariants} from './street-tree-variants.js';
 import {createFleetVehicle,fleet} from './vehicle-fleet-models.js';
@@ -104,6 +105,6 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
  for(const stone of [false,true]){
   const items=debris.filter(d=>d.stone===stone),mesh=new T.InstancedMesh(stone?rockGeo:boxGeo,stone?m.stone:m.brick,items.length),o=new T.Object3D();items.forEach((d,i)=>{o.position.set(d.x,d.y,d.z);o.scale.set(d.sx,d.sy,d.sz);o.rotation.set(d.rx,d.ry,d.rz);o.updateMatrix();mesh.setMatrixAt(i,o.matrix);});mesh.castShadow=mesh.receiveShadow=true;mesh.instanceMatrix.needsUpdate=true;root.add(mesh);mesh.userData.ownedInstances=true;mesh.userData.collisionKind='rubble';
  }
- root.userData={seamBlockers:seamWalls.length/14,seed,layout:layoutIndex,size:72,houses,cars,smallRides,trees:treeSlots,debris:debris.length,obstacles,blockages,connections:[{x:0,z:-36,width:7},{x:0,z:36,width:7}]};addCityBackdrop(root,m.brick);addGroundDamage(root);addStreetOvergrowth(root);addStreetLife(root);return root;
+ root.userData={seamBlockers:seamWalls.length/14,seed,layout:layoutIndex,size:72,houses,cars,smallRides,trees:treeSlots,debris:debris.length,obstacles,blockages,connections:[{x:0,z:-36,width:7},{x:0,z:36,width:7}]};addNYCStreetProps(root);addCityBackdrop(root,m.brick);addGroundDamage(root);addStreetOvergrowth(root);addStreetLife(root);return root;
 }
 export function disposeStreetBlock(root){root.traverse(o=>{if(o.userData.ownedMaterial)o.material.dispose();if(o.userData.ownedMaterials)o.userData.ownedMaterials.forEach(m=>m.dispose());if(o.userData.ownedGeometry)o.geometry.dispose();if(o.userData.ownedInstances)o.dispose();});}

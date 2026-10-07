@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {addNYCStreetProps} from './nyc-street-props.js';
 import {createBrickHouse,houseVariants} from './brick-house-variants.js';
 import {createStreetTree,treeVariants} from './street-tree-variants.js';
 import {createFleetVehicle,fleet} from './vehicle-fleet-models.js';
@@ -35,6 +36,7 @@ export function createRoadShapeBlock(seed=2207,index=0){
   for(let z=start+2;z<36;z+=6)box(arm,0,.03,z,.1,.006,2,m.paint);
   for(let j=0;j<2;j++){const d=fleet[Math.floor(r()*fleet.length)],car=createFleetVehicle(d);car.rotation.set((r()-.5)*.1,(r()-.5)*2,r()<.3?1.45:.08*(r()-.5));car.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(car);car.position.set((j?1:-1)*(1.5+r()),.03-bounds.min.y,start+4+j*(armLength-8));mossMaterial(car.material,.72);car.userData={...car.userData,ownedMaterial:true,collisionKind:'car'};arm.add(car);cars.push({id:d.id});}
   for(let j=0;j<2;j++){const ride=createRide(rideFleet[Math.floor(r()*rideFleet.length)]);ride.rotation.set(0,r()*6.28,1.4);ride.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(ride);ride.position.set((j?1:-1)*5,.21-bounds.min.y,start+7+j*9);mossMaterial(ride.material,.65);ride.userData={ownedGeometry:true,ownedMaterial:true};arm.add(ride);}
+  addNYCStreetProps(arm,{junction:true,minZ:start,maxZ:36});
   arm.rotation.y=0;arm.updateMatrixWorld(true);
   arm.userData={seed:originalSeed+port*113,houses:houses.filter(h=>h.port===port&&!h.back),trees:trees.filter(t=>t.port===port)};
   addGroundDamage(arm,{minZ:start+1,maxZ:35});addStreetOvergrowth(arm,{minZ:start,maxZ:36,grassPatches:Math.round(480*armLength/72),roadPatches:Math.round(100*armLength/72)});
