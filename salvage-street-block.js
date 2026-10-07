@@ -93,7 +93,7 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
   const bounds=new T.Box3().setFromObject(ride),halfW=(bounds.max.x-bounds.min.x)/2,halfD=(bounds.max.z-bounds.min.z)/2,x=side*(2.1+r()*3.6),z=(r()-.5)*64;
   if([...cars,...smallRides].some(c=>Math.abs(c.x-x)<c.halfW+halfW+.25&&Math.abs(c.z-z)<c.halfD+halfD+.35)||treeSlots.some(t=>Math.abs(t.x-x)<halfW+.6&&Math.abs(t.z-z)<halfD+.6)){ride.geometry.dispose();ride.material.dispose();continue;}
   const ground=Math.abs(x)-halfW>3.65?.205: .03;
-  ride.position.set(x-(bounds.min.x+bounds.max.x)/2,ground-bounds.min.y,z-(bounds.min.z+bounds.max.z)/2);ride.castShadow=ride.receiveShadow=true;ride.userData.ownedGeometry=ride.userData.ownedMaterial=true;mossMaterial(ride.material,.65);ride.userData.collisionKind='ride';root.add(ride);smallRides.push({id:d.id,x,z,halfW,halfD});obstacles.push({kind:'ride',x,z,w:halfW*2,d:halfD*2});
+  ride.position.set(x-(bounds.min.x+bounds.max.x)/2,ground-bounds.min.y,z-(bounds.min.z+bounds.max.z)/2);ride.castShadow=ride.receiveShadow=true;ride.userData.ownedGeometry=ride.userData.ownedMaterial=true;mossMaterial(ride.material,.65);root.add(ride);smallRides.push({id:d.id,x,z,halfW,halfD});
  }
  // Collapse tongues spill into alternating sides of the road, forcing a winding route.
  const blockages=[];
