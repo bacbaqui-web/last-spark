@@ -1,0 +1,5 @@
+{
+  "mode": "built-in image_gen generation",
+  "asset": "public/textures/street/overgrown-sidewalk.jpg",
+  "prompt": "Create a seamless square photorealistic PBR base color texture of abandoned urban sidewalk concrete paving slabs, orthographic straight overhead, flat diffuse lighting with no baked shadows. Extremely neglected post-apocalyptic surface: dark brown embedded soil, green moss spread along irregular joints and in patches across slabs, black weather stains, pale worn concrete, fissures, tiny gritty rubble, damp grime, remnants of fallen leaves. Small paving slabs arranged irregular offset rows. Dense grime and moss cover about 45 percent but concrete remains recognizable. No perspective, no borders, no text, no large plants or objects, tileable across all edges. 1024 square."
+}
