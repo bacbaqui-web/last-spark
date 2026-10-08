@@ -246,7 +246,7 @@ export function attachEquipmentStudies(robot,equipment,parts=[],{paint='item'}={
    const type=item.type,d=EQUIPMENT_STUDIES[type];if(!d||EQUIPMENT[type].slot!==slot)continue;
    const mat=materialFor(type,paint),before=robot.exoskeletonPreview.groups.length;
    if(slot==='head')headModel(custom('item-'+type,robot.salvageFrame.anchors.Head),type,mat,paint);
-   else if(slot==='back')backModel(custom('item-'+type,robot.salvageFrame.anchors.spine_03),type,mat);
+   else if(slot==='back')backModel(custom('item-'+type,robot.salvageFrame.anchors.spine_03,[0,.10,0]),type,mat);
    else if(slot==='chest')torsoModel(robot,type,mat,paint,custom);
    else{
      attachExoskeleton(robot,d.concept,[slot],{append:true,armStyle:type==='brawler'?'melee':'standard',surfaceOverride:mat,specOverride:type==='exoleg'?{width:1.14}:{}});

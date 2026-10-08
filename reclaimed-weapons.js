@@ -191,5 +191,5 @@ export function createMinigunAmmoPack(){
  box([.30,.215,.15],[0,0,0],mat);box([.32,.032,.165],[0,.112,0],edge);
  for(const x of[-.105,.105]){box([.025,.23,.012],[x,0,-.082],edge);box([.03,.09,.03],[x,.15,.06],edge);}
  box([.072,.036,.015],[0,.06,-.084],salvageChrome);box([.065,.085,.07],[-.174,-.033,0],edge);
- group.position.set(0,-.30,-.235);group.visible=false;return group;
+ group.position.set(0,-.20,-.235);group.visible=false;return group;
 }

@@ -381,7 +381,7 @@ for(const id of Object.keys(WILD_ENEMIES)){
   const forward=new THREE.Vector3(0,0,1).applyQuaternion(head.rotation);assert(forward.y>.55,'headshot death snaps the head strongly backward');
   const first=head.rotation.clone();dieWildEnemy(victim,.43);assert(head.rotation.angleTo(first)>.002,'head trembles continuously rather than freezing');
   dieWildEnemy(victim,.65);assert(new THREE.Vector3(0,0,1).applyQuaternion(head.rotation).y<-.2,'head folds forward after the backward hit');
-  const torsoPiece=d.recoil.body.pieces[0];assert(torsoPiece.mesh.position.y<torsoPiece.p.y-.1*d.scale,'body descends as the knees buckle');
+  const torsoPiece=d.recoil.body.pieces[0];assert(torsoPiece.mesh.position.y<torsoPiece.p.y-.1*d.scale,`${id}: body descends as the knees buckle (${(torsoPiece.mesh.position.y-torsoPiece.p.y)/d.scale})`);
   dieWildEnemy(victim,1.1);assert(d.pieces.every(p=>!p.physicsBody.world),'falling frame stays connected until explosion');
   for(const t of [.29,.57,.85]){dieWildEnemy(victim,t);assert(d.electric.visible,'headshot electricity repeats throughout the overload');}
   dieWildEnemy(victim,1.14);assert(!d.finalFire.visible&&!d.shards,'headshot waits one second of electrical overload before exploding');

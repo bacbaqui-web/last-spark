@@ -129,13 +129,13 @@ function captureHeadDeath(r){
     const shake=THREE.MathUtils.smoothstep(t,.08,.16)*(1-fall*.6);
     const drop=hipHeight*(r.spec.count?.35:.52)*kneel;
     if(r.nodes.Pelvis)r.nodes.Pelvis.position.y-=drop;
-    r.body.position.y-=drop;r.body.rotateX(.38*fold+.3*fall);
+    r.body.position.y-=drop;r.body.rotateX((r.spec.count?.12:.38)*fold+(r.spec.count?.15:.3)*fall);
     r.head.rotateX(-.95*kick+1.4*fold+Math.sin(t*83)*.06*shake);
     r.body.position.x+=Math.sin(t*71)*.008*shake;
     r.body.position.z+=.12*kneel;
     for(let i=0;i<r.legs.length;i++)plantLeg(r,r.legs[i],feet[i]);
     // Once the knees give way, carry the connected frame forward into the fall.
-    r.motion.rotateX(.65*fall);r.motion.updateWorldMatrix(true,true);
+    r.motion.rotateX((r.spec.count?.3:.65)*fall);r.motion.updateWorldMatrix(true,true);
     for(const part of parts){
       const matrix=inverse.clone().multiply(part.mesh.matrixWorld).multiply(part.matrix.clone().invert());
       part.rotation.setFromRotationMatrix(new THREE.Matrix4().extractRotation(matrix));
