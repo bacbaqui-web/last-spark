@@ -47,7 +47,7 @@ export function createRandomStreetMap(seed=2207,level=1){
 function decorateStart(block){
  const drone=new T.Group();drone.position.set(0,0,12);block.add(drone);
  const shell=new T.MeshStandardMaterial({color:0xe3ebda,metalness:.25,roughness:.7}),dark=new T.MeshStandardMaterial({color:0x596f75,metalness:.35,roughness:.8}),orange=new T.MeshStandardMaterial({color:0xffca46,metalness:.4,roughness:.75}),light=new T.MeshStandardMaterial({color:0x86eadb,emissive:0x3ea996,emissiveIntensity:1.4});
- 
+
  function part(geo,x,y,z,mat,solid=true){const mesh=new T.Mesh(geo,mat);mesh.position.set(x,y,z);mesh.castShadow=mesh.receiveShadow=true;mesh.userData={ownedGeometry:true,...(solid?{collisionKind:'building'}:{})};drone.add(mesh);return mesh;}
  const box=(x,y,z,w,h,d,mat,solid=true)=>part(new T.BoxGeometry(w,h,d),x,y,z,mat,solid);
  // An open underslung cradle stays accessible from the street.
