@@ -1,9 +1,6 @@
 import {configureUpgradeLighting} from '../asset-upgrades.js';
 import {sortieMission} from '../sortie-mission.js';
-import {createServer} from 'vite';
-const runtimeServer=await createServer({server:{middlewareMode:true}});
-const SALVAGE=await runtimeServer.ssrLoadModule('/sortie-runtime.js');
-await runtimeServer.close();
+import * as SALVAGE from '../sortie-runtime.js';
 import {createStepLocomotion} from '../step-locomotion.js';
 import {decorateMinigunFlash} from '../minigun-fire.js';
 import * as MOVE from '../player-movement.js';

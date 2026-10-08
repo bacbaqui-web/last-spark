@@ -3,7 +3,7 @@ import * as T from 'three';
 import {createServer} from 'vite';
 import {buildWalkCollision} from '../street-walk-collision.js';
 import {movePlayerWithSlide} from '../player-movement.js';
-const server=await createServer({server:{middlewareMode:true}});
+const server=await createServer({server:{middlewareMode:true,watch:null}});
 try{
  const {planStreetMap}=await server.ssrLoadModule('/street-random-map.js');
  const {connectedStreetRoute}=await server.ssrLoadModule('/connected-street-world.js');

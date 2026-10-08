@@ -1,5 +1,5 @@
 import * as T from 'three';
-import definitions from './ride-fleet-data.json';
+import definitions from './ride-fleet-data.json' with {type:'json'};
 import {createRecolorableCarMaterial} from './car-paint-material.js';
 export const fleet=definitions;
 
