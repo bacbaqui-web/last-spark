@@ -29,7 +29,7 @@ scene.add(new THREE.HemisphereLight(0xd6edff,0x657a45,1.65));const sun=new THREE
 const mats={floor:new THREE.MeshStandardMaterial({color:0x777b66,roughness:.9}),wall:new THREE.MeshStandardMaterial({color:0x9a9582,roughness:.8}),dark:new THREE.MeshStandardMaterial({color:0x535c50,metalness:.6,roughness:.5}),lime:new THREE.MeshStandardMaterial({color:0xb9f56b,emissive:0x669b21,emissiveIntensity:.6}),red:new THREE.MeshStandardMaterial({color:0xef614b,emissive:0x9f2418,emissiveIntensity:.4})};
 mats.wall.map=mats.dark.map=panelTexture;
 function box(w,h,d,mat,x,y,z,parent=scene){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
-box(240,1,460,mats.floor,0,-.5,0);
+if(!salvageMode)box(240,1,460,mats.floor,0,-.5,0);
 const platforms=[];
 const coverProxy=new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false});
 function platform(x,z,w,d,h){
@@ -342,7 +342,7 @@ function updateSpecialBoss(e,dt){
   e.bladeSwing=Math.max(0,(e.bladeSwing||0)-dt);const speed=e.bladeSwing?2.8:e.speed;let actualSpeed=0;
   if(!e.bladeLeap)actualSpeed=moveBladeBoss(e,player.pos,platforms,dt,speed);
   tryBladeLeap(e,player.pos,platforms,dt);
-  const floor=platforms.filter(o=>Math.abs(p.x-o.x)<o.w/2&&Math.abs(p.z-o.z)<o.d/2&&o.h<=p.y+.2).reduce((h,o)=>Math.max(h,o.h),0);if(e.bladeLeap){const leap=e.bladeLeap;leap.t+=dt;const t=Math.min(1,leap.t/.8);p.lerpVectors(leap.start,leap.end,t);p.y+=Math.sin(t*Math.PI)*4;if(t===1)e.bladeLeap=null;}else p.y=Math.max(floor,p.y-12*dt);
+  const floor=platforms.filter(o=>Math.abs(p.x-o.x)<o.w/2&&Math.abs(p.z-o.z)<o.d/2&&o.h<=p.y+.2).reduce((h,o)=>Math.max(h,o.h),platforms.streetCollision?.height(p.x,p.z,p.y)??0);if(e.bladeLeap){const leap=e.bladeLeap;leap.t+=dt;const t=Math.min(1,leap.t/.8);p.lerpVectors(leap.start,leap.end,t);p.y+=Math.sin(t*Math.PI)*4;if(t===1)e.bladeLeap=null;}else p.y=Math.max(floor,p.y-12*dt);
   const meleeOffset=player.pos.clone().sub(p.clone().add(new THREE.Vector3(0,1.7,0)));ray.set(p.clone().add(new THREE.Vector3(0,1.7,0)),meleeOffset.clone().normalize());ray.far=meleeOffset.length();const meleeVisible=!ray.intersectObjects(worldObstacles,false).length;
   if(distance<4.2&&meleeVisible&&Math.abs(player.pos.y-(p.y+1.7))<3&&e.attack<=0){e.attack=1.25;e.bladeSwing=.65;e.bladeHit=false;playSound('laserSmall_000',.25,.55,p);}
   if(e.bladeSwing>0&&e.bladeSwing<.38&&!e.bladeHit){e.bladeHit=true;const center=p.clone().add(new THREE.Vector3(0,1.7,0)),offset=player.pos.clone().sub(center);ray.set(center,offset.clone().normalize());ray.far=offset.length();if(offset.length()<4.8&&!ray.intersectObjects(worldObstacles,false).length)damage(32);const arc=new THREE.Mesh(new THREE.TorusGeometry(2.6,.08,5,24,Math.PI*1.3),new THREE.MeshBasicMaterial({color:e.robot.wildId==='forest-warden'?0xffb45b:0xff67e8,transparent:true,opacity:.9,side:THREE.DoubleSide}));arc.rotation.x=Math.PI/2;arc.position.copy(center);arc.userData.effect=true;scene.add(arc);shots.push({m:arc,life:.18});}
@@ -579,7 +579,7 @@ async function launchRemoteFrame(){
  if(!sortie){returnToBase();return;}
  sortie.mission=selectedMission;progression.enemy.damage=selectedMission.difficulty;progression.enemy.speed=1+(selectedMission.blocks-1)*.025;progression.enemy.attackRate=1+(selectedMission.blocks-1)*.035;
  baseBack.hidden=true;progression.player.damage=sortie.stats.damage;progression.player.speed=sortie.stats.speed*.85;progression.player.damageTaken=sortie.stats.damageTaken;
- backEquipment.reset(sortie);player.hp=robot.hp/100*sortie.stats.maxHP;SALVAGE.applyFrameVisual(playerAvatar,sortie.stats);player.pos.set(sortieWorld.route.start.x,1.703,sortieWorld.route.start.z);camera.position.copy(player.pos);yaw=0;pitch=0;
+ backEquipment.reset(sortie);player.hp=robot.hp/100*sortie.stats.maxHP;SALVAGE.applyFrameVisual(playerAvatar,sortie.stats);player.pos.set(sortieWorld.route.start.x,1.703,sortieWorld.route.start.z);camera.position.copy(player.pos);yaw=sortieWorld.route.spawnYaw??0;pitch=0;
  slotAmmo=selectedWeapons.map(w=>sortie.ammo[w]||0);equipSlot(1);sortieHUD.hidden=false;sortieWorld.reset();
 }
 const backEquipment=SALVAGE.createBackEquipmentRuntime(scene,{hit:dealEnemyDamage,beam:weaponBeam,spend:SALVAGE.spendBattery,ground:(x,z)=>platforms.reduce((h,p)=>Math.abs(x-p.x)<p.w/2&&Math.abs(z-p.z)<p.d/2?Math.max(h,p.h):h,0),blocked:(a,b)=>{const delta=b.clone().sub(a);ray.set(a,delta.clone().normalize());ray.far=Math.max(0,delta.length()-.1);return ray.intersectObjects(worldObstacles,false).length>0;}});
@@ -634,14 +634,14 @@ function updateRoadAwareness(e,dt){
  e.group.updateMatrixWorld(true);return false;
 }
 function updateRoadSortie(dt){
- if(!sortie||sortie.finished||dead)return;const recoveredHP=Math.min(maxPlayerHP()-player.hp,sortie.stats.regen*dt);player.hp+=recoveredHP;sortie.hpRecovered=(sortie.hpRecovered||0)+recoveredHP;SALVAGE.tickBattery(sortie,dt,Math.hypot(player.vel.x,player.vel.z));sortieWorld.update(time);updateCargoRack();backEquipment.update(dt,{position:player.pos,avatar:playerAvatar,enemies,time});
+ if(!sortie||sortie.finished||dead)return;const recoveredHP=Math.min(maxPlayerHP()-player.hp,sortie.stats.regen*dt);player.hp+=recoveredHP;sortie.hpRecovered=(sortie.hpRecovered||0)+recoveredHP;SALVAGE.tickBattery(sortie,dt,Math.hypot(player.vel.x,player.vel.z));scene.userData.gameCamera=camera;sortieWorld.update(time);updateCargoRack();backEquipment.update(dt,{position:player.pos,avatar:playerAvatar,enemies,time});
  if(sortie.battery<=0){beginGameOver();return;}
  const progress=sortieWorld.route.progress(player.pos),remaining=sortieWorld.route.length-progress;
  const nearExit=Math.hypot(player.pos.x-sortieWorld.route.start.x,player.pos.z-sortieWorld.route.start.z)<5,nearCore=sortieWorld.target.visible&&Math.hypot(player.pos.x-sortieWorld.target.position.x,player.pos.z-sortieWorld.target.position.z)<4;
  extractPrompt.hidden=!(nearExit||nearCore);extractPrompt.textContent=nearCore?(sortieWorld.unlocked?'F · 발전 코어 회수':'보상 잠금 · 수호 개체를 먼저 처치하세요'):`F · ${sortie.core?'수집품을 싣고 본거지 복귀':'철수 · 현재 수집품으로 복귀'}`;
  const estimate=progress*.12*sortie.stats.drain;
  if(!sortie.hudNext||time>=sortie.hudNext||time<sortie.hudNext-.2){sortieHUD.innerHTML=`<b>${sortie.core?'귀환 중 / 적재품 보존':'원격 출격 / 발전 코어 수색'}</b><br>배터리 ${sortie.battery.toFixed(1)} / ${sortie.stats.battery}<br>복귀 이동 예상 ${estimate.toFixed(1)} · 대시 ${(6*sortie.stats.dashEfficiency).toFixed(1)} 소모${sortie.stats.shield?'<br>방어막 '+Math.ceil(sortie.shieldHP||0)+' / '+Math.round(sortie.stats.shield):sortie.stats.autoDamage?'<br>자동 사격 팔 · 가동 중':sortie.stats.houndDamage?'<br>로봇 사냥개 · 동행 중':''}<br>회수 모듈 ${sortie.cargo.length}개 · 회수 무기 ${sortie.lootWeapons.length}개 · 장비 ${sortie.lootEquipment.length}개<br>${sortie.core?'핵심 코어 적재 · 복귀까지 '+progress.toFixed(0)+'m':'도로 끝까지 '+remaining.toFixed(0)+'m · 언제든 철수 가능'}${sortie.battery<estimate+8?'<br><strong>배터리 부족 위험 · 복귀를 고려하세요</strong>':''}`;sortie.hudNext=time+.1;}
- $('wave').textContent=sortie.core?'핵심 코어 확보 · 귀환 중':`도로 수색 ${progress.toFixed(0)} / ${sortieWorld.route.length}m · ${sortie.mission?.blocks||0}블록`;
+ $('wave').textContent=sortie.core?'핵심 코어 확보 · 귀환 중':`도로 수색 ${progress.toFixed(0)} / ${sortieWorld.route.length}m · ${sortieWorld.route.blockCount||sortie.mission?.blocks||0}블록`;
 }
 function interactRoadSortie(){
  if(!sortie||sortie.finished||countdownTime>0||dead)return;

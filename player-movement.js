@@ -9,6 +9,18 @@ function sweep(start,delta,b){let enter=-Infinity,exit=Infinity,normal=new THREE
 // Continuous sweep of a player's expanded footprint, then consume the remaining
 // movement along the contact plane. Vertical sweeps also handle landing/ceilings.
 export function movePlayerWithSlide(start,desired,velocity,platforms,{dash=false,bounds=41.5,boundsX=bounds,boundsZ=bounds}={}){
+ if(platforms.streetCollision){
+  const collision=platforms.streetCollision,position=start.clone(),speed=velocity.clone(),contacts=[],foot=start.y-HEIGHT;
+  const supported=Math.abs(collision.height(start.x,start.z,foot)-foot)<.15&&speed.y<=0;
+  const nextFoot=collision.move(position,desired.x-start.x,desired.z-start.z,supported?foot:desired.y-HEIGHT);
+  const floor=collision.height(position.x,position.z,supported?nextFoot:Math.min(foot,desired.y-HEIGHT));
+  position.y=supported?nextFoot+HEIGHT:Math.max(desired.y,floor+HEIGHT);
+  const grounded=supported||desired.y<=floor+HEIGHT+.003;
+  if(grounded)speed.y=0;
+  for(const axis of ['x','z'])if(Math.abs(position[axis]-desired[axis])>.001){const n=new THREE.Vector3();n[axis]=desired[axis]>start[axis]?-1:1;contacts.push(n);speed[axis]=0;}
+  if(grounded)contacts.push(new THREE.Vector3(0,1,0));
+  return {position,velocity:speed,grounded,contacts,path:[start.clone(),position.clone()]};
+ }
  platforms=nearbyColliders(platforms,start,desired);
  const boxes=platforms.map(expanded);boxes.push({min:{x:-1000,y:-1000,z:-1000},max:{x:1000,y:HEIGHT,z:1000}});
  for(const a of['x','z'])for(const sign of[-1,1]){const b={min:{x:-1000,y:-1000,z:-1000},max:{x:1000,y:1000,z:1000}};if(sign<0)b.max[a]=-(a==='x'?boundsX:boundsZ);else b.min[a]=a==='x'?boundsX:boundsZ;boxes.push(b);}

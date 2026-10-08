@@ -31,5 +31,5 @@ export function buildWalkCollision(root){
    for(let i=0;i<6;i++){center.set(x,foot+radius+i*(1.65-radius*2)/5,z);t.triangle.closestPointToPoint(center,closest);if(closest.y<=foot+.035)continue;if(center.distanceToSquared(closest)<radius*radius-.0001)return true;}
   }return false;}
  function move(position,dx,dz,foot){let next=foot;for(const axis of ['x','z']){if(Math.abs(axis==='x'?dx:dz)<1e-8)continue;const x=position.x+(axis==='x'?dx:0),z=position.z+(axis==='z'?dz:0);if(Math.abs(x)>(root.userData.walkBounds||8.2)||Math.abs(z)>boundZ-1)continue;const ids=nearby(x,z),height=support(x,z,next,ids);if(height-next>rubbleStepHeight+.01||blocked(x,z,height,ids))continue;position.x=x;position.z=z;next=Math.max(height,next-.12);}return next;}
- return {surfaces,move,triangleCount:triangles.length,cellCount:cells.size,stepHeight,rubbleStepHeight};
+ return {surfaces,move,height:(x,z,foot)=>support(x,z,foot,nearby(x,z)),triangleCount:triangles.length,cellCount:cells.size,stepHeight,rubbleStepHeight};
 }

@@ -4,6 +4,7 @@ export {createBackEquipmentRuntime} from './back-equipment-runtime.js';
 export {createEquipmentModel} from './equipment-models.js';
 export {EQUIPMENT,EQUIPMENT_SLOTS,makeEquipment,lootEquipment} from './equipment.js';
 import {createAtomicCityWorld} from './atomic-city-world.js';
+import {createConnectedStreetWorld} from './connected-street-world.js';
 export {applyFrameVisual,framePreview} from './frame-preview.js';
 import * as THREE from 'three';
 import {createCampaign,PARTS,frameStats,makePart,makeWeapon,makeCoreWeapon,SALVAGE_DROPS,weaponPerk,lootWeapon,lootPart,tickBattery,spendBattery} from './salvage-campaign.js';
@@ -12,7 +13,7 @@ export {createCampaign,PARTS,frameStats,makePart,makeWeapon,makeCoreWeapon,SALVA
 import {createRoadRoute,updateAwareness} from './road-route.js';
 export {updateAwareness};
 export function createSalvageWorld(scene,platforms,box,mats){
- if(typeof document!=='undefined')return createAtomicCityWorld(scene,platforms,mats);
+ if(typeof document!=='undefined')return new URLSearchParams(location.search).has('arena')?createAtomicCityWorld(scene,platforms,mats):createConnectedStreetWorld(scene,platforms,mats);
  const route=createRoadRoute();platforms.bounds=route.bounds;
  const asphalt=new THREE.MeshStandardMaterial({color:0x626967,roughness:1}),paint=new THREE.MeshStandardMaterial({color:0xd8cfaa}),green=new THREE.MeshStandardMaterial({color:0x55734a,roughness:1}),trunk=new THREE.MeshStandardMaterial({color:0x675542,roughness:1});
  const ground=new THREE.Group();ground.name='long-bent-avenue';scene.add(ground);
