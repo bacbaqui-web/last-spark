@@ -6,6 +6,7 @@ import {buildWalkCollision} from './street-walk-collision.js';
 import {prepareVegetation} from './street-vegetation-runtime.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {createSalvageStreetBlock,disposeStreetBlock,streetLayouts} from './salvage-street-block.js';
+const requestedSeed=new URLSearchParams(location.search).get('seed');if(requestedSeed){document.querySelector('#seed').value=requestedSeed;document.querySelector('#preset').value=requestedSeed;}
 const viewport=document.querySelector('#viewport'),canvas=document.querySelector('canvas'),renderer=new T.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
 const scene=new T.Scene();scene.background=new T.Color('#2589df');scene.fog=new T.Fog(0xb5d8ed,160,380);renderer.toneMappingExposure=1.08;renderer.shadowMap.autoUpdate=false;scene.add(new T.HemisphereLight(0xeff6ff,0x566049,1.7));const sun=new T.DirectionalLight(0xfff1d7,2.6);sun.position.set(-150,350,150);sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);Object.assign(sun.shadow.camera,{left:-350,right:350,top:350,bottom:-350,near:1,far:1000});sun.shadow.bias=-.0005;sun.shadow.normalBias=.03;scene.add(sun);
 // A single distant sky dome; clouds are painted once, with no per-frame particles.
@@ -51,4 +52,7 @@ function walkStep(dt){if(!walking)return;const forward=Number(walkKeys.has('KeyW
 }
 let lastFrame=0;function animate(now){requestAnimationFrame(animate);if(document.hidden||now-lastFrame<33.3)return;const dt=Math.min(.05,(now-lastFrame)*.001);lastFrame=now;walkStep(dt);vegetationUpdate?.(now*.001,camera,walking);root?.userData.updateLife?.(now*.001,walking?camera:null);root?.userData.updateImpactFire?.(now*.001);render();}requestAnimationFrame(animate);
 
-document.querySelector('#preset').onchange=e=>{document.querySelector('#seed').value=e.target.value;rebuild();};
+const openSeed=seed=>{const url=new URL(location.href);url.searchParams.set('seed',String(seed));location.href=url.href;};
+document.querySelector('#preset').onchange=e=>openSeed(e.target.value);
+document.querySelector('#apply').onclick=()=>openSeed(document.querySelector('#seed').value);
+document.querySelector('#random').onclick=()=>openSeed(1+Math.floor(Math.random()*999999));
