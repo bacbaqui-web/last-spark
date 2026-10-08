@@ -84,7 +84,7 @@ function backModel(group,type,mat){
      b.cylinder(.046,.221,[x,.018,-.206]);
      b.cylinder(.044,.055,[x,-.119,-.206],dark,[0,0,0],.056);
      b.add(new THREE.CylinderGeometry(.042,.052,.047,10,1,true),[x,-.126,-.206]);
-     b.cylinder(.034,.004,[x,-.146,-.206],dark);
+     b.cylinder(.034,.004,[x,-.146,-.206],dark).name='equipment-nozzle';
      b.box([.045,.016,.007],[x,.054,-.255],glow);
    }
  }else if(type==='shieldPack'){
@@ -98,10 +98,12 @@ function backModel(group,type,mat){
    b.cylinder(.039,.053,[-.084,.272,-.186],mat,[Math.PI/2,0,0]);
    const beam=b.box([.200,.047,.054],[-.164,.292,-.133]);beam.rotation.z=-.24;
    b.cylinder(.038,.052,[-.247,.311,-.128],dark,[Math.PI/2,0,0]);
-   b.box([.085,.077,.187],[-.248,.327,-.052]);
-   b.cylinder(.022,.104,[-.248,.326,.085],dark,[Math.PI/2,0,0]);
-   b.ring(.019,.005,[-.248,.326,.135]);
-   b.box([.050,.019,.068],[-.248,.375,-.01],dark);
+   const gun=new THREE.Group();gun.name='back-auto-gun';gun.position.set(-.248,.327,-.052);group.add(gun);
+   const barrel=builder(gun,mat);
+   barrel.box([.085,.077,.187],[0,0,0]);
+   barrel.cylinder(.022,.104,[0,-.001,.137],dark,[Math.PI/2,0,0]);
+   barrel.ring(.019,.005,[0,-.001,.187]);
+   barrel.box([.050,.019,.068],[0,.048,.042],dark);
  }else if(type==='houndPack'){
    b.box([.154,.245,.099],[0,-.008,-.220]);
    b.box([.114,.084,.090],[0,.157,-.231]);
@@ -246,7 +248,10 @@ export function attachEquipmentStudies(robot,equipment,parts=[],{paint='item'}={
    const type=item.type,d=EQUIPMENT_STUDIES[type];if(!d||EQUIPMENT[type].slot!==slot)continue;
    const mat=materialFor(type,paint),before=robot.exoskeletonPreview.groups.length;
    if(slot==='head')headModel(custom('item-'+type,robot.salvageFrame.anchors.Head),type,mat,paint);
-   else if(slot==='back')backModel(custom('item-'+type,robot.salvageFrame.anchors.spine_03,[0,.10,0]),type,mat);
+   else if(slot==='back'){
+     const mount=custom('item-'+type,robot.salvageFrame.anchors.spine_03,[0,.05,.0264]);
+     mount.scale.setScalar(1.2);backModel(mount,type,mat);
+   }
    else if(slot==='chest')torsoModel(robot,type,mat,paint,custom);
    else{
      attachExoskeleton(robot,d.concept,[slot],{append:true,armStyle:type==='brawler'?'melee':'standard',surfaceOverride:mat,specOverride:type==='exoleg'?{width:1.14}:{}});

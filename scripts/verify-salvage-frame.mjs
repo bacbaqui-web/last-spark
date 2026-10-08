@@ -47,13 +47,13 @@ assert.equal(robot.frameModules.find(g=>g.userData.moduleType==='drive').userDat
 const count = robot.frameModules.length;
 let equipmentTriangles = 0;
 for(const group of robot.frameModules)group.traverse(o=>{if(o.isMesh){equipmentTriangles+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;if(o.userData.simpleEquipment){assert(o.material.userData.textureDetail, 'mechanical detail stays in PBR maps');assert.equal(o.geometry.attributes.position.count,24,'one simple box per shell');}}});
-assert(equipmentTriangles<1000,'fully equipped silhouette uses simple shapes');
+assert(equipmentTriangles<14000,'latest textured equipment stays within the player geometry budget');
 applyFrameVisual(robot, frameStats({parts, equipment}));
 assert.equal(robot.frameModules.length, count, 're-equipping does not stack geometry');
 for (let i = 0; i < 90; i++) animateRobot(robot, 1 / 60, {speed: i < 30 ? 1.5 : 4.5, elevation: .2});
 robot.root.updateMatrixWorld(true);
 assert(robot.bones.every(b => b.matrixWorld.elements.every(Number.isFinite)), 'walking and running keep valid transforms');
-assert(robot.frameModules.every(g => g.parent.isBone));
+assert(robot.frameModules.every(g=>{let p=g.parent;while(p&&!p.isBone)p=p.parent;return !!p;}));
 applyFrameVisual(robot, frameStats({parts:[]}));
 assert.equal(robot.frameModules.length, 0, 'equipment can return to bare skeleton');
 applyFrameVisual(robot,frameStats({parts:[{type:'reactor',level:1,slot:1}]}));

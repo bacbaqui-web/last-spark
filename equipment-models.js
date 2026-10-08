@@ -3,6 +3,7 @@ import {applyRigidUpgrade} from './asset-upgrades.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {EQUIPMENT} from './equipment.js';
 import {createSimpleEquipment} from './salvage-equipment.js';
+import {attachEquipmentStudies} from './equipment-studies.js';
 // Each rigid shell attaches to the existing bone's rest mesh, so joints remain free.
 export function createEquipmentModel(type,segment=''){const d=EQUIPMENT[type],root=new THREE.Group();root.name='equipment-'+type;const mat=new THREE.MeshStandardMaterial({color:d.color,metalness:d.shape==='beanie'||d.shape==='tshirt'?.05:.5,roughness:d.shape==='beanie'?.95:.48}),dark=new THREE.MeshStandardMaterial({color:0x202b33,roughness:.5}),light=new THREE.MeshStandardMaterial({color:0x86dcff,emissive:0x45aaff,emissiveIntensity:.5,metalness:.4});
  const add=(geometry,material,pos=[0,0,0],scale=[1,1,1])=>{const m=new THREE.Mesh(geometry,material);m.position.fromArray(pos);m.scale.fromArray(scale);m.castShadow=true;m.userData.cosmetic=true;root.add(m);return m;};
@@ -30,4 +31,13 @@ export function createEquipmentModel(type,segment=''){const d=EQUIPMENT[type],ro
  }else if(d.shape==='houndPack'){box([.23,.32,.15],[0,0,-.2]);box([.16,.12,.12],[0,.20,-.23]);for(const x of[-.1,.1])for(const y of[-.12,.12])box([.055,.14,.07],[x,y,-.29],dark);box([.12,.025,.02],[0,.2,-.30],light);
  }else{box([.25,.28,.095],[0,0,-.16],dark);if(d.shape==='batteryPack'){for(const x of[-.065,.065]){add(new THREE.CapsuleGeometry(.045,.18,6,12),mat,[x,0,-.22]);box([.026,.13,.018],[x,0,-.267],light);}}else{for(const x of[-.085,.085]){add(new THREE.CylinderGeometry(.045,.05,.2,16),mat,[x,-.02,-.22]);add(new THREE.CylinderGeometry(.035,.045,.04,16),dark,[x,-.14,-.22]).name='equipment-nozzle';}}}
  return applyRigidUpgrade(root,'equipment-'+type,{segment:['tshirt','marksman','brawler','runner','exoleg'].includes(type)?segment:undefined});}
-export function attachEquipment(robot,items){for(const item of items){const d=EQUIPMENT[item.type];if(!d)continue;const names=d.slot==='head'?['Head']:d.slot==='chest'||d.slot==='back'?(d.shape==='tshirt'?['spine_03','upperarm_l','upperarm_r']:['spine_03']):['l','r'].flatMap(side=>(d.slot==='arms'?['upperarm_','lowerarm_','hand_']:['thigh_','calf_','foot_']).map(n=>n+side));for(const name of names){const bone=robot.bones.find(b=>b.name===name),base=robot.salvageFrame?.equipmentAnchors[name]||(name==='Head'?robot.head:bone?.children.find(m=>m.isMesh&&(!m.userData.cosmetic||name.startsWith('foot'))&&!m.userData.weakPoint));if(!bone||!base)continue;const group=robot.salvageFrame&&d.shape!=='beanie'?createSimpleEquipment(item.type,name):createEquipmentModel(item.type,name);group.position.copy(base.position);group.quaternion.copy(base.quaternion);group.userData.frameEquipment=true;bone.add(group);robot.frameModules.push(group);}}}
+export function attachEquipment(robot,items){
+ if(robot.salvageFrame){
+  const equipment=Object.fromEntries(items.filter(item=>EQUIPMENT[item.type]).map(item=>[EQUIPMENT[item.type].slot,item]));
+  const appearance=attachEquipmentStudies(robot,equipment);
+  for(const group of appearance.groups){if(group.name.startsWith('item-'))group.name=group.name.replace('item-','equipment-');group.userData.frameEquipment=true;group.userData.runtimeEquipmentStudy=true;robot.frameModules.push(group);}
+  // The runtime frame owns cleanup; the workshop preview must not dispose it again.
+  robot.exoskeletonPreview=null;
+  return;
+ }
+ for(const item of items){const d=EQUIPMENT[item.type];if(!d)continue;const names=d.slot==='head'?['Head']:d.slot==='chest'||d.slot==='back'?(d.shape==='tshirt'?['spine_03','upperarm_l','upperarm_r']:['spine_03']):['l','r'].flatMap(side=>(d.slot==='arms'?['upperarm_','lowerarm_','hand_']:['thigh_','calf_','foot_']).map(n=>n+side));for(const name of names){const bone=robot.bones.find(b=>b.name===name),base=robot.salvageFrame?.equipmentAnchors[name]||(name==='Head'?robot.head:bone?.children.find(m=>m.isMesh&&(!m.userData.cosmetic||name.startsWith('foot'))&&!m.userData.weakPoint));if(!bone||!base)continue;const group=robot.salvageFrame&&d.shape!=='beanie'?createSimpleEquipment(item.type,name):createEquipmentModel(item.type,name);group.position.copy(base.position);group.quaternion.copy(base.quaternion);group.userData.frameEquipment=true;bone.add(group);robot.frameModules.push(group);}}}

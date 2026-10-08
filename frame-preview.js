@@ -5,7 +5,7 @@ import {createRobot,animateRobot,disposeRobot} from './robot.js';
 import {salvageMetal} from './salvage-metal.js';
 import {addSimpleModules} from './salvage-equipment.js';
 let renderer;const cache=new Map();
-function clearModules(robot){for(const group of robot.frameModules||[]){group.removeFromParent();group.traverse(o=>{if(o.isMesh){o.geometry.dispose();if(!o.material.userData.sharedSalvageMaterial)o.material.dispose();}});}robot.frameModules=[];}
+function clearModules(robot){for(const group of robot.frameModules||[]){group.removeFromParent();group.traverse(o=>{if(o.isMesh){o.geometry.dispose();if(!group.userData.runtimeEquipmentStudy&&!o.material.userData.sharedSalvageMaterial)o.material.dispose();}});}robot.frameModules=[];}
 function addModules(robot,parts){
  const colors={armor:0x9ab78a,drive:0xe4ab63,reactor:0x70ced5,weapon:0x76aaf1,core:0xaf85e4};
  function mount(boneName,type){const bone=robot.bones.find(b=>b.name===boneName),base=robot.salvageFrame?.equipmentAnchors[boneName]||bone?.children.find(m=>m.isMesh&&!m.userData.cosmetic&&!m.userData.weakPoint);if(!bone||!base)return null;const group=new THREE.Group();group.name='installed-'+type+'-'+boneName;group.userData.frameModule=true;group.position.copy(base.position);group.quaternion.copy(base.quaternion);bone.add(group);robot.frameModules.push(group);return group;}
