@@ -58,7 +58,26 @@ function walkStep(dt){if(!walking)return;const forward=Number(walkKeys.has('KeyW
  }
  const targetY=walkFoot+1.675;camera.position.y=T.MathUtils.lerp(camera.position.y,targetY,Math.min(1,dt*12));
 }
-let lastFrame=0;function animate(now){requestAnimationFrame(animate);if(document.hidden||now-lastFrame<33.3)return;const dt=Math.min(.05,(now-lastFrame)*.001);lastFrame=now;walkStep(dt);vegetationUpdate?.(now*.001,camera,walking);root?.userData.updateLife?.(now*.001,walking?camera:null);root?.userData.updateImpactFire?.(now*.001);render();}requestAnimationFrame(animate);
+let defenseTargets=[];
+const defenseButton=document.querySelector('#drone-defense');
+defenseButton.onclick=()=>{
+ defenseTargets.forEach(target=>{scene.remove(target);target.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});});defenseTargets=[];
+ const drone=root.userData.recoveryDrone;drone.updateWorldMatrix(true,false);
+ for(const side of [-1,1]){
+  const target=new T.Group(),body=new T.Mesh(new T.BoxGeometry(.55,.7,.4),new T.MeshStandardMaterial({color:0x985f43,roughness:.8}));body.position.y=.9;target.add(body);
+  const head=new T.Mesh(new T.BoxGeometry(.3,.25,.28),new T.MeshStandardMaterial({color:0x37433f}));head.position.y=1.42;target.add(head);
+  for(const x of [-.18,.18]){const leg=new T.Mesh(new T.BoxGeometry(.14,.5,.16),new T.MeshStandardMaterial({color:0x46504a}));leg.position.set(x,.35,0);target.add(leg);}
+  target.position.copy(drone.localToWorld(new T.Vector3(side*2,.05,14)));target.userData.hp=80;target.userData.onHit=()=>{body.material.emissive.setHex(0x5a1700);if(target.userData.hp<=0){target.rotation.z=side*Math.PI*.45;target.position.y=.25;}};scene.add(target);defenseTargets.push(target);
+ }
+ drone.userData.setDefenseTargets(defenseTargets);fit('start');document.querySelector('#caption').textContent='자동 방어 테스트 · 18m 이내 표적을 조준해 사격합니다';
+};
+function updateDrone(time,dt){
+ const drone=root?.userData.recoveryDrone;if(!drone)return;
+ for(const target of defenseTargets){if(target.userData.hp<=0)continue;const origin=drone.getWorldPosition(new T.Vector3()),delta=origin.sub(target.position);delta.y=0;if(delta.length()>4)target.position.addScaledVector(delta.normalize(),dt*1.5);}
+ drone.userData.updateDefense(time);
+ if(defenseTargets.length&&defenseTargets.every(t=>t.userData.hp<=0))document.querySelector('#caption').textContent='자동 방어 테스트 완료 · 근접 표적 2기 제거';
+}
+let lastFrame=0;function animate(now){requestAnimationFrame(animate);if(document.hidden||now-lastFrame<33.3)return;const dt=Math.min(.05,(now-lastFrame)*.001);lastFrame=now;walkStep(dt);updateDrone(now*.001,dt);vegetationUpdate?.(now*.001,camera,walking);root?.userData.updateLife?.(now*.001,walking?camera:null);root?.userData.updateImpactFire?.(now*.001);render();}requestAnimationFrame(animate);
 
 const openSeed=seed=>{const url=new URL(location.href);url.searchParams.set('seed',String(seed));url.searchParams.set('level',String(Number(seed)>=2207&&Number(seed)<=2211?Number(seed)-2206:mapLevel));location.href=url.href;};
 document.querySelector('#preset').onchange=e=>openSeed(e.target.value);
