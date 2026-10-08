@@ -3,7 +3,7 @@ import {createFleetVehicle,fleet} from './vehicle-fleet-models.js';
 import {createImpactRuinBuilding} from './impact-ruin-buildings.js';
 import {addCityBackdrop} from './street-city-backdrop.js';
 import {mossMaterial} from './street-moss-material.js';
-export function createSatelliteCrashBlock(seed=2207){
+export function createSatelliteCrashBlock(seed=2207,options={}){
  const root=new T.Group(),houses=[],r=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
  function tex(file,color=0xffffff){const m=new T.MeshStandardMaterial({color,roughness:.95});if(typeof document!=='undefined'){m.map=new T.TextureLoader().load(new URL('./textures/'+file,document.baseURI).href);m.map.colorSpace=T.SRGBColorSpace;m.map.wrapS=m.map.wrapT=T.RepeatWrapping;}return m;}
  const earth=tex('street/mossy-asphalt.jpg',0x80746a),brick=mossMaterial(tex('houses/red-brick-weathered.jpg'),.45),metal=tex('street/nyc-prop-materials.jpg',0x9d9890),dark=new T.MeshStandardMaterial({color:0x242b2d,roughness:.8,metalness:.4}),panel=new T.MeshStandardMaterial({color:0x273b4c,roughness:.7,metalness:.3}),core=new T.MeshStandardMaterial({color:0x72dee1,emissive:0x1f7779,emissiveIntensity:.7});
@@ -43,5 +43,5 @@ export function createSatelliteCrashBlock(seed=2207){
  const flames=new T.Group(),flameMat=fireMaterial(.1),innerMat=fireMaterial(.7),flameGeo=new T.ConeGeometry(.3,1.7,5);
  for(const [x,z] of [[-5,-3],[4,2],[-7,8],[9,-6],[-12,-3],[13,10],[0,-10]]){const fire=new T.Group();fire.position.set(x,height(x,z)+.5,z);for(let j=0;j<3;j++){const f=new T.Mesh(flameGeo,j===1?innerMat:flameMat);f.position.set((j-1)*.22,j===1?.35:.1,0);f.scale.setScalar(j===1?.65:1);fire.add(f);}fire.userData.phase=r()*6.28;flames.add(fire);}root.add(flames);flames.userData.ownedMaterials=[flameMat,innerMat];flames.children[0].children[0].userData.ownedGeometry=true;
  root.userData.updateImpactFire=time=>{flameMat.uniforms.time.value=innerMat.uniforms.time.value=time;for(const fire of flames.children){fire.scale.set(1,.8+Math.sin(time*7+fire.userData.phase)*.17,1);fire.rotation.y=time*.2+fire.userData.phase;}};
- addCityBackdrop(root,{groundY:-4});ground.userData.ownedMaterials=[earth,brick,metal,dark,panel,core,road,walk,paint,scorchedBrick,scorchedFloor,beam];return root;
+ if(options.backdrop!==false)addCityBackdrop(root,{groundY:-4});ground.userData.ownedMaterials=[earth,brick,metal,dark,panel,core,road,walk,paint,scorchedBrick,scorchedFloor,beam];return root;
 }
