@@ -69,9 +69,10 @@ function decorateStart(block){
  function part(geo,x,y,z,mat,solid=true){const mesh=new T.Mesh(geo,mat);mesh.position.set(x,y,z);mesh.castShadow=mesh.receiveShadow=true;mesh.userData={ownedGeometry:true,...(solid?{collisionKind:'building'}:{})};drone.add(mesh);return mesh;}
  const box=(x,y,z,w,h,d,mat,solid=true)=>part(new T.BoxGeometry(w,h,d),x,y,z,mat,solid);
  // An open underslung cradle stays accessible from the street.
+ const top=shell.clone();if(typeof document!=='undefined'){top.map=new T.TextureLoader().load(new URL('./textures/street/return-drone-top-v1.png',document.baseURI).href);top.map.colorSpace=T.SRGBColorSpace;}
  const casing=new T.BoxGeometry(2.6,.85,4.2),vertices=casing.attributes.position;
  for(let i=0;i<vertices.count;i++){if(vertices.getX(i)>.9&&vertices.getZ(i)>1.8){vertices.setX(i,vertices.getX(i)-.3);vertices.setZ(i,vertices.getZ(i)-.22);vertices.setY(i,vertices.getY(i)-.12);}}
- casing.computeVertexNormals();part(casing,0,2.8,0,shell);
+ casing.computeVertexNormals();for(let i=8;i<12;i++)casing.attributes.uv.setXY(i,(vertices.getZ(i)+2.1)/4.2,(vertices.getX(i)+1.3)/2.6);part(casing,0,2.8,0,[shell,shell,top,shell,shell,shell]);
  // Torn side panel, exposed reinforcement and a hanging cable.
  box(1.025,2.88,1.58,.025,.4,.65,exposed);
  for(let i=0;i<3;i++)box(1.05,2.77+i*.11,1.58,.045,.035,.62,dark);
@@ -92,5 +93,5 @@ function decorateStart(block){
   const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='#fff3b8';ctx.fillRect(0,0,512,128);ctx.fillStyle='#153d46';ctx.textAlign='center';ctx.font='bold 60px sans-serif';ctx.fillText('RETURN HERE',256,86);
   const map=new T.CanvasTexture(c);map.colorSpace=T.SRGBColorSpace;const mat=new T.MeshBasicMaterial({map});const sign=box(0,3.38,2.12,2.3,.58,.04,mat,false);sign.userData.ownedMaterial=true;
  }
- block.userData.ownedMaterials=[shell,dark,orange,light,exposed];
+ block.userData.ownedMaterials=[shell,top,dark,orange,light,exposed];
 }
