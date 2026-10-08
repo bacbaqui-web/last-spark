@@ -1,0 +1,5 @@
+export function briefingMap(tiles){
+ const xs=tiles.map(t=>t.x),zs=tiles.map(t=>t.z),minX=Math.min(...xs)-.7,minZ=Math.min(...zs)-.7,w=Math.max(...xs)-minX+.7,h=Math.max(...zs)-minZ+.7;
+ const ports=[[0,2],[0,3],[0,1],[0,1,3],[0,1,2,3],[0],[0]],dirs=[[0,1],[-1,0],[0,-1],[1,0]];
+ return `<svg viewBox="${minX} ${minZ} ${w} ${h}" role="img" aria-label="이번 작전 지도: 출발 드론과 전쟁위성 추락지"><rect x="${minX}" y="${minZ}" width="${w}" height="${h}" fill="#101e22"/>${tiles.map(t=>`<rect x="${t.x-.46}" y="${t.z-.46}" width=".92" height=".92" rx=".06" fill="#263a3c"/>${ports[t.shape].map(p=>{const [x,z]=dirs[(p+t.rotation)%4];return `<path d="M ${t.x} ${t.z} L ${t.x+x*.51} ${t.z+z*.51}" stroke="#8da5a1" stroke-width=".15"/>`;}).join('')}${t.role==='start'?`<circle cx="${t.x}" cy="${t.z}" r=".22" fill="#bce575"/><text x="${t.x}" y="${t.z-.3}" fill="#dfffaa" font-size=".18" text-anchor="middle">RETURN</text>`:t.role==='finish'?`<circle cx="${t.x}" cy="${t.z}" r=".27" fill="#de8653"/><text x="${t.x}" y="${t.z-.34}" fill="#ffd0a0" font-size=".18" text-anchor="middle">위성 추락지</text>`:''}`).join('')}</svg>`;
+}
