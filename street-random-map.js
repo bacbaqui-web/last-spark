@@ -39,15 +39,15 @@ export function chooseArrival(tiles,random=Math.random){
 }
 export function createRandomStreetMap(seed=2207,level=1){
  const root=new T.Group(),tiles=planStreetMap(seed,level),houses=[],trees=[],cars=[],smallRides=[];let debris=0;const updates=[];
- for(const tile of tiles){const block=tile.shape===6?createSatelliteCrashBlock(tile.seed,{backdrop:false}):createRoadShapeBlock(tile.seed,tile.role==='start'?0:tile.shape,{backdrop:false,connected:true});block.rotation.y=-tile.rotation*Math.PI/2;block.position.set(tile.x*72,0,tile.z*72);if(tile.role==='start'){block.updateMatrixWorld(true);const clearTrees=[];block.traverse(o=>{if(o.userData.lod)clearTrees.push(o);});clearTrees.forEach(o=>o.parent.remove(o));block.userData.trees=[];const wrecks=[];block.traverse(o=>{if(o.userData.collisionKind==='car')wrecks.push(o);});wrecks.forEach(o=>o.parent.remove(o));block.userData.cars=[];const gate=new T.Mesh(new T.BoxGeometry(7,2.5,.4),new T.MeshStandardMaterial({color:0x434b49,roughness:1}));gate.position.set(0,1.25,-34);gate.userData={ownedGeometry:true,ownedMaterial:true,collisionKind:'building'};block.add(gate);}root.add(block);houses.push(...block.userData.houses);trees.push(...block.userData.trees);cars.push(...block.userData.cars);smallRides.push(...block.userData.smallRides);debris+=block.userData.debris;updates.push(block.userData.updateLife);if(tile.role==='finish')root.userData.updateImpactFire=block.userData.updateImpactFire;if(tile.role==='start'){decorateStart(block);}}
- const start=tiles.find(t=>t.role==='start'),angle=-start.rotation*Math.PI/2,spawn={x:start.x*72-24*Math.sin(angle),z:start.z*72-24*Math.cos(angle),yaw:angle+Math.PI};
- root.userData={...root.userData,seed,tiles,spawn,routeDistance:start.routeDistance,houses,trees,cars,smallRides,debris,walkBounds:Math.max(...tiles.map(t=>Math.abs(t.x)*72+40)),walkBoundsZ:Math.max(...tiles.map(t=>Math.abs(t.z)*72+40)),groundBase:-3,updateLife:(time,camera)=>updates.forEach(fn=>fn?.(time,camera))};return root;
+ for(const tile of tiles){const block=tile.shape===6?createSatelliteCrashBlock(tile.seed,{backdrop:false}):createRoadShapeBlock(tile.seed,tile.shape,{backdrop:false,connected:true});block.rotation.y=-tile.rotation*Math.PI/2;block.position.set(tile.x*72,0,tile.z*72);if(tile.role==='start'){block.updateMatrixWorld(true);const clearTrees=[];block.traverse(o=>{if(o.userData.lod)clearTrees.push(o);});clearTrees.forEach(o=>o.parent.remove(o));block.userData.trees=[];const wrecks=[];block.traverse(o=>{if(o.userData.collisionKind==='car')wrecks.push(o);});wrecks.forEach(o=>o.parent.remove(o));block.userData.cars=[];}root.add(block);houses.push(...block.userData.houses);trees.push(...block.userData.trees);cars.push(...block.userData.cars);smallRides.push(...block.userData.smallRides);debris+=block.userData.debris;updates.push(block.userData.updateLife);if(tile.role==='finish')root.userData.updateImpactFire=block.userData.updateImpactFire;if(tile.role==='start'){decorateStart(block);}}
+ const start=tiles.find(t=>t.role==='start'),angle=-start.rotation*Math.PI/2,spawn={x:start.x*72+13*Math.sin(angle),z:start.z*72+13*Math.cos(angle),yaw:angle+Math.PI};
+ root.userData={...root.userData,seed,tiles,spawn,routeDistance:start.routeDistance,startVariant:((start.seed^0x389a)>>>0)%5,houses,trees,cars,smallRides,debris,walkBounds:Math.max(...tiles.map(t=>Math.abs(t.x)*72+40)),walkBoundsZ:Math.max(...tiles.map(t=>Math.abs(t.z)*72+40)),groundBase:-3,updateLife:(time,camera)=>updates.forEach(fn=>fn?.(time,camera))};return root;
 }
 
 function decorateStart(block){
- const drone=new T.Group();drone.position.set(0,0,-25);block.add(drone);
- const shell=new T.MeshStandardMaterial({color:0x798581,metalness:.65,roughness:.65}),dark=new T.MeshStandardMaterial({color:0x202b2c,metalness:.6,roughness:.85}),orange=new T.MeshStandardMaterial({color:0xd99b3e,metalness:.4,roughness:.75}),light=new T.MeshStandardMaterial({color:0x86eadb,emissive:0x3ea996,emissiveIntensity:1.4});
- if(typeof document!=='undefined'){shell.map=new T.TextureLoader().load(new URL('./textures/street/nyc-prop-materials.jpg',document.baseURI).href);shell.map.colorSpace=T.SRGBColorSpace;}
+ const drone=new T.Group();drone.position.set(0,0,12);block.add(drone);
+ const shell=new T.MeshStandardMaterial({color:0xe3ebda,metalness:.25,roughness:.7}),dark=new T.MeshStandardMaterial({color:0x596f75,metalness:.35,roughness:.8}),orange=new T.MeshStandardMaterial({color:0xffca46,metalness:.4,roughness:.75}),light=new T.MeshStandardMaterial({color:0x86eadb,emissive:0x3ea996,emissiveIntensity:1.4});
+ 
  function part(geo,x,y,z,mat,solid=true){const mesh=new T.Mesh(geo,mat);mesh.position.set(x,y,z);mesh.castShadow=mesh.receiveShadow=true;mesh.userData={ownedGeometry:true,...(solid?{collisionKind:'building'}:{})};drone.add(mesh);return mesh;}
  const box=(x,y,z,w,h,d,mat,solid=true)=>part(new T.BoxGeometry(w,h,d),x,y,z,mat,solid);
  // An open underslung cradle stays accessible from the street.
@@ -64,8 +64,8 @@ function decorateStart(block){
  box(0,.045,.7,1.5,.06,2.8,dark,false);
  for(const x of [-.8,.8])box(x,.08,.7,.07,.05,2.8,orange,false);
  if(typeof document!=='undefined'){
-  const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='#243133';ctx.fillRect(0,0,512,128);ctx.fillStyle='#dce8d9';ctx.textAlign='center';ctx.font='bold 40px sans-serif';ctx.fillText('ROBOT RECOVERY',256,53);ctx.font='24px sans-serif';ctx.fillText('REMOTE UNIT / RETURN HERE',256,99);
-  const map=new T.CanvasTexture(c);map.colorSpace=T.SRGBColorSpace;const mat=new T.MeshStandardMaterial({map,roughness:.75});const sign=box(0,3.38,2.12,2.3,.58,.04,mat,false);sign.userData.ownedMaterial=true;
+  const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='#fff3b8';ctx.fillRect(0,0,512,128);ctx.fillStyle='#153d46';ctx.textAlign='center';ctx.font='bold 60px sans-serif';ctx.fillText('RETURN HERE',256,86);
+  const map=new T.CanvasTexture(c);map.colorSpace=T.SRGBColorSpace;const mat=new T.MeshBasicMaterial({map});const sign=box(0,3.38,2.12,2.3,.58,.04,mat,false);sign.userData.ownedMaterial=true;
  }
  block.userData.ownedMaterials=[shell,dark,orange,light];
 }
