@@ -7,7 +7,7 @@ export function planStreetMap(seed=2207){
  for(let attempt=0;attempt<100;attempt++){
   const tiles=[],used=new Set(),add=(x,z,shape,rotation,role)=>{used.add(key(x,z));tiles.push({x,z,shape,rotation,role,seed:(seed+tiles.length*37)>>>0});};
   add(0,1,5,2,'start');let x=0,z=0,incoming=0,failed=false;
-  for(const shape of [0,3,4,random()<.5?1:2]){
+  for(const shape of [random()<.5?1:2,3,4,random()<.5?1:2]){
    const candidates=[];
    for(let rotation=0;rotation<4;rotation++){
     const ports=roadShapes[shape].ports.map(p=>(p+rotation)%4);if(!ports.includes(incoming))continue;
