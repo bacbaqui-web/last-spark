@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "units": "metres",
+  "source": "Authored Blender polygon meshes based on selected V2 concepts",
+  "models": [
+    {
+      "meshObjects": 16,
+      "triangles": 23240,
+      "vertices": 13433,
+      "rigged": false,
+      "rigidAssemblies": 16,
+      "textured": true,
+      "texture": "material-atlas.png",
+      "boundsMetres": [
+        1.415,
+        2.714,
+        1.184
+      ],
+      "animations": [],
+      "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+      "id": "rust-scout",
+      "name": "녹슨 척후병",
+      "role": "기본 전투·정찰형",
+      "concept": "01-rust-scout-v2.png",
+      "glb": "rust-scout.glb",
+      "preview": "rust-scout.png",
+      "blend": "rust-scout.blend",
+      "embeddedImages": 1,
+      "bytes": 5507396
+    },
+    {
+      "meshObjects": 16,
+      "triangles": 25552,
+      "vertices": 17997,
+      "rigged": false,
+      "rigidAssemblies": 16,
+      "textured": true,
+      "texture": "material-atlas.png",
+      "boundsMetres": [
+        3.1,
+        3.324,
+        1.664
+      ],
+      "animations": [],
+      "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+      "id": "forest-warden",
+      "name": "숲의 파수꾼",
+      "role": "중장갑 정예형",
+      "concept": "10-forest-warden-v2.png",
+      "glb": "forest-warden.glb",
+      "preview": "forest-warden.png",
+      "blend": "forest-warden.blend",
+      "embeddedImages": 1,
+      "bytes": 5688620
+    },
+    {
+      "meshObjects": 27,
+      "triangles": 36276,
+      "vertices": 23529,
+      "rigged": false,
+      "rigidAssemblies": 27,
+      "textured": true,
+      "texture": "material-atlas.png",
+      "boundsMetres": [
+        2.466,
+        1.116,
+        2.292
+      ],
+      "animations": [],
+      "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+      "id": "iron-beetle",
+      "name": "철갑 딱정벌레",
+      "role": "지상 돌진형",
+      "concept": "03-iron-beetle-v2.png",
+      "glb": "iron-beetle.glb",
+      "preview": "iron-beetle.png",
+      "blend": "iron-beetle.blend",
+      "embeddedImages": 1,
+      "bytes": 6369188
+    },
+    {
+      "meshObjects": 44,
+      "triangles": 44260,
+      "vertices": 25624,
+      "rigged": false,
+      "rigidAssemblies": 44,
+      "textured": true,
+      "texture": "material-atlas.png",
+      "boundsMetres": [
+        3.127,
+        1.753,
+        2.963
+      ],
+      "animations": [],
+      "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+      "id": "wall-sniper-spider",
+      "name": "폐허 거미 저격수",
+      "role": "벽면·고지대 저격형",
+      "concept": "04-wall-sniper-spider-v2.png",
+      "glb": "wall-sniper-spider.glb",
+      "preview": "wall-sniper-spider.png",
+      "blend": "wall-sniper-spider.blend",
+      "embeddedImages": 1,
+      "bytes": 6632840
+    },
+    {
+      "meshObjects": 18,
+      "triangles": 20720,
+      "vertices": 13725,
+      "rigged": false,
+      "rigidAssemblies": 18,
+      "textured": true,
+      "texture": "material-atlas.png",
+      "boundsMetres": [
+        2.1,
+        2.481,
+        1.66
+      ],
+      "animations": [],
+      "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+      "id": "assault-mantis",
+      "name": "이끼 사마귀 돌격병",
+      "role": "근접 돌격형",
+      "concept": "02-assault-mantis-v2.png",
+      "glb": "assault-mantis.glb",
+      "preview": "assault-mantis.png",
+      "blend": "assault-mantis.blend",
+      "embeddedImages": 1,
+      "bytes": 5370584
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {replaceTemplates} from './asset-upgrades.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 // Shared low-poly meshes supplement the purchased kit's missing street furniture.
 export function createStreetProps(){
@@ -22,5 +23,5 @@ export function createStreetProps(){
   else{box(1.5,4.2,1.5,0,2.1,0,stone);box(1.6,.25,1.6,0,4.22,0,rust);box(.8,.6,.6,.3,4.5,.1,stone);}
   const parts=[...groups].map(([material,geos])=>{const geometry=mergeGeometries(geos,false);geos.forEach(g=>g.dispose());return {material,geometry};}),bounds=new T.Box3();for(const p of parts){p.geometry.computeBoundingBox();bounds.union(p.geometry.boundingBox);}const size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());for(const p of parts)p.geometry.translate(-center.x,-bounds.min.y,-center.z);out.set(id,{parts,size,maxSize:Math.max(size.x,size.y,size.z)});
  }
- return out;
+ return replaceTemplates(out);
 }

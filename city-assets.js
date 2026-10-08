@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {applyRigidUpgrade} from './asset-upgrades.js';
 const palette={sand:0xb8a58b,wall:0xd1bda0,teal:0x618c83,rust:0xb56f49,dark:0x343e41,glass:0x426367,leaf:0x788b55,wood:0x77604c,cream:0xe5d5ac};
 export function createCityAsset(id){
  const g=new T.Group(),materials={};
@@ -30,7 +31,7 @@ export function createCityAsset(id){
  }else if(id==='container'){
  box(4.5,2.2,2,0,1.1,0,'teal');for(let i=0;i<15;i++)box(.07,2.1,.07,-2.1+i*.3,1.1,1.03,'dark');for(const x of[-1.1,1.1]){box(2.1,2,.06,x,1.1,-1.03,'teal');box(.06,1.9,.08,x,1.1,-1.1,'rust');}box(1,.15,.7,1.5,2.25,.4,'rust');
  }else rubble(18);
- g.name=id;g.userData.assetId=id;return g;
+ g.name=id;g.userData.assetId=id;return applyRigidUpgrade(g,'gallery-'+id);
 }
 export const cityAssets=[
  ['apartment','덩굴 아파트','건물','바랜 외벽, 판자로 막은 창문, 부서진 옥상과 덩굴.'],['shop','마지막 정류장 상점','건물','청록색 간판과 줄무늬 차양을 갖춘 작은 거리 상점.'],['ruin','붕괴한 콘크리트 골조','건물','노출된 기둥과 철근, 기울어진 바닥판과 잔해.'],['car','방치된 세단','차량','바랜 청록 차체, 녹슨 보닛과 각진 바퀴.'],['van','폐배달 밴','차량','높은 적재실과 낡은 투톤 도장의 배달 차량.'],['tree','도시를 되찾는 나무','자연','다섯 덩어리의 각진 수관과 갈라진 가지.'],['dead-tree','마른 나무','자연','잎이 사라지고 가지가 드러난 거리의 고목.'],['signal','낡은 신호등','거리 소품','긴 가로대와 바랜 삼색 신호등.'],['barrels','녹슨 드럼통 묶음','거리 소품','청록과 적갈색 드럼통, 금속 띠와 작은 라벨.'],['barricade','도로 차단물','거리 소품','콘크리트 받침과 비스듬한 경고 무늬.'],['container','방치된 화물 컨테이너','거리 소품','골판 외벽, 문 잠금봉과 녹슨 지붕.'],['rubble','붕괴 잔해 더미','거리 소품','크기와 각도가 다른 콘크리트·벽돌 조각.']

@@ -10,9 +10,10 @@ const clips=Object.fromEntries(Object.entries({...data,...sideData}).map(([name,
 // while weapon grips and aim receive small final corrections in third-person.js.
 export function createThirdPersonMotion(avatar){
  const sprintClip=avatar.actions.Sprint_Loop.getClip();
- const motionClips={...clips,Sprint_Loop:{duration:sprintClip.duration,tracks:sprintClip.tracks.map(t=>({bone:t.name.split('.')[0],property:t.name.split('.')[1],sample:t.createInterpolant()}))}};
+ const motionClips={...clips,Sprint_Loop:{positionAligned:true,duration:sprintClip.duration,tracks:sprintClip.tracks.map(t=>({bone:t.name.split('.')[0],property:t.name.split('.')[1],sample:t.createInterpolant()}))}};
  const bones=Object.fromEntries(avatar.bones.map(b=>[b.name,b])),previous=new Map();let clock=0,strideClock=0,strideRate=.35,wasGrounded=true,airAge=0,landAge=1,lastWeapon='',shotKick=0,lastFlash=false,wasMoving=false,transitionKind='',transitionAge=1,walkBlend=0;const momentum=new THREE.Vector3();let runLift=0,runTwist=0,runPoseBlend=0;
- function apply(name,phase,mask=()=>true,weight=1){const clip=motionClips[name];if(!clip)return;for(const t of clip.tracks){const b=bones[t.bone];if(!b||!mask(t.bone))continue;const a=t.sample.evaluate(THREE.MathUtils.clamp(phase,0,1)*clip.duration);if(t.property==='quaternion')b.quaternion.slerp(new THREE.Quaternion().fromArray(a),weight);else b.position.lerp(new THREE.Vector3().fromArray(a),weight);}}
+ function alignPosition(name,position,aligned=false){const offset=avatar.bindPositionOffsets?.get(name);if(offset&&!aligned)position.add(offset);return position;}
+ function apply(name,phase,mask=()=>true,weight=1){const clip=motionClips[name];if(!clip)return;for(const t of clip.tracks){const b=bones[t.bone];if(!b||!mask(t.bone))continue;const a=t.sample.evaluate(THREE.MathUtils.clamp(phase,0,1)*clip.duration);if(t.property==='quaternion')b.quaternion.slerp(new THREE.Quaternion().fromArray(a),weight);else b.position.lerp(alignPosition(t.bone,new THREE.Vector3().fromArray(a),clip.positionAligned),weight);}}
  function applyLeftCross(phase){
   const clip=motionClips.Punch_Cross;
   for(const t of clip.tracks){
@@ -20,7 +21,7 @@ export function createThirdPersonMotion(avatar){
    const values=t.sample.evaluate(THREE.MathUtils.clamp(phase,0,1)*clip.duration);
    // Reflect the entire source pose across the character's sagittal plane.
    if(t.property==='quaternion'){const q=new THREE.Quaternion().fromArray(values);q.y=-q.y;q.z=-q.z;bone.quaternion.copy(q);}
-   else{const p=new THREE.Vector3().fromArray(values);p.x=-p.x;bone.position.copy(p);}
+   else{const p=new THREE.Vector3().fromArray(values);p.x=-p.x;bone.position.copy(alignPosition(target,p));}
   }
  }
  function applyStep(name,phase){
@@ -32,7 +33,7 @@ export function createThirdPersonMotion(avatar){
    const target=mirror?t.bone.replace(/_([lr])$/,(_,side)=>side==='l'?'_r':'_l'):t.bone,b=bones[target];if(!b)continue;
    const values=t.sample.evaluate(sampleTime);
    if(t.property==='quaternion'){const q=new THREE.Quaternion().fromArray(values);if(mirror){q.y=-q.y;q.z=-q.z;}b.quaternion.copy(q);}
-   else{const p=new THREE.Vector3().fromArray(values);if(mirror)p.x=-p.x;b.position.copy(p);}
+   else{const p=new THREE.Vector3().fromArray(values);if(mirror)p.x=-p.x;b.position.copy(alignPosition(target,p));}
   }
  }
  avatar.root.updateMatrixWorld(true);const uprightWaist=avatar.root.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(bones.spine_01.getWorldQuaternion(new THREE.Quaternion()));

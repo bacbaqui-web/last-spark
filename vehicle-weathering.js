@@ -1,8 +1,8 @@
 import * as T from 'three';
 let rustTexture;
 export function weatherVehicleMaterial(material,{paint=false}={}){
- if(typeof document==='undefined')return material;
- rustTexture??=new T.TextureLoader().load(new URL(import.meta.env.BASE_URL+'textures/vehicles/rusted-paint-v1.png',document.baseURI).href,()=>window.dispatchEvent(new Event('vehicle-texture-ready')));
+ if(typeof document==='undefined'||!document.baseURI)return material;
+ rustTexture??=new T.TextureLoader().load(new URL((import.meta.env?.BASE_URL??'./')+'textures/vehicles/rusted-paint-v1.png',document.baseURI).href,()=>window.dispatchEvent(new Event('vehicle-texture-ready')));
  rustTexture.colorSpace=T.SRGBColorSpace;rustTexture.wrapS=rustTexture.wrapT=T.RepeatWrapping;rustTexture.anisotropy=4;
  material.map=rustTexture;material.roughness=.94;material.metalness=.08;
  if(paint){

@@ -47,7 +47,8 @@
       ]
     ],
     "kind": null,
-    "color": "#b3c2be"
+    "color": "#e4e2d9",
+    "paintId": "white"
   },
   {
     "id": "daewoo-matiz-2003",
@@ -97,7 +98,8 @@
       ]
     ],
     "kind": null,
-    "color": "#cba746"
+    "color": "#adb3b8",
+    "paintId": "silver"
   },
   {
     "id": "volvo-v70-wagon-2006",
@@ -147,7 +149,8 @@
       ]
     ],
     "kind": null,
-    "color": "#839fbd"
+    "color": "#315b83",
+    "paintId": "blue"
   },
   {
     "id": "mahindra-thar-2021",
@@ -189,7 +192,8 @@
       ]
     ],
     "kind": null,
-    "color": "#ad7b53"
+    "color": "#292c30",
+    "paintId": "black"
   },
   {
     "id": "willys-mb",
@@ -207,7 +211,11 @@
     "profile": [
       [
         0,
-        0.96
+        0.79
+      ],
+      [
+        0.065,
+        0.98
       ],
       [
         0.4,
@@ -231,7 +239,9 @@
       ]
     ],
     "kind": "jeep",
-    "color": "#778565"
+    "color": "#657052",
+    "paintId": "olive",
+    "windshieldRake": 32
   },
   {
     "id": "ford-f-100-1956",
@@ -281,7 +291,8 @@
       ]
     ],
     "kind": "pickup",
-    "color": "#a95c43"
+    "color": "#a83831",
+    "paintId": "red"
   },
   {
     "id": "citroen-hy-1957",
@@ -327,7 +338,8 @@
       ]
     ],
     "kind": null,
-    "color": "#7cabb3"
+    "color": "#bdac8c",
+    "paintId": "beige"
   },
   {
     "id": "nissan-civilian",
@@ -369,7 +381,8 @@
       ]
     ],
     "kind": null,
-    "color": "#b6a96a"
+    "color": "#656b70",
+    "paintId": "gray"
   },
   {
     "id": "daihatsu-gran-max-box-van",
@@ -419,7 +432,8 @@
       ]
     ],
     "kind": "truck",
-    "color": "#a6bdc3"
+    "color": "#e4e2d9",
+    "paintId": "white"
   },
   {
     "id": "nissan-silvia-s14-1994",
@@ -473,6 +487,7 @@
       ]
     ],
     "kind": null,
-    "color": "#8d4d49"
+    "color": "#a83831",
+    "paintId": "red"
   }
 ]

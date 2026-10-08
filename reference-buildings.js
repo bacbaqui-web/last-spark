@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {replaceTemplates} from './asset-upgrades.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 export const referenceAssetInfo=[
  {id:'ref-brownstone',name:'덩굴 벽돌 주택',description:'사진 1 · 4층의 반복 창문, 현관 계단, 철제 비상계단과 벽을 타고 오르는 덩굴.',source:'wall_1_window_1 / wall_1_door_boarded / wall_column / leaf_1'},
@@ -56,5 +57,5 @@ export function composeReferenceAssets(library){
   }
   const parts=[...groups.values()].map(g=>({material:g.material,geometry:mergeGeometries(g.geometries,false)}));const bounds=new T.Box3();for(const p of parts){if(!p.geometry)throw Error('Assembly merge failed '+info.id);p.geometry.computeBoundingBox();bounds.union(p.geometry.boundingBox);}const center=bounds.getCenter(new T.Vector3()),size=bounds.getSize(new T.Vector3());for(const p of parts)p.geometry.translate(-center.x,-bounds.min.y,-center.z);for(const g of groups.values())for(const geo of g.geometries)geo.dispose();result.set(info.id,{parts,size,maxSize:Math.max(size.x,size.y,size.z),sources:[...sources]});
  }
- return result;
+ return replaceTemplates(result);
 }

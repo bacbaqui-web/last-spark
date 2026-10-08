@@ -1,5 +1,6 @@
 import {weatherVehicleMaterial,vehicleSurfaceUV} from './vehicle-weathering.js';
 import * as T from 'three';
+import {getUpgradedTemplate} from './asset-upgrades.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 export const VEHICLE_PAINTS=[{name:'퇴색한 붉은색',color:0x984d43},{name:'청록색',color:0x497f79},{name:'회청색',color:0x56748e},{name:'황토색',color:0xb69b55},{name:'아이보리',color:0xbab7a3},{name:'올리브',color:0x687756},{name:'남색',color:0x3e5268},{name:'검회색',color:0x525654}];
 export const VEHICLE_TYPES=[
@@ -18,7 +19,7 @@ export const VEHICLE_TYPES=[
 ];
 const cache=new Map(),materialCache=new Map();
 function sharedMaterial(name,color){const key=name+color;if(!materialCache.has(key))materialCache.set(key,['body','rust','metal'].includes(name)?weatherVehicleMaterial(new T.MeshStandardMaterial({color,roughness:1,flatShading:true}),{paint:name==='body'}):new T.MeshStandardMaterial({color,roughness:1,flatShading:true}));return materialCache.get(key);}
-export function getRuinedVehicle(id,paint=0){const info=VEHICLE_TYPES.find(v=>v.id===id);if(!info?.style)return null;const key=id+':'+paint;if(cache.has(key))return cache.get(key);
+export function getRuinedVehicle(id,paint=0){const info=VEHICLE_TYPES.find(v=>v.id===id);if(!info?.style)return null;const key=id+':'+paint;if(cache.has(key))return getUpgradedTemplate(id,cache.get(key));
  const colors={body:VEHICLE_PAINTS[paint%VEHICLE_PAINTS.length].color,glass:0x273a39,rubber:0x262923,rust:0x78513a,metal:0x8a8c7d,light:0xada47f,red:0x964b3e},materials=new Map(),groups=new Map();for(const [name,color]of Object.entries(colors))materials.set(name,sharedMaterial(name,color));
  function add(g,name='body',x=0,y=0,z=0){g.translate(x,y,z);const geo=g.index?g.toNonIndexed():g;if(g!==geo)g.dispose();if(['body','rust','metal'].includes(name))vehicleSurfaceUV(geo);if(!groups.has(name))groups.set(name,[]);groups.get(name).push(geo);}
  function box(w,h,d,x,y,z,name='body'){add(new T.BoxGeometry(w,h,d),name,x,y,z);}
@@ -36,5 +37,5 @@ export function getRuinedVehicle(id,paint=0){const info=VEHICLE_TYPES.find(v=>v.
  if(style==='delivery')for(let i=0;i<9;i++)box(W+.025,.025,.035,0,1.2+i*.17,-L*.18,'metal');
  // Dents, missing glazing and exposed rusty seams remain visible in every paint variant.
  for(let i=0;i<12;i++){const side=i%2?1:-1,z=Math.sin(i*2.4)*L*.43;box(.035,.08+(i%3)*.035,.16+(i%4)*.09,side*(W/2+.02),.62+(i%5)*.16,z,'rust');}
- const parts=[...groups].map(([name,geos])=>{const geometry=mergeGeometries(geos,false);geos.forEach(g=>g.dispose());return {geometry,material:materials.get(name)};});const bounds=new T.Box3();for(const p of parts){p.geometry.computeBoundingBox();bounds.union(p.geometry.boundingBox);}const size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());for(const p of parts)p.geometry.translate(-center.x,-bounds.min.y,-center.z);const result={parts,size,maxSize:Math.max(size.x,size.y,size.z),name:info.name};cache.set(key,result);return result;
+ const parts=[...groups].map(([name,geos])=>{const geometry=mergeGeometries(geos,false);geos.forEach(g=>g.dispose());return {geometry,material:materials.get(name)};});const bounds=new T.Box3();for(const p of parts){p.geometry.computeBoundingBox();bounds.union(p.geometry.boundingBox);}const size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());for(const p of parts)p.geometry.translate(-center.x,-bounds.min.y,-center.z);const result={parts,size,maxSize:Math.max(size.x,size.y,size.z),name:info.name};cache.set(key,result);return getUpgradedTemplate(id,result);
 }

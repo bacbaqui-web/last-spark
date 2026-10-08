@@ -76,7 +76,7 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
  // Wrecks have full 3D attitudes. Grounding uses transformed geometry bounds.
  let attempts=0;while(cars.length<layout.cars&&attempts++<600){
   const d=fleet[Math.floor(r()*fleet.length)],side=r()<.5?-1:1,angle=r()*Math.PI*2,roll=r()<.45?(r()<.4?Math.PI:(r()<.5?-1:1)*Math.PI/2):(r()-.5)*.18,pitch=(r()-.5)*.25;
-  const car=createFleetVehicle(d);car.scale.setScalar(1.12);car.rotation.set(pitch,angle,roll);car.updateMatrixWorld(true);
+  const car=createFleetVehicle(d,{seed:`${seed}:${attempts}`});car.scale.setScalar(1.12);car.rotation.set(pitch,angle,roll);car.updateMatrixWorld(true);
   const bounds=new T.Box3().setFromObject(car),halfW=(bounds.max.x-bounds.min.x)/2,halfD=(bounds.max.z-bounds.min.z)/2;
   if(halfW>3.4||halfD>4.5){car.material.dispose();continue;}
   // Guarantee central wrecks and both sidewalk zones, then vary the rest.
@@ -86,7 +86,7 @@ export function createSalvageStreetBlock(seed=2207,layoutIndex=0){
   if(Math.abs(x)+halfW>8.3||treeSlots.some(t=>Math.abs(t.x-x)<halfW+.5&&Math.abs(t.z-z)<halfD+.5)){car.material.dispose();continue;}
   if(cars.some(c=>Math.abs(c.x-x)<c.halfW+halfW+.35&&Math.abs(c.z-z)<c.halfD+halfD+.5)){car.material.dispose();continue;}
   const ground=Math.abs(x)+halfW>3.65?.215:.04;
-  car.position.set(x-(bounds.min.x+bounds.max.x)/2,ground-bounds.min.y,z-(bounds.min.z+bounds.max.z)/2);car.castShadow=car.receiveShadow=true;car.userData.ownedMaterial=true;mossMaterial(car.material,.72);car.userData.collisionKind='car';root.add(car);cars.push({id:d.id,x,z,halfW,halfD,roll,pitch,angle,placement});obstacles.push({kind:'car',x,z,w:halfW*2,d:halfD*2});
+  car.position.set(x-(bounds.min.x+bounds.max.x)/2,ground-bounds.min.y,z-(bounds.min.z+bounds.max.z)/2);car.castShadow=car.receiveShadow=true;car.userData.ownedMaterial=true;mossMaterial(car.material,.72);car.userData.collisionKind='car';root.add(car);cars.push({id:d.id,paintId:car.userData.paintId,x,z,halfW,halfD,roll,pitch,angle,placement});obstacles.push({kind:'car',x,z,w:halfW*2,d:halfD*2});
  }
  // A few abandoned motorcycles, bicycles and scooters, grounded on the road or sidewalk.
  for(let attempts=0;smallRides.length<5&&attempts<150;attempts++){

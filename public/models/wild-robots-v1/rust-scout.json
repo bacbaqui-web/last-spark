@@ -1,0 +1,25 @@
+{
+  "meshObjects": 16,
+  "triangles": 23240,
+  "vertices": 13433,
+  "rigged": false,
+  "rigidAssemblies": 16,
+  "textured": true,
+  "texture": "material-atlas.png",
+  "boundsMetres": [
+    1.415,
+    2.714,
+    1.184
+  ],
+  "animations": [],
+  "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+  "id": "rust-scout",
+  "name": "녹슨 척후병",
+  "role": "기본 전투·정찰형",
+  "concept": "01-rust-scout-v2.png",
+  "glb": "rust-scout.glb",
+  "preview": "rust-scout.png",
+  "blend": "rust-scout.blend",
+  "embeddedImages": 1,
+  "bytes": 5507396
+}

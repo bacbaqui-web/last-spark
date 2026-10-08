@@ -1,0 +1,25 @@
+{
+  "meshObjects": 27,
+  "triangles": 36276,
+  "vertices": 23529,
+  "rigged": false,
+  "rigidAssemblies": 27,
+  "textured": true,
+  "texture": "material-atlas.png",
+  "boundsMetres": [
+    2.466,
+    1.116,
+    2.292
+  ],
+  "animations": [],
+  "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+  "id": "iron-beetle",
+  "name": "철갑 딱정벌레",
+  "role": "지상 돌진형",
+  "concept": "03-iron-beetle-v2.png",
+  "glb": "iron-beetle.glb",
+  "preview": "iron-beetle.png",
+  "blend": "iron-beetle.blend",
+  "embeddedImages": 1,
+  "bytes": 6369188
+}

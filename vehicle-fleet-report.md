@@ -12,10 +12,10 @@
 | 경차 해치백 | [daewoo-matiz-2003](https://drawingdatabase.com/daewoo-matiz-2003/) | 842 |
 | 스테이션 왜건 | [volvo-v70-wagon-2006](https://drawingdatabase.com/volvo-v70-wagon-2006/) | 842 |
 | 오프로드 SUV | [mahindra-thar-2021](https://drawingdatabase.com/mahindra-thar-2021/) | 814 |
-| 오픈 지프 | [willys-mb](https://drawingdatabase.com/willys-mb/) | 914 |
+| 오픈 지프 | [willys-mb](https://drawingdatabase.com/willys-mb/) | 928 |
 | 클래식 픽업 | [ford-f-100-1956](https://drawingdatabase.com/ford-f-100-1956/) | 888 |
 | 패널 밴 | [citroen-hy-1957](https://drawingdatabase.com/citroen-hy-1957/) | 828 |
-| 미니버스 | [nissan-civilian](https://drawingdatabase.com/nissan-civilian/) | 814 |
+| 미니버스 | [nissan-civilian](https://drawingdatabase.com/nissan-civilian/) | 822 |
 | 소형 탑차 | [daihatsu-gran-max-box-van](https://drawingdatabase.com/daihatsu-gran-max-box-van/) | 842 |
 | 스포츠 쿠페 | [nissan-silvia-s14-1994](https://drawingdatabase.com/nissan-silvia-s14-1994/) | 856 |
 
@@ -26,16 +26,29 @@
 - 휠 아치를 차체 경계에 만들고 안쪽에 닫힌 차콜 코어를 넣었습니다. 바퀴는 차체 폭 안쪽으로 넣었습니다.
 - 차종별 도면과 UV 안내 이미지를 imagegen에 입력해 각각 독립된 낡은 텍스처를 만들었습니다.
 - 녹, 벗겨진 도장, 금 간 오염 유리, 진흙 묻은 휠·타이어는 텍스처에 고정했습니다. 녹 양 슬라이더는 없습니다. 남아 있는 도장색만 변경 가능합니다.
-- 차량당 메시 1개 / 재질 1개, 총 8,482개 삼각형. 배포용 JPEG 10개 합계 약 8.67 MB.
+- 차량당 메시 1개 / 재질 1개, 총 8,504개 삼각형(지프 형태 및 미니버스 UV 구간 수정 반영). 배포용 JPEG 10개 합계 약 8.67 MB.
 - 정확한 입력 프롬프트와 원본 생성 경로: [vehicle-fleet-prompts.json](./vehicle-fleet-prompts.json). 생성 모드는 UV 안내 + 도면 참조 이미지 편집입니다. 배포 자산은 `public/textures/vehicles/fleet/*.jpg`입니다.
 
 ## 비교 화면
 
 [차량 10종 비교](https://bacbaqui-web.github.io/last-spark/vehicle-fleet.html)
 
-전체 비교, 개별 차량 선택, 드래그 회전, 휠 확대, 정면·측면·위·입체 보기, 메시 표시와 도장 색 변경을 지원합니다. 각 차량 카드에서 도면 출처와 텍스처를 열 수 있습니다.
+전체 비교, 개별 차량 선택, 드래그 회전, 휠 확대, 정면·측면·위·입체 보기, 메시 표시와 도장 색 변경을 지원합니다. 각 차량 카드에서 도면 출처와 텍스처를 열 수 있습니다. 아래 색상 확장은 현재 로컬 작업본 기준입니다.
+
+## 기본 도장 8종 확장 (2026-10-08)
+
+- 10개 차종 모두 화이트·블랙·실버·그레이·레드·딥 블루·베이지·올리브를 지원합니다. 총 80개 차종/색상 조합입니다.
+- `vehicle-paints.js`가 색상 이름·색상값·거리 배정 가중치를 관리합니다. 무채색 합계 80%는 거리 연출용 설정이며 실제 판매 통계가 아닙니다.
+- 기존 청록색 원본 텍스처의 상대적인 색 차이를 사용해 어둡거나 바랜 도장까지 재색칠합니다. 녹·먼지의 명암을 유지하며 휠/타이어 타일은 마스크에서 제외합니다. 별도의 색상별 이미지 복사본은 만들지 않습니다.
+- `createFleetVehicle(data, {paintId:'red'})`로 고정색, `{seed:placementKey}`로 재현 가능한 색상을 선택합니다. 지오메트리와 원본 텍스처는 공유하고 도장 uniform은 차량별로 독립됩니다.
+- 비교 화면의 **차종별 8색 비교**는 같은 차량 8대를 나란히 표시합니다. 색상 버튼을 누르면 해당 색상을 개별 확인하며 차량을 바꿨다 돌아와도 페이지를 새로고침하기 전까지 선택을 유지합니다.
+- `salvage-street-block.js`와 `street-road-shapes.js`의 거리 시제품에서도 위치별로 다른 색상을 배정합니다. 별도 해시를 사용하므로 건물·차량 배치를 생성하는 기존 난수 순서는 바뀌지 않습니다. 본편 전투 맵 통합은 이번 변경 범위가 아닙니다.
+- 검증: `node scripts/verify-vehicle-paints.mjs`, Vite 빌드, 브라우저 도장 비교 및 선택 유지 확인. 10종의 8색 지원, 재질 독립성, 시드 재현성, 이끼 셰이더와의 결합을 확인했습니다.
 
 ## 검증과 범위
+
+- 2026-10-08 미니버스 앞유리 보정: 앞쪽 경사 구간(차체 길이의 0–10%)에 정면 텍스처를 투영하고, 옆유리와 같은 하단 1.38m / 상단 2.30m로 앞유리 UV를 맞췄습니다. 1.10m 아래의 전조등·그릴은 기존 위치를 유지합니다. 유리 위 도장 면은 지붕 텍스처로 채워 경계가 길게 늘어지지 않게 했습니다. 지붕은 상면 텍스처의 18% 지점부터 사용합니다. 차체 외형을 유지하며 높이별 UV 보간을 위해 삼각형 8개를 추가했습니다. 다른 9종의 지오메트리와 UV는 동일합니다. 빌드·8색 회귀 확인, 정면/입체 및 앞·옆유리 접합부 확대 확인을 통과했습니다.
+- 2026-10-08 지프 형태 보정: 제공된 비교 이미지에 맞춰 앞유리를 카울 하단 축에서 뒤로 32도 기울이고, 보닛 앞쪽 6.5% 구간에 경사를 추가했습니다. 유리의 UV는 강체 회전과 함께 유지하며, 다른 9종의 위치·법선·UV·정점색은 수정 전과 동일함을 확인했습니다. 빌드와 8색 회귀 확인, 측면/입체 브라우저 확인을 통과했습니다.
 
 - 10종 모두 선택 동작을 브라우저에서 확인했습니다.
 - 모든 메시의 위치 / UV / 색상 값이 유한한지, 측면 프로필이 중복되지 않는지 확인했습니다.

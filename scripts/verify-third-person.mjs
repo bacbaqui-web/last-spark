@@ -1,3 +1,6 @@
+import * as SALVAGE from '../sortie-runtime.js';
+import {sortieMission} from '../sortie-mission.js';
+import {configureUpgradeLighting} from '../asset-upgrades.js';
 import {createStepLocomotion} from '../step-locomotion.js';
 import {decorateMinigunFlash} from '../minigun-fire.js';
 import * as MOVE from '../player-movement.js';
@@ -14,8 +17,8 @@ import * as REAL from '../node_modules/three/build/three.module.js';
 import * as ROBOT from '../robot.js';import * as AI from '../enemy-ai.js';
 import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
 const elements=new Map(),events=new Map();const element=()=>({style:{},textContent:'',innerHTML:'',querySelector:()=>({style:{}}),addEventListener(){},requestPointerLock:async()=>{}});
-const context={createStepLocomotion,decorateMinigunFlash,MOVE,events,THIRD,MOTION,VIEW,NAV,PROGRESS,DETAIL,BOSSES,REAL,ROBOT,AI,WM,poseSword,console,Math,performance,innerWidth:1200,innerHeight:800,devicePixelRatio:1,window:{addEventListener(){}},document:{body:{appendChild(){}},createElement:()=>({style:{},remove(){},getContext:()=>null}),getElementById(id){if(!elements.has(id))elements.set(id,element());return elements.get(id)},addEventListener(name,fn){events.set(name,fn)},exitPointerLock(){}},requestAnimationFrame(){}};
-vm.createContext(context);let source=fs.readFileSync('main.js','utf8').replace("import './salvage.css';",'').replace("import * as SALVAGE from './sortie-runtime.js';",'').replace("import {createStepLocomotion} from './step-locomotion.js';",'').replace("import {decorateMinigunFlash} from './minigun-fire.js';",'').replace("import * as THREE from 'three';",`const THREE={...REAL,WebGLRenderer:class{constructor(){this.shadowMap={}}setPixelRatio(){}setSize(){}render(){}}};`);
+const context={SALVAGE,sortieMission,configureUpgradeLighting,createStepLocomotion,decorateMinigunFlash,MOVE,events,THIRD,MOTION,VIEW,NAV,PROGRESS,DETAIL,BOSSES,REAL,ROBOT,AI,WM,poseSword,console,Math,performance,innerWidth:1200,innerHeight:800,devicePixelRatio:1,window:{addEventListener(){}},document:{body:{appendChild(){}},createElement:()=>({style:{},remove(){},getContext:()=>null}),getElementById(id){if(!elements.has(id))elements.set(id,element());return elements.get(id)},addEventListener(name,fn){events.set(name,fn)},exitPointerLock(){}},requestAnimationFrame(){}};
+vm.createContext(context);let source=fs.readFileSync('main.js','utf8').replace("import {sortieMission} from './sortie-mission.js';",'').replace("import {configureUpgradeLighting} from './asset-upgrades.js';",'').replace("import './salvage.css';",'').replace("import * as SALVAGE from './sortie-runtime.js';",'').replace("import {createStepLocomotion} from './step-locomotion.js';",'').replace("import {decorateMinigunFlash} from './minigun-fire.js';",'').replace("import * as THREE from 'three';",`const THREE={...REAL,WebGLRenderer:class{constructor(){this.shadowMap={}}setPixelRatio(){}setSize(){}render(){}}};`);
 source=source.replace("import {movePlayerWithSlide} from './player-movement.js';",'const {movePlayerWithSlide}=MOVE;');
 source=source.replace("import {createThirdPersonView} from './third-person.js';",'const {createThirdPersonView}=THIRD;');
 source=source.replace("import {createWeaponMotion} from './weapon-motion.js';",'const {createWeaponMotion}=MOTION;');

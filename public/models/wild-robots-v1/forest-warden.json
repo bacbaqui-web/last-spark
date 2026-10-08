@@ -1,0 +1,25 @@
+{
+  "meshObjects": 16,
+  "triangles": 25552,
+  "vertices": 17997,
+  "rigged": false,
+  "rigidAssemblies": 16,
+  "textured": true,
+  "texture": "material-atlas.png",
+  "boundsMetres": [
+    3.1,
+    3.324,
+    1.664
+  ],
+  "animations": [],
+  "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+  "id": "forest-warden",
+  "name": "숲의 파수꾼",
+  "role": "중장갑 정예형",
+  "concept": "10-forest-warden-v2.png",
+  "glb": "forest-warden.glb",
+  "preview": "forest-warden.png",
+  "blend": "forest-warden.blend",
+  "embeddedImages": 1,
+  "bytes": 5688620
+}

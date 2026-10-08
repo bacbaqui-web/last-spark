@@ -1,3 +1,5 @@
+import {preloadAssetUpgrades} from './asset-upgrades.js';
+await preloadAssetUpgrades();
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {createCityAsset,cityAssets} from './city-assets.js';

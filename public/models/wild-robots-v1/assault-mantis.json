@@ -1,0 +1,25 @@
+{
+  "meshObjects": 18,
+  "triangles": 20720,
+  "vertices": 13725,
+  "rigged": false,
+  "rigidAssemblies": 18,
+  "textured": true,
+  "texture": "material-atlas.png",
+  "boundsMetres": [
+    2.1,
+    2.481,
+    1.66
+  ],
+  "animations": [],
+  "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+  "id": "assault-mantis",
+  "name": "이끼 사마귀 돌격병",
+  "role": "근접 돌격형",
+  "concept": "02-assault-mantis-v2.png",
+  "glb": "assault-mantis.glb",
+  "preview": "assault-mantis.png",
+  "blend": "assault-mantis.blend",
+  "embeddedImages": 1,
+  "bytes": 5370584
+}

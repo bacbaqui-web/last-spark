@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>에셋 교체 검토 · LAST SPARK</title><link rel="stylesheet" href="./asset-review.css"></head>
+<body>
+<header class="masthead"><a class="wordmark" href="./index.html">LAST SPARK<span>ASSET WORKSHOP</span></a><a class="back-game" href="./index.html" target="_blank" rel="noopener">게임에서 확인 ↗</a></header>
+<main>
+ <section class="intro"><div><p class="eyebrow">ART DIRECTION / 01</p><h1>폐허 도시,<br>다시 만들기<span>.</span></h1><p class="intro-copy">현재 에셋과 새 후보를 비교하세요.<br><strong>허용한 항목만</strong> 게임에 적용됩니다.</p></div><div class="review-summary"><span class="direction">사실적인 폐허 도시</span><div id="counts" class="counts"></div><button id="scanAll" class="primary">전체 후보 찾기 <span>↗</span></button><p id="scanStatus" role="status">검토 목록을 준비하고 있습니다.</p></div></section>
+ <aside id="connectionNotice" hidden></aside><p class="review-guide">무료·유료 후보를 함께 비교합니다. <strong>사진은 판매자 미리보기</strong>이며, 실제 게임 적용 모습은 3D 비교에서 확인하세요. 유료 팩은 전체 가격입니다.</p>
+ <nav class="review-filters" aria-label="에셋 필터"><label class="search-field"><span>⌕</span><input id="filterText" type="search" placeholder="에셋 이름으로 찾기" aria-label="에셋 이름으로 찾기"></label><select id="category" aria-label="종류별 보기"><option value="">모든 종류</option></select><select id="statusFilter" aria-label="검토 상태별 보기"><option value="">모든 상태</option><option value="candidate">검토할 후보</option><option value="approved">적용한 에셋</option><option value="empty">후보 없음 · 검색 오류</option></select><select id="priceFilter" aria-label="현재 후보 가격"><option value="">무료 + 유료</option><option value="free">무료 후보</option><option value="paid">유료 후보</option></select><span id="visibleCount"></span></nav>
+ <div class="list-legend"><span>현재 모습</span><span>새로운 후보</span><span>선택은 직접</span></div>
+ <section id="assetList" aria-label="에셋 교체 목록"></section><p id="emptyList" hidden>조건에 맞는 항목이 없습니다.</p>
+ <footer class="page-footer">소재 검색 · 3D Asset Server + 원본 판매처 검토 <a href="https://3d.shep.bot" target="_blank" rel="noopener noreferrer">원본 서비스 ↗</a><span>승인은 이 프로젝트에 저장됩니다. 열린 게임은 새로고침하면 반영됩니다.</span></footer>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+<dialog id="compareDialog" aria-labelledby="compareTitle"><header><div><p class="eyebrow">BEFORE / AFTER</p><h2 id="compareTitle"></h2></div><button id="closeCompare" aria-label="비교 닫기">×</button></header><p class="compare-help">드래그해서 회전 · 휠로 확대 · 필요한 경우 후보의 방향을 조정하세요.</p><div class="compare-views"><figure><figcaption>현재 모습</figcaption><canvas id="beforeCanvas" aria-label="현재 에셋 회전 미리보기"></canvas></figure><figure><figcaption>새로운 후보</figcaption><canvas id="afterCanvas" aria-label="교체 후보 회전 미리보기"></canvas></figure></div><div id="compareInfo"></div><div class="rotation-controls"><span>후보 방향</span><button data-axis="0">X축 90°</button><button data-axis="1">Y축 90°</button><button data-axis="2">Z축 90°</button><button id="resetRotation">초기화</button></div><footer><button id="compareNext">다른 거 찾기</button><button id="compareApprove" class="primary">허용 · 게임에 적용</button></footer></dialog>
+<script type="module" src="./asset-review.js"></script>
+</body></html>

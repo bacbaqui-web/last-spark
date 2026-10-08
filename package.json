@@ -6,11 +6,22 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "test:weapons": "node scripts/verify-fire-knife.mjs && node scripts/verify-laser-bow.mjs && node scripts/verify-chainsaw.mjs && node scripts/verify-third-person.mjs && node scripts/verify-player-movement.mjs && node scripts/verify-third-person-motion.mjs && node scripts/verify-motion-settings.mjs && node scripts/verify-pose-tools.mjs && node scripts/verify-frame-timeline.mjs",
+    "test:exoskeleton": "node scripts/verify-exoskeleton-concepts.mjs",
+    "test:reclaimed-weapons": "node scripts/verify-reclaimed-weapons.mjs",
+    "test:reclaimed-grips": "node scripts/verify-reclaimed-grips.mjs",
+    "test:robot-motion": "node scripts/verify-robot-motion.mjs",
+    "test:equipment-studies": "node scripts/verify-equipment-studies.mjs",
+    "test:frame": "node scripts/verify-salvage-frame.mjs && node scripts/verify-frame-visual.mjs && node scripts/verify-equipment.mjs && node scripts/verify-shoulder-mount.mjs && node scripts/verify-robot-gaze.mjs",
     "test:salvage": "node scripts/verify-bounded-route.mjs && node scripts/verify-collision-performance.mjs && node scripts/verify-aim-assist.mjs && node scripts/verify-salvage-campaign.mjs && node scripts/verify-equipment.mjs && node scripts/verify-sortie-report.mjs && node scripts/verify-frame-visual.mjs && node scripts/verify-salvage-runtime.mjs && node scripts/verify-player-movement.mjs && node scripts/verify-urban-ground.mjs && node scripts/verify-random-city.mjs && node scripts/verify-back-equipment.mjs",
     "test:blocks": "node scripts/verify-street-blocks.mjs",
-    "test:brick-streets": "node scripts/verify-brick-streets.mjs"
+    "test:brick-streets": "node scripts/verify-brick-streets.mjs",
+    "review": "vite --host 127.0.0.1 --port 5175 --strictPort",
+    "test:asset-review": "node scripts/verify-asset-review.mjs",
+    "test:wild-enemies": "node scripts/verify-wild-debris.mjs && node scripts/verify-wild-enemy-game.mjs"
   },
   "dependencies": {
+    "cannon-es": "0.20.0",
+    "fflate": "^0.8.3",
     "three": "^0.180.0",
     "vite": "^7.1.0",
     "yuka": "^0.7.8"
