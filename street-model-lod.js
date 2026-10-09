@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {brickHouseDetail} from './brick-house-variants.js';
 import {streetDetailLevel} from './street-lod-policy.js';
 import {staticMaterialKey} from './static-material-key.js';
@@ -32,8 +33,8 @@ export function prepareStreetModelLOD(root){
   }
  }
  root.updateMatrixWorld(true);
- // Repeated variants keep their shared geometry. Compact the selected levels
- // into immutable per-block instance buckets only when a level changes.
+ // Repeated near variants keep shared geometry. Select instances and proxy
+ // triangles within per-block material buckets only when a level changes.
  const buckets=new Map(),materialKeys=new WeakMap(),inverse=new T.Matrix4();
  function materialKey(material){
   if(!materialKeys.has(material)){
@@ -47,19 +48,39 @@ export function prepareStreetModelLOD(root){
   if(item.block===item.node||item.node.matrixWorld.determinant()<0)continue;
   inverse.copy(item.block.matrixWorld).invert();
   for(const [level,group] of item.levels.entries())for(const mesh of group.children){
-   const key=[item.block.id,mesh.geometry.id,materialKey(mesh.material),+mesh.castShadow,+mesh.receiveShadow].join('|');
-   let bucket=buckets.get(key);if(!bucket){bucket={sources:[],block:item.block,geometry:mesh.geometry,material:mesh.material,castShadow:mesh.castShadow,receiveShadow:mesh.receiveShadow};buckets.set(key,bucket);}
-   bucket.sources.push({item,level,matrix:new T.Matrix4().multiplyMatrices(inverse,mesh.matrixWorld)});
+   // Tiny proxies of different variants share a material. Merge their immutable
+   // vertices once, then select triangles with an index buffer on LOD changes.
+   // Near models keep shared instanced geometry without duplicating large meshes.
+   const merged=level>0,format=Object.entries(mesh.geometry.attributes).map(([name,a])=>[name,a.itemSize,a.normalized,a.array.constructor.name]).sort();
+   const key=[item.block.id,merged?'proxy:'+JSON.stringify(format):mesh.geometry.id,materialKey(mesh.material),+mesh.castShadow,+mesh.receiveShadow].join('|');
+   let bucket=buckets.get(key);if(!bucket){bucket={sources:[],block:item.block,geometry:mesh.geometry,material:mesh.material,castShadow:mesh.castShadow,receiveShadow:mesh.receiveShadow,merged};buckets.set(key,bucket);}
+   bucket.sources.push({item,level,geometry:mesh.geometry,matrix:new T.Matrix4().multiplyMatrices(inverse,mesh.matrixWorld)});
   }
   item.node.visible=false;
  }
  for(const bucket of buckets.values()){
-  const batch=new T.InstancedMesh(bucket.geometry,bucket.material,bucket.sources.length);
-  batch.name='street-lod-instances';batch.castShadow=bucket.castShadow;batch.receiveShadow=bucket.receiveShadow;batch.userData.ownedInstances=true;batch.matrixAutoUpdate=false;batch.instanceMatrix.setUsage(T.DynamicDrawUsage);bucket.batch=batch;bucket.block.add(batch);
+  let batch;
+  if(bucket.merged){
+   let offset=0;const parts=bucket.sources.map(source=>{
+    const geometry=(source.geometry.index?source.geometry.toNonIndexed():source.geometry.clone()).applyMatrix4(source.matrix);
+    source.offset=offset;source.count=geometry.attributes.position.count;offset+=source.count;return geometry;
+   });
+   const geometry=mergeGeometries(parts);parts.forEach(part=>part.dispose());
+   geometry.setIndex(new T.BufferAttribute(new Uint32Array(offset),1).setUsage(T.DynamicDrawUsage));
+   geometry.computeBoundingSphere();batch=new T.Mesh(geometry,bucket.material);batch.userData.ownedGeometry=true;batch.name='street-lod-proxies';
+  }else{
+   batch=new T.InstancedMesh(bucket.geometry,bucket.material,bucket.sources.length);
+   batch.name='street-lod-instances';batch.userData.ownedInstances=true;batch.instanceMatrix.setUsage(T.DynamicDrawUsage);
+  }
+  batch.castShadow=bucket.castShadow;batch.receiveShadow=bucket.receiveShadow;batch.matrixAutoUpdate=false;bucket.batch=batch;bucket.block.add(batch);
  }
  function updateBatches(){
   for(const bucket of buckets.values()){
    const batch=bucket.batch;let count=0;
+   if(bucket.merged){
+    for(const source of bucket.sources)if(source.item.level===source.level)for(let i=0;i<source.count;i++)batch.geometry.index.array[count++]=source.offset+i;
+    batch.geometry.setDrawRange(0,count);batch.geometry.index.needsUpdate=true;batch.visible=count>0;continue;
+   }
    for(const source of bucket.sources)if(source.item.level===source.level)batch.setMatrixAt(count++,source.matrix);
    batch.count=count;batch.visible=count>0;
    if(count){batch.instanceMatrix.needsUpdate=true;batch.boundingSphere=null;batch.computeBoundingSphere();}

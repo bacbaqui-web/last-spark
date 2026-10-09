@@ -62,18 +62,34 @@ for(const [time,z,level] of [[1,100,2],[2,50,1],[3,0,0],[4,100,2],[5,0,0]]){
 block.visible=false;camera.position.z=100;lod(6,camera);assert.equal(house.userData.detailLevel,0);block.visible=true;lod(7,camera);assert.equal(house.userData.detailLevel,2);
 const batchRoot=new T.Group(),batchBlock=new T.Group();batchRoot.add(batchBlock);const placed=[];
 for(let i=0;i<6;i++){
- const h=createBrickHouse(2);h.position.set((i%3)*12,0,Math.floor(i/3)*20);h.rotation.y=i*.2;h.scale.setScalar(.8+i*.03);h.userData.collisionKind='building';
+ const h=createBrickHouse(i%3);h.position.set((i%3)*12,0,Math.floor(i/3)*20);h.rotation.y=i*.2;h.scale.setScalar(.8+i*.03);h.userData.collisionKind='building';
  h.traverse(m=>{if(m.isMesh)m.material=mossMaterial(m.material.clone(),.78);});batchBlock.add(h);placed.push(h);
 }
 const batchUpdate=prepareStreetModelLOD(batchRoot);batchStreetStatics(batchRoot);freezeStreetTransforms(batchRoot);
 for(const [time,z] of [[1,12],[2,55],[3,150],[4,12]]){
  batchUpdate(time,{position:new T.Vector3(0,2,z)});
- const actual=[],expected=[],instance=new T.Matrix4(),world=new T.Matrix4();
- for(const h of placed){assert.equal(h.visible,false);for(const m of h.children[h.userData.detailLevel].children)expected.push({geometry:m.geometry.id,matrix:m.matrixWorld});}
+ const actual=[],expected=[],proxyActual=[],proxyExpected=[],instance=new T.Matrix4(),world=new T.Matrix4(),point=new T.Vector3();let surfaceCount=0;
+ const vertices=(mesh,target)=>{
+  const g=mesh.geometry,start=g.drawRange.start,count=Math.min(g.index?.count??g.attributes.position.count,start+g.drawRange.count);
+  for(let i=start;i<count;i++){point.fromBufferAttribute(g.attributes.position,g.index?g.index.getX(i):i).applyMatrix4(mesh.matrixWorld);target.push(point.toArray());}
+ };
+ for(const h of placed){assert.equal(h.visible,false);for(const m of h.children[h.userData.detailLevel].children){surfaceCount++;if(h.userData.detailLevel===0)expected.push({geometry:m.geometry.id,matrix:m.matrixWorld});else vertices(m,proxyExpected);}}
  for(const b of batchBlock.children.filter(n=>n.name==='street-lod-instances'&&n.visible))for(let i=0;i<b.count;i++){b.getMatrixAt(i,instance);world.multiplyMatrices(b.matrixWorld,instance);actual.push({geometry:b.geometry.id,matrix:world.clone()});}
+ for(const b of batchBlock.children.filter(n=>n.name==='street-lod-proxies'&&n.visible))vertices(b,proxyActual);
  assert.equal(actual.length,expected.length);
  for(const source of expected){const match=actual.findIndex(a=>a.geometry===source.geometry&&a.matrix.elements.every((v,i)=>Math.abs(v-source.matrix.elements[i])<1e-5));assert(match>=0,'instance world matrix matches the selected original surface');actual.splice(match,1);}
- assert(batchUpdate.snapshot().houseDrawBatches<expected.length,'shared variants reduce draw submissions');
+ assert.equal(proxyActual.length,proxyExpected.length,'merged proxies retain exactly the selected triangle count');
+ const points=new Map();for(const p of proxyActual){const key=p.map(v=>Math.floor(v*100)).join(',');if(!points.has(key))points.set(key,[]);points.get(key).push(p);}
+ for(const p of proxyExpected){
+  const cell=p.map(v=>Math.floor(v*100));let matched=false;
+  for(let x=-1;x<=1&&!matched;x++)for(let y=-1;y<=1&&!matched;y++)for(let z=-1;z<=1&&!matched;z++){
+   const candidates=points.get([cell[0]+x,cell[1]+y,cell[2]+z].join(','));if(!candidates)continue;
+   const i=candidates.findIndex(q=>p.every((v,k)=>Math.abs(v-q[k])<1e-4));if(i>=0){candidates.splice(i,1);matched=true;}
+  }
+  assert(matched,'merged proxy world vertex matches a selected original within 0.1mm');
+ }
+ assert(batchUpdate.snapshot().houseDrawBatches<surfaceCount,'shared variants reduce draw submissions');
+ if(z===150)assert(batchUpdate.snapshot().houseDrawBatches<surfaceCount/2,'different far variants share material draws');
 }
 console.log('PASS 20 house / 10 tree LOD budgets, cached geometry, hysteresis, frozen render levels, exact near restoration, 315 collision rays, rubble compaction and broken-tree preservation');
-console.log('PASS instanced house surfaces match every selected level across rotation, scale and near/far return; fewer draw submissions');
+console.log('PASS instanced near surfaces and merged proxy triangles match every selected level across rotation, scale and near/far return; fewer draw submissions');
