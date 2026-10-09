@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {withFrameWork,scheduleFrameWork,flushFrameWork,cancelFrameWork,inFrameWork} from '../frame-work.js';
 import './verify-wild-enemies.mjs';
+import './verify-wild-bosses.mjs';
 import {WILD_ENEMIES,createWildEnemy,animateWildEnemy,animateWildAttack,fireWildEnemy,dieWildEnemy,disposeWildEnemy,flushEnemyPoses} from '../wild-enemy-models.js';
 
 const work=[];

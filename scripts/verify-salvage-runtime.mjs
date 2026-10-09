@@ -1,3 +1,4 @@
+import {bindNewEnemyImports} from './new-enemy-test-bindings.mjs';
 import {configureUpgradeLighting} from '../asset-upgrades.js';
 import {sortieMission} from '../sortie-mission.js';
 import * as SALVAGE from '../sortie-runtime.js';
@@ -71,4 +72,4 @@ yaw=Math.PI;update(1/60);assert(!hiddenEnemy.dormant&&hiddenEnemy.group.visible,
 console.log('PASS actual game loop freezes offscreen AI and resumes on camera turn');
 console.log('PASS fallback pause, stopped simulation, frame exception containment and recovery action');
 console.log('PASS: 380m route, preplaced patrols, immediate detection, ally alert, locked cache, guardian unlock, return respawn, extraction and loss');`;
-context.assert=(ok,label)=>assert.ok(ok,label);vm.runInContext(source.replaceAll('import.meta.env.DEV','false'),context);
+context.assert=(ok,label)=>assert.ok(ok,label);vm.runInContext(bindNewEnemyImports(source,context).replaceAll('import.meta.env.DEV','false'),context);

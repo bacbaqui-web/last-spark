@@ -7,7 +7,7 @@ import {createBoss,createScoutDrone,animateBoss} from '../boss-models.js';
 import {wildGait} from '../wild-enemy-gait.js';
 import {WILD_ENEMIES,registerWildTemplate,createWildEnemy,wildEnemyId,animateWildEnemy,animateWildAttack,fireWildEnemy,dieWildEnemy,disposeWildEnemy} from '../wild-enemy-models.js';
 // Exercise the actual GLB geometry and pivot nodes in Node; skip only browser image decoding.
-for(const id of Object.keys(WILD_ENEMIES)){
+for(const id of Object.keys(WILD_ENEMIES).filter(id=>!WILD_ENEMIES[id].bossModel)){
  const bytes=await fs.readFile(new URL(`../public/models/wild-robots-v1/${id}.glb`,import.meta.url));
  const jsonSize=bytes.readUInt32LE(12),json=JSON.parse(bytes.subarray(20,20+jsonSize));
  const mappedMaterials=new Set(json.materials.filter(m=>m.pbrMetallicRoughness?.baseColorTexture).map(m=>m.name));
@@ -36,7 +36,7 @@ for(const id of Object.keys(WILD_ENEMIES)){
   fireWildEnemy(drone);assert(drone.muzzleFlash.visible);
   dieWildEnemy(drone,.2);assert(drone.destruction.pieces.length>0);
   animateWildEnemy(drone,.016);assert(!drone.destruction&&drone.mount.visible);
-  const boss=createBoss('drone'),scout=createScoutDrone();
+  const boss=createBoss('drone','scoutDrone'),scout=createScoutDrone();
   for(const actor of [boss,scout]){
    assert.equal(actor.wildId,id);assert.equal(actor.rotors.length,2);assert.equal(actor.missileMuzzles.length,2);
    actor.posePrepared=false;animateBoss(actor,.016,1,0);assert(actor.phase>0);
@@ -63,7 +63,7 @@ for(const id of Object.keys(WILD_ENEMIES)){
  // the planted foot must travel backward relative to a forward-moving chassis.
  for(const speed of [2.3,6])for(const yaw of [0,.8,Math.PI]){
   r.root.rotation.y=yaw;r.walkBlend=1;r.gaitSpeed=speed;
-  const support=wildGait(id,speed).support;
+  const support=wildGait(WILD_ENEMIES[id].gait||id,speed).support;
   const footAt=cycle=>{r.phase=cycle*Math.PI*2;animateWildEnemy(r,0,{speed});return r.motion.worldToLocal(r.legs[0].foot.getWorldPosition(new THREE.Vector3()));};
   const swingStart=footAt(support+(1-support)*.25),swingEnd=footAt(support+(1-support)*.75);
   const stanceStart=footAt(support*.2),stanceEnd=footAt(support*.8);
@@ -75,7 +75,7 @@ for(const id of Object.keys(WILD_ENEMIES)){
  r.root.rotation.y=0;
  // Check full cycles on the real meshes, not just the foot-target function.
  for(const speed of [2.3,6]){
-  const gait=wildGait(id,speed),heights=[],torsoHeights=[];let supportedFrames=0,minSupports=99;
+  const gait=wildGait(WILD_ENEMIES[id].gait||id,speed),heights=[],torsoHeights=[];let supportedFrames=0,minSupports=99;
   r.gaitSpeed=speed;r.walkBlend=1;r.travel.set(0,0,1);
   for(let frame=0;frame<120;frame++){
    r.phase=frame/120*Math.PI*2;animateWildEnemy(r,0,{speed});
@@ -191,5 +191,5 @@ for(const id of Object.keys(WILD_ENEMIES)){
  const geometry=other.hitMeshes[0].geometry;let disposed=false;geometry.addEventListener('dispose',()=>disposed=true);disposeWildEnemy(r);assert(!disposed,'despawning keeps shared mesh geometry alive');
  console.log(`PASS ${id}: ${r.legs.length} legs, weighted support/compression, walk/run/strafe, 30/60 fps, stop/airborne, attack and destruction`);
 }
-assert.equal(wildEnemyId(false,'trooper'),'rust-scout');assert.equal(wildEnemyId(false,'spider'),'iron-beetle');assert.equal(wildEnemyId(false,'assassin'),'assault-mantis');assert.equal(wildEnemyId(false,'sniper'),'wall-sniper-spider');assert.equal(wildEnemyId(false,'blade'),'forest-warden');assert.equal(wildEnemyId(false,'player'),null);assert.equal(wildEnemyId(true,'drone'),'rust-wasp-drone');assert.equal(wildEnemyId(false,'scoutDrone'),'rust-wasp-drone');
+assert.equal(wildEnemyId(false,'trooper'),'rust-scout');assert.equal(wildEnemyId(false,'spider'),'iron-beetle');assert.equal(wildEnemyId(false,'assassin'),'assault-mantis');assert.equal(wildEnemyId(false,'sniper'),'wall-sniper-spider');assert.equal(wildEnemyId(false,'blade'),'forest-warden');assert.equal(wildEnemyId(false,'player'),null);assert.equal(wildEnemyId(true,'drone'),'queen-wasp-boss');assert.equal(wildEnemyId(false,'scoutDrone'),'rust-wasp-drone');
 console.log('PASS enemy mapping and player/aerial compatibility');

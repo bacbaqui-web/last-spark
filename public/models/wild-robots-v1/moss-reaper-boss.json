@@ -1,0 +1,25 @@
+{
+  "meshObjects": 18,
+  "triangles": 69740,
+  "vertices": 41013,
+  "rigged": false,
+  "rigidAssemblies": 18,
+  "textured": true,
+  "texture": "material-atlas.png",
+  "boundsMetres": [
+    3.385,
+    3.809,
+    2.779
+  ],
+  "animations": [],
+  "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+  "id": "moss-reaper-boss",
+  "name": "이끼 사신 · 보스",
+  "role": "대형 낫팔 근접 보스",
+  "concept": "/models/wild-robots-v1/boss-reaper-concept.png",
+  "glb": "moss-reaper-boss.glb",
+  "preview": "moss-reaper-boss.png",
+  "blend": "moss-reaper-boss.blend",
+  "embeddedImages": 1,
+  "bytes": 7123696
+}

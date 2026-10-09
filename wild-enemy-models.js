@@ -7,6 +7,10 @@ import {WILD_DESTRUCTION_DURATION,updateWildDestruction,resetWildDestruction,rec
 export {resetWildDestruction} from './wild-enemy-destruction.js';
 
 export const WILD_ENEMIES = {
+  'slag-beetle': {name:'용재 포격벌레',scale:1,body:'Chassis',head:'Front_head',leg:'Beetle',count:3,gait:'iron-beetle',attackKind:'mortar'},
+  'siege-beetle-boss': {name:'포격 딱정벌레 · 보스',scale:1,body:'Thorax',head:'Head',leg:'boss_leg',shoulder:'Boss_shoulder',forearm:'Boss_forearm',gait:'forest-warden',bossModel:true,attackKind:'missile'},
+  'queen-wasp-boss': {name:'여왕말벌 · 보스',scale:1,body:'Thorax',head:'Head',flying:true,bossModel:true,attackKind:'missile-barrage'},
+  'moss-reaper-boss': {name:'이끼 사신 · 보스',scale:1,body:'Thorax',head:'Head',leg:'boss_leg',shoulder:'Boss_shoulder',forearm:'Boss_forearm',hand:'Blade_hand',gait:'assault-mantis',bossModel:true,attackKind:'blade',attackDuration:1.12},
   'rust-wasp-drone': {name:'녹슨 말벌 드론',scale:.75,body:'Thorax',head:'Head',flying:true},
   'rust-scout': {name:'녹슨 척후병',scale:.82,body:'Torso',head:'Head',leg:'leg',shoulder:'Shoulder',forearm:'Forearm'},
   'forest-warden': {name:'숲의 파수꾼',scale:1.1,body:'Torso',head:'Head',leg:'heavy_leg',shoulder:'Heavy_shoulder',forearm:'Heavy_forearm'},
@@ -38,6 +42,10 @@ export async function preloadWildEnemies(){
 }
 export function wildEnemyId(boss,type){
   if(type==='player')return null;
+  if(boss&&type==='missile')return 'siege-beetle-boss';
+  if(boss&&type==='drone')return 'queen-wasp-boss';
+  if(boss&&type==='blade')return 'moss-reaper-boss';
+  if(type==='mortar')return 'slag-beetle';
   if(type==='drone'||type==='scoutDrone')return 'rust-wasp-drone';
   if(type==='assassin')return 'assault-mantis';
   if(type==='blade')return 'forest-warden';
@@ -67,6 +75,8 @@ export function createWildEnemy(id,{scale=WILD_ENEMIES[id]?.scale}={}){
   const attach=(child,parent)=>{root.updateMatrixWorld(true);parent.attach(child);};
   attach(head,body);
   for(const name of ['Backpack','Heavy_back','Abdomen','Carapace','Sniper_gimbal'])if(nodes[name])attach(nodes[name],body);
+  for(const side of [-1,1])if(nodes['Missile_pod_'+side])attach(nodes['Missile_pod_'+side],body);
+  if(nodes.Mortar_tail)attach(nodes.Mortar_tail,body);
   if(nodes.Sniper_rifle)attach(nodes.Sniper_rifle,nodes.Sniper_gimbal);
   if(spec.flying){
     for(const side of [-1,1]){attach(nodes['Rotor_mount_'+side],body);attach(nodes['Rotor_'+side],nodes['Rotor_mount_'+side]);}
@@ -108,7 +118,7 @@ export function createWildEnemy(id,{scale=WILD_ENEMIES[id]?.scale}={}){
     eyeGlow.position.copy(eyePosition);eyeGlow.position.z+=.035;
   }
   eyeGlow.scale.setScalar(.38);eyeGlow.visible=!!asset.userData.wildEye;head.add(eyeGlow);
-  let weapon=nodes.Stinger_gun||nodes.Sniper_rifle||(id==='forest-warden'?nodes.Heavy_forearm_1:nodes['Forearm_-1'])||body;
+  let weapon=nodes.Mortar_tail||nodes['Missile_pod_-1']||nodes.Stinger_gun||nodes.Sniper_rifle||(id==='forest-warden'?nodes.Heavy_forearm_1:nodes['Forearm_-1'])||body;
   let muzzle=socket(weapon,weapon.userData.muzzle_local||(id==='rust-scout'?[.02,-.2328,.614]:id==='wall-sniper-spider'?[0,.052,1.598]:[0,0,.5]),'combat-muzzle');
   const sniper=id==='wall-sniper-spider',flashColor=sniper?0xff2034:0xffc466;
   const muzzleFlash=new THREE.Mesh(new THREE.ConeGeometry(.095,.34,6),new THREE.MeshBasicMaterial({color:flashColor,toneMapped:false}));
@@ -121,6 +131,8 @@ export function createWildEnemy(id,{scale=WILD_ENEMIES[id]?.scale}={}){
     r.rotors=[nodes['Rotor_-1'],nodes.Rotor_1];
     r.missileMuzzles=[-1,1].map(side=>socket(socket(nodes.Stinger_gun,[side*.10,0,.30],'wasp-launch-pivot-'+side),[0,0,.20],'wasp-launch-port-'+side));
   }
+  if(spec.attackKind==='missile-barrage'){const ports=nodes.Stinger_gun.userData.missile_ports;r.missileMuzzles=Array.from({length:ports.length/3},(_,i)=>socket(nodes.Stinger_gun,ports.slice(i*3,i*3+3),'queen-missile-port-'+i));r.launchIndex=0;}
+  if(spec.attackKind==='missile')r.missileMuzzles=[-1,1].map(side=>socket(nodes['Missile_pod_'+side],nodes['Missile_pod_'+side].userData.muzzle_local,'missile-port-'+side));
   r.previousPosition=root.position.clone();r.travel=new THREE.Vector3(0,0,1);r.gaitSpeed=0;r.strideRate=0;
   r.deathDuration=WILD_DESTRUCTION_DURATION;
   r.captureHeadDeath=()=>captureHeadDeath(r);
@@ -135,7 +147,7 @@ export function createWildEnemy(id,{scale=WILD_ENEMIES[id]?.scale}={}){
   r.legParents=[...new Set(legs.map(leg=>leg.hip.parent))];
   r.finishLegPose=()=>{pendingLegs.delete(r);solveLegPose(r);r.motion.updateWorldMatrix(true,true);};
   // Rigid mesh offsets and decorative groups never animate; their joint parents do.
-  const moving=new Set([root,mount,motion,body,head,weapon,...r.rotors,nodes.Pelvis,nodesRifle(r),muzzleFlash,muzzleGlow,...arms.flatMap(arm=>[arm.shoulder,arm.elbow,arm.hand]),...r.legNodes]);
+  const moving=new Set([root,mount,motion,body,head,weapon,...r.rotors,nodes['Missile_pod_-1'],nodes.Missile_pod_1,nodes.Pelvis,nodesRifle(r),muzzleFlash,muzzleGlow,...arms.flatMap(arm=>[arm.shoulder,arm.elbow,arm.hand]),...r.legNodes]);
   r.poseRest=new Map([...rest].filter(([node])=>moving.has(node)));
   root.traverse(node=>{if(!moving.has(node)){node.updateMatrix();node.matrixAutoUpdate=false;}});
   animateWildEnemy(r,0);return r;
@@ -243,7 +255,7 @@ export function animateWildEnemy(r,dt,{speed=0,aim=0,elevation=0,hit=0,rolling=f
   const supported=grounded&&!r.wallMounted;
   r.walkBlend=THREE.MathUtils.damp(r.walkBlend,supported?Math.min(1,speed/.8):0,10,dt);
   r.gaitSpeed=THREE.MathUtils.damp(r.gaitSpeed,Math.max(0,speed),8,dt);
-  const gait=wildGait(r.wildId,r.gaitSpeed);r.gait=gait;r.strideRate=gait.pace;
+  const gait=wildGait(r.spec.gait||r.wildId,r.gaitSpeed);r.gait=gait;r.strideRate=gait.pace;
   r.aimBlend=THREE.MathUtils.damp(r.aimBlend,aim,12,dt);if(supported)r.phase+=dt*gait.pace*Math.PI*2;
   // Game actors can strafe or retreat while facing the player. The stationary
   // lab uses +Z; actual translation supplies the travel direction in combat.
@@ -251,7 +263,7 @@ export function animateWildEnemy(r,dt,{speed=0,aim=0,elevation=0,hit=0,rolling=f
   if(v.lengthSq()>1e-8&&speed>.05){v.applyQuaternion(r.root.getWorldQuaternion(q).invert()).setY(0).normalize();r.travel.lerp(v,1-Math.exp(-dt*12));}
   r.previousPosition.copy(r.root.position);
   r.recoil=THREE.MathUtils.damp(r.recoil,0,18,dt);r.flashTime=Math.max(0,r.flashTime-dt);updateMuzzleFlash(r);
-  const walk=supported?r.walkBlend:0,mantis=r.wildId==='assault-mantis',pelvis=r.nodes.Pelvis;
+  const walk=supported?r.walkBlend:0,mantis=!!r.spec.hand,pelvis=r.nodes.Pelvis;
   let load=0,supportSide=0;
   for(const leg of r.legs){leg.step=wildFootfall(wildLegPhase(r,leg),gait.support);load=Math.max(load,leg.step.load);supportSide+=leg.side*leg.step.load;}
   supportSide/=r.spec.count||1;
@@ -299,9 +311,11 @@ export function animateWildEnemy(r,dt,{speed=0,aim=0,elevation=0,hit=0,rolling=f
     }
   }
   if(nodesRifle(r))nodesRifle(r).position.z-=r.recoil*.25;
+  if(nodesMortar(r))nodesMortar(r).rotation.x=-r.recoil*.12;
   if(rolling){flushLegPose(r);r.body.position.y-=.16;r.body.rotation.z=Math.sin(Math.min(1,rollTime/.72)*Math.PI)*.5;}
   r.motion.updateWorldMatrix(true,true);r.posePrepared=true;
 }
+function nodesMortar(r){return r.nodes.Mortar_tail;}
 function nodesRifle(r){return r.nodes.Sniper_rifle||(r.wildId==='forest-warden'?r.nodes.Heavy_forearm_1:null);}
 export function aimWildEnemy(r,target){
   if(!nodesRifle(r))return;
@@ -311,9 +325,30 @@ export function aimWildEnemy(r,target){
   rifle.updateWorldMatrix(false,true);
 }
 export function animateWildAttack(r,remaining){
+  if(r.spec.flying)return;
   // Remaining time follows the game's .65 s melee attack, with impact at .27 s.
-  if(!remaining)return;flushLegPose(r);const age=.65-remaining,t=THREE.MathUtils.clamp(age/.65,0,1);
-  if(r.wildId==='assault-mantis'){
+  if(r.spec.attackKind==='missile'){for(const side of [-1,1])r.nodes['Missile_pod_'+side].rotation.x=-.22;return;}
+  if(!remaining)return;flushLegPose(r);const duration=r.spec.attackDuration||.65,age=duration-remaining,t=THREE.MathUtils.clamp(age/duration,0,1);
+  if(r.wildId==='moss-reaper-boss'){
+    // Separate diagonal cuts: the second arm winds up as the first recovers.
+    // Slow preparation, a short cutting stroke, then a weighted follow-through.
+    const keys=[[0,0,-.08,0,0,0],[.27,-1.15,-.38,-.75,-.38,.45],[.47,.55,-.12,.85,.65,-.28],[.72,.65,-.06,.95,.55,-.22],[1,0,-.08,0,0,0]];
+    let twist=0,lean=0;
+    for(const arm of r.arms){
+      const phase=THREE.MathUtils.clamp((t-(arm.side<0?0:.40))/.60,0,1);
+      const index=phase<.27?0:phase<.47?1:phase<.72?2:3,start=keys[index],end=keys[index+1];
+      const blend=THREE.MathUtils.smootherstep(phase,start[0],end[0]);
+      const pose=start.map((value,i)=>THREE.MathUtils.lerp(value,end[i],blend));
+      arm.shoulder.rotation.set(pose[1],arm.side*pose[4],arm.side*pose[5]);
+      arm.elbow.rotation.x=pose[2];
+      arm.hand.rotation.x=pose[3]-pose[1]-pose[2];
+      arm.hand.rotation.z=-arm.side*Math.sin(phase*Math.PI)*.22;
+      twist+=arm.side*pose[4]*.22;lean+=Math.max(0,pose[1])*.10;
+    }
+    r.body.rotateY(twist);r.body.rotateX(lean);
+    return;
+  }
+  if(r.spec.hand){
     // Upper arm, forearm and absolute blade pitch: lift above the head, chop
     // down through the .27 s damage window, then recover to a downward guard.
     const poses=[[0,0,-.08,0],[.20,-1.10,.10,-1.20],[.35,.15,-.20,.80],[.65,0,-.08,0]];
@@ -345,7 +380,7 @@ function updateMuzzleFlash(r){
   r.muzzleGlow.scale.setScalar(pulse>0?(r.wildId==='forest-warden'?1.35:.9)*(.7+pulse*.3):.18);
   r.muzzleLight.intensity=18*pulse*pulse+.12*aiming;
 }
-export function fireWildEnemy(r){r.recoil=1;r.flashTime=.12;updateMuzzleFlash(r);}
+export function fireWildEnemy(r){if(r.spec.attackKind==='missile-barrage'){const port=r.missileMuzzles[r.launchIndex++%r.missileMuzzles.length];r.muzzle.position.copy(port.position);r.muzzle.updateMatrix();}r.recoil=1;r.flashTime=.12;updateMuzzleFlash(r);}
 export function dieWildEnemy(r,progress){
   flushLegPose(r);
   updateWildDestruction(r,progress);

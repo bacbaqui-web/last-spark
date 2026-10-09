@@ -1,6 +1,8 @@
+import {bindNewEnemyImports} from './new-enemy-test-bindings.mjs';
 import * as CAMPAIGN from '../salvage-campaign.js';
 import {configureUpgradeLighting} from '../asset-upgrades.js';
 import './verify-wild-enemies.mjs';
+import './verify-wild-bosses.mjs';
 import {sortieMission} from '../sortie-mission.js';
 import * as SALVAGE from '../sortie-runtime.js';
 import {createStepLocomotion} from '../step-locomotion.js';
@@ -39,7 +41,7 @@ source=source.replace("import {configureUpgradeLighting} from './asset-upgrades.
 source+=`baseUI={show(){},hide(){},root:{hidden:true}};sortieHUD={hidden:true};extractPrompt={hidden:true};baseBack={hidden:true};
 campaign.frame().weaponSlots=[SALVAGE.makeWeapon('shotgun','test-s'),SALVAGE.makeWeapon('bow','test-b')];campaign.state.ammo={shotgun:24,bow:30};campaign.save();selectedWeapons=['shotgun','bow'];reset(false);launchRemoteFrame();active=true;damageGrace=999;
 const expected={trooper:'rust-scout',spider:'iron-beetle',assassin:'assault-mantis',sniper:'wall-sniper-spider',blade:'forest-warden'};
-for(const [type,id]of Object.entries(expected)){spawn(type==='blade',type);const e=enemies.at(-1);assert(e.robot.wildId===id,type+' uses accepted mesh');assert(e.robot.hitMeshes.every(m=>m.userData.enemyOwner===e),'hit ownership');}
+for(const [type,id]of Object.entries(expected)){spawn(false,type);const e=enemies.at(-1);if(type==='blade')e.boss=true;assert(e.robot.wildId===id,type+' uses accepted mesh');assert(e.robot.hitMeshes.every(m=>m.userData.enemyOwner===e),'hit ownership');}
 const ground=platforms.splice(0),occluders=worldObstacles.splice(0);player.pos.set(0,1.7,8);camera.position.copy(player.pos);
 const infantry=enemies.find(e=>e.type==='trooper');infantry.group.position.set(0,0,0);animateRobot(infantry.robot,.016,{speed:3,aim:1});infantry.group.updateMatrixWorld(true);const muzzle=infantry.robot.muzzle.getWorldPosition(new THREE.Vector3());const count=projectiles.length;fireEnemyRifle(infantry);assert(projectiles.length===count+1&&projectiles.at(-1).m.position.distanceTo(muzzle)<.001,'round starts at mesh muzzle');
 const mantis=enemies.find(e=>e.type==='assassin');mantis.group.position.set(0,0,6);mantis.attack=0;updateNewEnemy(mantis,.016);assert(mantis.slashAge===.65&&!mantis.slashHit,'mantis winds up before damage');for(let i=0;i<20;i++)updateNewEnemy(mantis,.016);assert(mantis.slashHit&&mantis.robot.arms.every(arm=>arm.hand!==arm.elbow&&arm.bladeTip.getWorldPosition(new THREE.Vector3()).y<arm.hand.getWorldPosition(new THREE.Vector3()).y),'mantis impact follows the downward wrist-blade stroke');
@@ -57,7 +59,7 @@ for(let i=0;i<20;i++)update(.016);assert(dying.some(e=>e.robot===infantry.robot)
 for(let i=0;i<Math.ceil(infantry.robot.deathDuration/.016);i++)update(.016);assert(!dying.some(e=>e.robot===infantry.robot)&&!infantry.robot.destruction,'completed destruction releases its effect objects');
 const effectsBeforeSuicide=explosions.length;spawn(false,'spider');const suicide=enemies.at(-1);suicide.awareness={state:'combat'};suicide.group.position.set(0,0,0);suicide.leap={start:suicide.group.position.clone(),target:suicide.group.position.clone(),t:.64};update(.016);assert(!enemies.includes(suicide)&&dying.some(e=>e.robot===suicide.robot)&&suicide.robot.destruction&&!suicide.robot.destruction.hit,'beetle self-detonation uses the same black-part burst');assert(explosions.length===effectsBeforeSuicide,'self-detonation adds no explosion sphere or secondary effect');
 for(const e of [...enemies,...dying]){scene.remove(e.group);disposeRobot(e.robot);}enemies.length=0;dying.length=0;platforms.push(...ground);worldObstacles.push(...occluders);sortie.bossSpawned=false;startRoadSortie();
-assert(enemies.some(e=>e.robot.wildId==='forest-warden'),'campaign guardian uses warden');for(const id of ['rust-scout','iron-beetle','assault-mantis','wall-sniper-spider'])assert(enemies.some(e=>e.robot.wildId===id),'campaign includes '+id);
+assert(enemies.some(e=>e.robot.wildId==='moss-reaper-boss'),'campaign guardian uses reaper');for(const id of ['rust-scout','iron-beetle','assault-mantis','wall-sniper-spider'])assert(enemies.some(e=>e.robot.wildId===id),'campaign includes '+id);
 for(let i=0;i<6;i++)update(.016);assert(enemies.every(e=>e.group.position.toArray().every(Number.isFinite)),'campaign ticks with textured-model rig adapters');
 firing=false;cooldown=999;countdownTime=0;arrival=null;active=true;dead=false;
 for(const d of drops){clearItem(d.m);clearItem(d.beam);}drops.length=0;
@@ -66,5 +68,14 @@ updateFrameHUD=()=>{frameHUDCalls++;originalFrameHUD();};
 SALVAGE.withFrameWork(()=>{for(let i=0;i<4;i++)update(1/60);});
 assert(Math.abs(time-frameStart-4/60)<1e-8,'frame batching preserves all four simulation steps');
 updateFrameHUD=originalFrameHUD;assert(frameHUDCalls===1,'one HUD refresh for four physics steps without firing/pickups');
+// Actual game functions: new boss weapons and pillbug damage gate/knockback.
+reset(false);platforms.splice(0);worldObstacles.splice(0);delete platforms.streetCollision;player.pos.set(0,1.7,10);damageGrace=0;
+spawn(true,'drone');const queen=enemies.at(-1);queen.group.position.set(0,8,0);queen.attack=0;const beforeMissiles=projectiles.length;updateSpecialBoss(queen,.016);assert(queen.robot.wildId==='queen-wasp-boss'&&projectiles.length===beforeMissiles+1&&projectiles.at(-1).missile,'queen launches a missile, not a rifle bullet');
+spawn(true,'missile');assert(enemies.at(-1).robot.wildId==='siege-beetle-boss','siege model used in combat');launchMissile(enemies.at(-1));
+spawn(true,'blade');const reaper=enemies.at(-1);reaper.group.position.set(0,0,8);reaper.attack=0;for(let i=0;i<65;i++){reaper.attack-=1/60;updateSpecialBoss(reaper,1/60);}assert(reaper.bladeHits===2,'reaper has two separately timed diagonal strike windows');
+spawn(false,'pillbug');const pill=enemies.at(-1);pill.group.position.set(0,0,0);player.pos.set(0,1.7,10);const shellHP=pill.hp;dealEnemyDamage(pill,40,pill.group.position);assert(pill.hp===shellHP,'shell is invulnerable to shared damage path');let open=false;
+for(let i=0;i<360;i++){updatePillbugEnemy(pill,1/60);if(!pill.robot.invulnerable){open=true;break;}}
+assert(open&&player.pos.z>12,'collision knocks player back and exposes belly');dealEnemyDamage(pill,10,pill.group.position);assert(pill.hp<shellHP,'exposed belly accepts weapon damage');
+console.log('PASS new enemy game integration: three boss replacements, queen missiles, alternating reaper strikes, pillbug immunity/knockback/vulnerability');
 console.log('PASS actual game: five spawn types, hit ownership, projectile muzzle, mantis attack, warden impact, wall sniper, death lifecycle, beetle self-detonation, campaign population and update');`;
-context.assert=(ok,label)=>assert.ok(ok,label);vm.runInContext(source.replaceAll('import.meta.env.DEV','false'),context);
+context.assert=(ok,label)=>assert.ok(ok,label);vm.runInContext(bindNewEnemyImports(source,context).replaceAll('import.meta.env.DEV','false'),context);

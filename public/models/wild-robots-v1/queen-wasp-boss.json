@@ -1,0 +1,25 @@
+{
+  "meshObjects": 14,
+  "triangles": 79396,
+  "vertices": 44715,
+  "rigged": false,
+  "rigidAssemblies": 14,
+  "textured": true,
+  "texture": "material-atlas.png",
+  "boundsMetres": [
+    5.048,
+    2.409,
+    2.633
+  ],
+  "animations": [],
+  "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+  "id": "queen-wasp-boss",
+  "name": "여왕말벌 · 보스",
+  "role": "쌍발 폭격 보스",
+  "concept": "/models/wild-robots-v1/boss-queen-concept.png",
+  "glb": "queen-wasp-boss.glb",
+  "preview": "queen-wasp-boss.png",
+  "blend": "queen-wasp-boss.blend",
+  "embeddedImages": 1,
+  "bytes": 7243672
+}

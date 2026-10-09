@@ -1,0 +1,25 @@
+{
+  "meshObjects": 28,
+  "triangles": 46724,
+  "vertices": 29943,
+  "rigged": false,
+  "rigidAssemblies": 28,
+  "textured": true,
+  "texture": "material-atlas.png",
+  "boundsMetres": [
+    2.466,
+    2.871,
+    2.671
+  ],
+  "animations": [],
+  "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+  "id": "slag-beetle",
+  "name": "용재 포격벌레",
+  "role": "곡사 화염 지원형",
+  "concept": "/models/wild-robots-v1/slag-beetle-concept.png",
+  "glb": "slag-beetle.glb",
+  "preview": "slag-beetle.png",
+  "blend": "slag-beetle.blend",
+  "embeddedImages": 1,
+  "bytes": 6774064
+}

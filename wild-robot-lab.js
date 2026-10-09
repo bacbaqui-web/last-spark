@@ -1,3 +1,5 @@
+import {createSlagMortar,advanceMortar} from './slag-mortar.js';
+import {createMissilePreview} from './wild-missile-preview.js';
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {loadWildTemplate,createWildEnemy,animateWildEnemy,animateWildAttack,fireWildEnemy,dieWildEnemy,disposeWildEnemy,resetWildDestruction} from './wild-enemy-models.js';
@@ -7,6 +9,10 @@ const $=id=>document.getElementById(id);
 const base=new URL('./models/wild-robots-v1/',document.baseURI);
 const conceptBase=new URL('./output/imagegen/wild-robots-2026-10-08/refined-v2/',document.baseURI);
 const descriptions={
+  'slag-beetle':'후방 곡사 지원형입니다. 0.8초 간격으로 불덩이 3발을 쏜 뒤 냉각합니다. 착탄한 불은 5초 동안 유지되며, 전투에서는 밟는 동안 0.5초마다 피해를 줍니다.',
+  'siege-beetle-boss':'보스 후보 메쉬입니다. 분할 곡면 장갑, 양어깨 12연장 미사일 포드, 강화 역관절 다리와 세 갈래 집게를 제작했습니다.',
+  'queen-wasp-boss':'보스 후보 메쉬입니다. 강화 쌍발 보호 링, 겹친 배 장갑, 왕관형 머리 장갑과 엉덩이 끝 6연장 미사일 런처를 갖췄습니다. 공격 모드에서 발사관을 번갈아 사용해 미사일을 연속 발사합니다.',
+  'moss-reaper-boss':'보스 후보 메쉬입니다. 긴 역관절 다리, 겹겹의 등 장갑과 상완·하완·손목으로 분리된 대형 낫팔을 제작했습니다.',
   'rust-wasp-drone':'큰 보호 링 프로펠라 2개, 붉은 외눈, 접힌 여섯 다리와 앞으로 말린 배 총구를 가진 말벌형 드론입니다. 게임의 정찰 드론과 드론 보스에 적용했습니다. 프로펠라 회전·체공·사격을 확인할 수 있습니다.',
   'rust-scout':'큰 상자형 외눈 머리, 두 다리의 역관절, 짧은 팔 기관총과 집게손을 살렸습니다.',
   'forest-warden':'좁은 골반 양옆에서 다리가 이어지는 중장갑 기체입니다. 왼손 포로 원거리 사격하고 가까이 오면 오른팔 집게로 내려찍습니다. 공격 미리보기에서 두 동작을 번갈아 보여 줍니다.',
@@ -15,6 +21,7 @@ const descriptions={
   'assault-mantis':'상완·하완·손목을 나눈 3단 팔입니다. 양쪽 칼등은 위로, 절삭날은 아래로 향하며, 공격할 때 들어 올려 수직으로 내려칩니다.'
 };
 const scene=new THREE.Scene();scene.background=new THREE.Color('#171e15');
+const missilePreview=createMissilePreview(scene),slagPreview=createSlagMortar(scene);let slagAttackState={};
 const camera=new THREE.PerspectiveCamera(38,1,.015,100);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -47,12 +54,14 @@ function fit(){
   // Leave room for the wider running stride, especially the front insect feet.
   box.expandByVector(new THREE.Vector3(.12,.14,robot.spec.count?.22:.32));
   // The mantis raises its new wrist-mounted blades above the neutral silhouette.
-  if(robot.wildId==='assault-mantis'&&motionMode==='attack')box.expandByPoint(model.localToWorld(new THREE.Vector3(0,3.55,.8)));
+  if(robot.spec.hand&&motionMode==='attack')box.expandByPoint(model.localToWorld(new THREE.Vector3(0,robot.spec.previewOnly?4.8:3.55,.8)));
   if(['death','shot'].includes(motionMode))box.union(new THREE.Box3(new THREE.Vector3(-2.1,0,-2.1),new THREE.Vector3(2.1,wallPose?4.5:3.5,2.1)));
+  if(robot.spec.attackKind==='mortar'&&motionMode==='attack')box.union(new THREE.Box3(new THREE.Vector3(-3,0,-2),new THREE.Vector3(3,10,16)));
   const size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
   const radius=Math.max(size.y,size.x/Math.max(.65,camera.aspect),size.z*.85)*.69;
   const distance=radius/Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
   controls.target.copy(center);camera.position.copy(center).add(new THREE.Vector3(.63,.32,1).normalize().multiplyScalar(distance));
+  if(robot.spec.attackKind==='mortar'&&motionMode==='attack'){controls.maxDistance=40;controls.target.set(0,2,6);camera.position.set(18,12,13);}else controls.maxDistance=16;
   controls.update();controls.saveState();
 }
 function pose(){
@@ -61,12 +70,13 @@ function pose(){
   fit();
 }
 async function select(info){
+  missilePreview.clear();slagPreview.clear();slagAttackState={};
   const token=++request;selected=info;wallPose=false;setPressed('wall',false);$('wall').disabled=info.id!=='wall-sniper-spider';wall.visible=false;
   $('loading').hidden=false;$('status').textContent='메쉬와 텍스처 로딩 중';$('error').textContent='';
   for(const button of $('models').children)button.setAttribute('aria-pressed',String(button.dataset.model===info.id));
-  for(const [value,label] of Object.entries(info.id==='rust-wasp-drone'?{idle:'체공',walk:'순항',run:'고속 비행'}:{idle:'대기',walk:'걷기',run:'달리기'}))$('motion').querySelector(`option[value="${value}"]`).textContent=label;
+  for(const [value,label] of Object.entries(['rust-wasp-drone','queen-wasp-boss'].includes(info.id)?{idle:'체공',walk:'순항',run:'고속 비행'}:{idle:'대기',walk:'걷기',run:'달리기'}))$('motion').querySelector(`option[value="${value}"]`).textContent=label;
   $('name').textContent=info.name;$('role').textContent=info.role;$('description').textContent=descriptions[info.id];
-  $('reference').src=new URL(info.id==='rust-wasp-drone'?info.concept.replace(/^\//,''):info.concept,info.id==='rust-wasp-drone'?document.baseURI:conceptBase).href;$('reference').alt=info.name+' 2차 디자인 원본';$('reference-link').href=$('reference').src;
+  $('reference').src=new URL(info.concept.startsWith('/')?info.concept.slice(1):info.concept,info.concept.startsWith('/')?document.baseURI:conceptBase).href;$('reference').alt=info.name+' 2차 디자인 원본';$('reference-link').href=$('reference').src;
   $('download').href=new URL(info.glb,base).href;$('download').download=info.glb;
   try{
     await loadWildTemplate(info.id);if(token!==request)return;
@@ -74,7 +84,7 @@ async function select(info){
     model.traverse(o=>{if(o.isMesh)o.userData.originalMaterial=o.material;});
     motionAge=0;shotAge=null;scene.add(model);pose();appearance();
     $('triangles').textContent=info.triangles.toLocaleString('ko-KR')+' 삼각형';$('assemblies').textContent=info.rigidAssemblies+'개 기계식 파츠';
-    $('status').textContent=info.id==='rust-wasp-drone'?'게임 적용 · 체공 / 사격':motionMode==='shot'?'로봇의 부위를 클릭해 보세요':'게임 적용 · 검은 파츠 흩어짐';$('viewport').dataset.model=info.id;$('viewport').dataset.status='ready';$('loading').hidden=true;
+    $('status').textContent=robot.spec.previewOnly?'보스 메쉬 시안':info.id==='rust-wasp-drone'?'게임 적용 · 체공 / 사격':motionMode==='shot'?'로봇의 부위를 클릭해 보세요':'게임 적용 · 검은 파츠 흩어짐';$('viewport').dataset.model=info.id;$('viewport').dataset.status='ready';$('loading').hidden=true;
   }catch(error){if(token!==request)return;$('loading').textContent='모델을 불러오지 못했습니다.';$('status').textContent='로드 실패';$('error').textContent=error.message;$('viewport').dataset.status='error';console.error(error);}
 }
 $('home').addEventListener('click',fit);
@@ -82,7 +92,7 @@ $('spin').addEventListener('click',()=>{controls.autoRotate=!controls.autoRotate
 $('wire').addEventListener('click',()=>{wire=!wire;setPressed('wire',wire);appearance();});
 $('clay').addEventListener('click',()=>{clay=!clay;setPressed('clay',clay);appearance();});
 $('wall').addEventListener('click',()=>{if(selected?.id!=='wall-sniper-spider')return;resetWildDestruction(robot);motionAge=0;shotAge=null;wallPose=!wallPose;setPressed('wall',wallPose);pose();});
-$('motion').addEventListener('change',()=>{motionMode=$('motion').value;motionAge=0;shotAge=null;$('replay-death').hidden=$('slow-death').hidden=!['death','shot'].includes(motionMode);$('replay-death').textContent=motionMode==='shot'?'로봇 복구':'다시 파괴';$('status').textContent=selected?.id==='rust-wasp-drone'?'게임 적용 · 체공 / 사격':motionMode==='shot'?'로봇의 부위를 클릭해 보세요':'게임 적용 · 검은 파츠 흩어짐';document.querySelector('.gesture').textContent=motionMode==='shot'?'몸을 클릭 · 피격 파괴 / 드래그 · 회전':'드래그 · 회전 / 휠 · 확대 / 우클릭 · 이동';if(robot){resetWildDestruction(robot);animateWildEnemy(robot,0);fit();}});
+$('motion').addEventListener('change',()=>{motionMode=$('motion').value;motionAge=0;shotAge=null;$('replay-death').hidden=$('slow-death').hidden=!['death','shot'].includes(motionMode);$('replay-death').textContent=motionMode==='shot'?'로봇 복구':'다시 파괴';$('status').textContent=robot?.spec.previewOnly?'보스 메쉬 시안':selected?.id==='rust-wasp-drone'?'게임 적용 · 체공 / 사격':motionMode==='shot'?'로봇의 부위를 클릭해 보세요':'게임 적용 · 검은 파츠 흩어짐';document.querySelector('.gesture').textContent=motionMode==='shot'?'몸을 클릭 · 피격 파괴 / 드래그 · 회전':'드래그 · 회전 / 휠 · 확대 / 우클릭 · 이동';if(robot){resetWildDestruction(robot);animateWildEnemy(robot,0);fit();}});
 $('replay-death').addEventListener('click',()=>{if(robot)resetWildDestruction(robot);motionAge=0;shotAge=null;});
 $('slow-death').addEventListener('click',()=>{slowDeath=!slowDeath;setPressed('slow-death',slowDeath);});
 renderer.domElement.addEventListener('pointerdown',event=>{pointerStart=event.button===0?{x:event.clientX,y:event.clientY}:null;});
@@ -100,17 +110,17 @@ function animate(){requestAnimationFrame(animate);const dt=Math.min(.05,clock.ge
     if(mode==='death'){const age=motionAge%(robot.deathDuration+.75);if(age<.55){resetWildDestruction(robot);animateWildEnemy(robot,dt);}else dieWildEnemy(robot,age-.55);$('viewport').dataset.deathAge=Math.max(0,age-.55).toFixed(3);}
     else if(mode==='shot'){if(shotAge===null)animateWildEnemy(robot,dt);else{shotAge+=motionDt;dieWildEnemy(robot,shotAge);if(shotAge>robot.deathDuration+.3){resetWildDestruction(robot);shotAge=null;$('status').textContent='로봇의 부위를 클릭해 보세요';}}$('viewport').dataset.deathAge=(shotAge??0).toFixed(3);}
     else{animateWildEnemy(robot,dt,{speed:mode==='walk'?2.3:mode==='run'?6:0,aim:mode==='attack'?1:0,hit:mode==='hit'?Math.max(0,.3-(motionAge%1.2)):0});
-      if(mode==='attack'){if(robot.wildId==='forest-warden'&&motionAge%4>=2){animateWildAttack(robot,Math.max(0,.65-((motionAge-2)%2)));}else if(['rust-scout','wall-sniper-spider','forest-warden','rust-wasp-drone'].includes(robot.wildId)){if(Math.floor(motionAge/.8)!==Math.floor((motionAge-dt)/.8))fireWildEnemy(robot);if(['wall-sniper-spider','forest-warden'].includes(robot.wildId))robot.aimAt(new THREE.Vector3(2,wallPose?1.2:.6,9));}
+      if(mode==='attack'){if(robot.spec.attackKind==='mortar'){if(advanceMortar(slagAttackState,dt,20).fire){fireWildEnemy(robot);slagPreview.launch(robot.muzzle.getWorldPosition(new THREE.Vector3()),new THREE.Vector3((Math.random()-.5)*3,0,10+Math.random()*3));}}else if(robot.spec.attackKind==='missile-barrage'){if(Math.floor(motionAge/.24)!==Math.floor((motionAge-dt)/.24)){fireWildEnemy(robot);missilePreview.launch(robot);}}else if(robot.wildId==='forest-warden'&&motionAge%4>=2){animateWildAttack(robot,Math.max(0,.65-((motionAge-2)%2)));}else if(['rust-scout','wall-sniper-spider','forest-warden','rust-wasp-drone','queen-wasp-boss','siege-beetle-boss'].includes(robot.wildId)){if(robot.spec.attackKind==='missile')animateWildAttack(robot,.4);if(Math.floor(motionAge/.8)!==Math.floor((motionAge-dt)/.8))fireWildEnemy(robot);if(['wall-sniper-spider','forest-warden'].includes(robot.wildId))robot.aimAt(new THREE.Vector3(2,wallPose?1.2:.6,9));}
         else if(robot.wildId==='iron-beetle'){const t=(motionAge%1.8)/1.8;robot.motion.position.y=Math.sin(t*Math.PI)*.35;robot.motion.rotation.x=-Math.sin(t*Math.PI)*.25;}
-        else animateWildAttack(robot,Math.max(0,.65-(motionAge%1.25)));}
+        else{const duration=robot.spec.attackDuration||.65;animateWildAttack(robot,Math.max(0,duration-(motionAge%(duration+.60))));}}
     }
     $('viewport').dataset.failure=robot.destruction?'burst':'none';$('viewport').dataset.motion=mode;$('viewport').dataset.muzzleFlash=robot.muzzleFlash.visible?'on':'off';$('viewport').dataset.aim=robot.aimBlend.toFixed(2);$('viewport').dataset.phase=robot.phase.toFixed(3);$('viewport').dataset.electric=robot.destruction?.fx?.arcs.visible?'on':'off';
     $('viewport').dataset.destructionStage=!robot.destruction?'intact':robot.destruction.group.visible?'burst':'finished';
-  }controls.update();renderer.render(scene,camera);
+  }if(motionMode==='attack')slagPreview.update(dt);else{slagPreview.clear();slagAttackState={};}if(motionMode==='attack')missilePreview.update(dt);else missilePreview.clear();controls.update();renderer.render(scene,camera);
 }animate();
 try{
   const response=await fetch(new URL('manifest.json',base));if(!response.ok)throw Error('모델 목록을 불러오지 못했습니다.');const manifest=await response.json();
   for(const info of manifest.models){const button=document.createElement('button');button.type='button';button.dataset.model=info.id;button.setAttribute('aria-pressed','false');button.setAttribute('aria-label',info.name+' 선택');
     const img=document.createElement('img');img.src=new URL(info.preview,base).href;img.alt='';const label=document.createElement('span'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=info.name;small.textContent=info.role;label.append(strong,small);button.append(img,label);button.addEventListener('click',()=>select(info));$('models').append(button);}
-  if(!manifest.models.length)throw Error('완료된 모델이 없습니다.');await select(manifest.models[0]);
+  if(!manifest.models.length)throw Error('완료된 모델이 없습니다.');await select(manifest.models.find(info=>info.id===new URLSearchParams(location.search).get('model'))||manifest.models[0]);
 }catch(error){$('status').textContent='불러오기 실패';$('error').textContent=error.message;$('loading').textContent=error.message;}

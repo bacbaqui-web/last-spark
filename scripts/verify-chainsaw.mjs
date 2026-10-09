@@ -1,3 +1,4 @@
+import {bindNewEnemyImports} from './new-enemy-test-bindings.mjs';
 import * as SALVAGE from '../sortie-runtime.js';
 import {sortieMission} from '../sortie-mission.js';
 import {configureUpgradeLighting} from '../asset-upgrades.js';
@@ -37,4 +38,4 @@ e=setup();player.pos.set(13,1.7,10);camera.position.copy(player.pos);e.group.pos
 e=setup();ammo=1;updateChainsaw(1);assert(weapon==='pistol'&&!chainsawRunning,'empty fuel fallback');
 e=setup();const nodes=[];const parameter=()=>({value:0,setValueAtTime(v){this.value=v;},linearRampToValueAtTime(v){this.value=v;},setTargetAtTime(v){this.value=v;},cancelScheduledValues(){}});const node=()=>{const n={frequency:parameter(),gain:parameter(),connect(){},disconnect(){},start(){this.starts=(this.starts||0)+1;},stop(){this.stops=(this.stops||0)+1;}};nodes.push(n);return n;};audio={currentTime:0,destination:{},createOscillator:node,createGain:node,createBiquadFilter:node};updateChainsaw(.1);const motor=chainsawMotor;updateChainsaw(.1);assert(chainsawMotor===motor&&motor.motor.starts===1,'one continuous motor');stopChainsaw();assert(!chainsawMotor&&motor.motor.stops===1&&motor.rumble.stops===1&&motor.vibration.stops===1,'all motor sources stop');stopChainsaw();assert(motor.motor.stops===1,'no duplicate stop');audio=null;
 setup();updateChainsaw(.2);equipSlot(0);assert(!chainsawRunning,'switch cancels');reset(false);assert(chainsawBlend===0&&chainsawFuelClock===0&&!chainsawMotor,'reset clears');console.log('PASS: continuous chainsaw hold/contact DPS/no projectiles/range/walls/second fuel/burst accounting/fallback/motor lifecycle/switch/reset');`;
-context.assert=(ok,label)=>assert.ok(ok,label);vm.runInContext(source.replaceAll('import.meta.env.DEV','false'),context);
+context.assert=(ok,label)=>assert.ok(ok,label);vm.runInContext(bindNewEnemyImports(source,context).replaceAll('import.meta.env.DEV','false'),context);

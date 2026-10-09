@@ -5,7 +5,7 @@ from mathutils import Vector
 ROOT=Path(__file__).resolve().parents[1]
 BASE=ROOT/'public/models/wild-robots-v1'
 manifest=json.loads((BASE/'manifest.json').read_text())
-assert len(manifest['models'])==6
+assert len(manifest['models'])==10
 results=[]
 for model in manifest['models']:
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -38,7 +38,7 @@ for model in manifest['models']:
         assert image.has_data and image.packed_file
     points=[o.matrix_world@Vector(corner) for o in meshes for corner in o.bound_box]
     bounds=[max(p[k] for p in points)-min(p[k] for p in points) for k in range(3)]
-    assert min(bounds)>.5 and max(bounds)<5
+    assert min(bounds)>.5 and max(bounds)<6
     result={'id':model['id'],'import':'passed','triangles':triangles,'meshObjects':len(meshes),'embeddedTextures':len(images),'textureDimensions':[list(im.size) for im in images],'rigged':False}
     results.append(result);print('VALIDATED',json.dumps(result),flush=True)
 (ROOT/'work/wild-robots-v1/validation.json').write_text(json.dumps({'models':results,'status':'passed'},indent=2))

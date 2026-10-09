@@ -1,3 +1,4 @@
+import {createCombatPillbug} from './pillbug-combat.js';
 import {disposeObjectResources} from './runtime-resources.js';
 import {wildEnemyId,createWildEnemy,animateWildEnemy,fireWildEnemy,disposeWildEnemy} from './wild-enemy-models.js';
 import {ENEMY_DEATH_DURATION,updateEnemyDeathBurst,resetEnemyDeathBurst} from './enemy-death-burst.js';
@@ -26,6 +27,7 @@ const reverse=clips.find(c=>c.name==='Sword_Attack').clone();reverse.name='Sword
 const upper=/^(spine|neck|Head|clavicle|upperarm|lowerarm|hand)/;
 function block(parent,material,size,pos){const m=new THREE.Mesh(cubeGeometry,material);m.scale.set(...size);m.position.set(...pos);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
 export function createRobot(boss=false,type='trooper',headScale=1){
+ if(type==='pillbug')return createCombatPillbug();
  const wildId=wildEnemyId(boss,type),wild=wildId&&createWildEnemy(wildId);if(wild)return wild;
  const root=new THREE.Group(),motion=new THREE.Group();root.add(motion);root.name=boss?'destroyer':'trooper';
  const bones=rigData.nodes.map(n=>{const b=new THREE.Bone();b.name=n.name;if(n.translation)b.position.fromArray(n.translation);if(n.rotation)b.quaternion.fromArray(n.rotation);if(n.scale)b.scale.fromArray(n.scale);return b;});
@@ -66,6 +68,7 @@ export function createRobot(boss=false,type='trooper',headScale=1){
  byName.Head.scale.multiplyScalar(headScale*.92);root.updateMatrixWorld(true);if(type!=='drone'&&!salvageFrame)attachRobotUpgrade(r,boss?'robot-destroyer':'robot-'+type);return r;
 }
 export function animateRobot(r,dt,{speed=0,aim=0,elevation=0,hit=0,velocityX,velocityZ,yaw=0,rolling=false,rollTime=0,grounded=true,stopping=false,sword=false,swinging=false,swordElapsed=0}={}){
+ if(r.pillbug)return;
  if(r.wildId){animateWildEnemy(r,dt,{speed,aim,elevation,hit,rolling,rollTime,grounded,velocityX,velocityZ});return;}
  if(r.spider){r.phase+=speed*dt*4.5;for(const leg of r.legs){const phase=r.phase+leg.index*Math.PI*.7+(leg.side>0?Math.PI:0);leg.hip.rotation.y=Math.sin(phase)*.45;leg.hip.position.y=.35+Math.max(0,Math.cos(phase))*.10*Math.min(speed/4,1);leg.knee.rotation.z=leg.side*(.2+Math.sin(phase)*.15);}r.motion.position.y=Math.sin(r.phase*2)*.018;return;}
  const damp=(a,b,k=8)=>THREE.MathUtils.damp(a,b,k,dt);const deceleration=Math.max(0,((r.lastSpeed??speed)-speed)/Math.max(.001,dt));r.lastSpeed=speed;r.brakeBlend=damp(r.brakeBlend??0,stopping?Math.min(1,speed/2)*Math.min(1,deceleration/5):0,12);r.walkBlend=damp(r.walkBlend,Math.min(1,speed/1.1)*(1-r.brakeBlend*.85));r.aimBlend=damp(r.aimBlend,aim);
@@ -99,7 +102,7 @@ export function animateRobot(r,dt,{speed=0,aim=0,elevation=0,hit=0,velocityX,vel
 function oneShot(r,name){const a=r.actions[name];a.reset().setLoop(THREE.LoopOnce,1).setEffectiveWeight(1).play();a.clampWhenFinished=false;}
 export function robotFired(r){if(r.wildId){fireWildEnemy(r);return;}oneShot(r,'Pistol_Shoot');r.recoil=.3;r.flashTime=.09;}
 export function animateDeath(r,progress){if(!r.salvageFrame){r.deathDuration=ENEMY_DEATH_DURATION;updateEnemyDeathBurst(r,progress);return;}if(!r.deathStarted){r.deathStarted=true;r.mixer.stopAllAction();const a=r.actions.Death01;a.reset().setLoop(THREE.LoopOnce,1).play();a.clampWhenFinished=true;}r.mixer.setTime(progress*2);updateRobotUpgrade(r);r.muzzleFlash.visible=false;}
-export function disposeRobot(r){if(r.disposed)return;r.disposed=true;if(r.wildId){disposeWildEnemy(r);return;}resetEnemyDeathBurst(r);r.mixer?.stopAllAction();r.mixer?.uncacheRoot(r.motion);r.skeleton?.dispose();disposeObjectResources(r.root);}
+export function disposeRobot(r){if(r.disposed)return;r.disposed=true;if(r.pillbug){resetEnemyDeathBurst(r);r.dispose();return;}if(r.wildId){disposeWildEnemy(r);return;}resetEnemyDeathBurst(r);r.mixer?.stopAllAction();r.mixer?.uncacheRoot(r.motion);r.skeleton?.dispose();disposeObjectResources(r.root);}
 
 export function swordFired(r,combo=1,duration=.5){r.swordAction=combo===2?'Sword_Attack_Reverse':'Sword_Attack';const old=r.lastSwordAction;if(old)r.actions[old].stop();oneShot(r,r.swordAction);r.actions[r.swordAction].setEffectiveTimeScale(r.actions[r.swordAction].getClip().duration/duration);r.lastSwordAction=r.swordAction;}
 

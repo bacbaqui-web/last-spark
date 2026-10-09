@@ -1,3 +1,4 @@
+import {bindNewEnemyImports} from './new-enemy-test-bindings.mjs';
 import * as SALVAGE from '../sortie-runtime.js';
 import {sortieMission} from '../sortie-mission.js';
 import {configureUpgradeLighting} from '../asset-upgrades.js';
@@ -56,4 +57,4 @@ events.get('keydown')({code:'ShiftRight',repeat:false,preventDefault(){}});event
 rightDrag=true;events.get('keydown')({code:'ShiftLeft',repeat:false,preventDefault(){}});for(let i=0;i<60;i++)update(1/60);assert(Math.abs(Math.hypot(player.vel.x,player.vel.z)-2)<.01&&!player.sprinting,'aiming overrides sprint input');rightDrag=false;keys.clear();platforms.push(...inputTerrain);
 console.log('PASS default walk, both Shift keys, release-to-walk, aim override and separate E dash input');
 console.log('PASS: flame travel/contact/DOT/refresh/expiration/ground/wall; knife targeted dash/area/one hit/air velocity/wall/durability/cancel/reset/real motion; combo timeout/queue, projectile parry, E 3x rush/through enemies/wall');`;
-context.assert=(ok,label)=>assert.ok(ok,label);vm.runInContext(source.replaceAll('import.meta.env.DEV','false'),context);
+context.assert=(ok,label)=>assert.ok(ok,label);vm.runInContext(bindNewEnemyImports(source,context).replaceAll('import.meta.env.DEV','false'),context);

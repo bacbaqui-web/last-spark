@@ -756,6 +756,9 @@ def main():
     for identifier,*_ in CONCEPTS:
         path=OUT/(identifier+'.json')
         if path.exists():records.append(json.loads(path.read_text()))
+    for path in sorted([*OUT.glob('*-boss.json'),*OUT.glob('slag-beetle.json')]):
+        record=json.loads(path.read_text())
+        if not any(r['id']==record['id'] for r in records):records.append(record)
     (OUT/'manifest.json').write_text(json.dumps({'version':1,'units':'metres','source':'Authored Blender polygon meshes based on selected V2 concepts','models':records},ensure_ascii=False,indent=2))
 
 if __name__=='__main__':main()

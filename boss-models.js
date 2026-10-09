@@ -9,7 +9,7 @@ const cube=panelGeometry,ring=new THREE.TorusGeometry(.63,.13,8,20);
 ring.userData.sharedModelGeometry=true;for(const material of [cyan,purple,dark,light,bladeLight])material.userData.sharedWeaponMaterial=true;
 function part(parent,mat,size,pos){const m=new THREE.Mesh(cube,mat);m.scale.set(...size);m.position.set(...pos);m.castShadow=true;parent.add(m);return m;}
 export function createBoss(kind,variant=kind){
- const r=createRobot(kind!=='blade',variant);r.bossKind=kind;
+ const r=createRobot(variant!=='assassin'&&variant!=='scoutDrone',variant);r.bossKind=kind;
  if(r.wildId){if(kind==='drone')r.mount.scale.setScalar(1.15);return r;}
  r.rotors=[];r.blades=[];const dronePorts=[];
  if(kind==='drone'){
@@ -34,5 +34,5 @@ export function animateBoss(r,dt,time,attack){
  if(r.bossKind==='blade'){for(const [i,arm]of r.arms.entries()){const swing=attack?Math.sin(Math.min(1,attack/.65)*Math.PI):0;arm.shoulder.rotateX(-.35-swing*2.1);arm.shoulder.rotateZ((i?1:-1)*(.3+swing*.8));arm.elbow.rotateX(-.3);}updateRobotUpgrade(r);}
 }
 
-export function createScoutDrone(){const r=createBoss('drone');r.root.scale.setScalar(.32);r.root.name='scout-drone';return r;}
+export function createScoutDrone(){const r=createBoss('drone','scoutDrone');r.root.scale.setScalar(.32);r.root.name='scout-drone';return r;}
 export function createAssassin(){const r=createBoss('blade','assassin');if(r.wildId)return r;r.root.scale.setScalar(1);r.root.name='assassin';const materials=new Map();r.root.traverse(o=>{if(!o.isMesh||!o.material?.color)return;const original=o.material;if(!materials.has(original)){const m=original.clone();m.userData.sharedWeaponMaterial=false;m.color.setHex(original===r.identityMaterial?0xdb2626:original===bladeLight?0xff4568:0x161c24);materials.set(original,m);}o.material=materials.get(original);});if(!r.upgradeRig)attachRobotUpgrade(r,'robot-assassin');return r;}

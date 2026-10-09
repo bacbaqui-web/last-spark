@@ -152,6 +152,106 @@
       "blend": "assault-mantis.blend",
       "embeddedImages": 1,
       "bytes": 5370780
+    },
+    {
+      "meshObjects": 17,
+      "triangles": 88148,
+      "vertices": 50493,
+      "rigged": false,
+      "rigidAssemblies": 17,
+      "textured": true,
+      "texture": "material-atlas.png",
+      "boundsMetres": [
+        3.075,
+        3.933,
+        1.423
+      ],
+      "animations": [],
+      "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+      "id": "siege-beetle-boss",
+      "name": "포격 딱정벌레 · 보스",
+      "role": "미사일 중장갑 보스",
+      "concept": "/models/wild-robots-v1/boss-siege-concept.png",
+      "glb": "siege-beetle-boss.glb",
+      "preview": "siege-beetle-boss.png",
+      "blend": "siege-beetle-boss.blend",
+      "embeddedImages": 1,
+      "bytes": 7735024
+    },
+    {
+      "meshObjects": 14,
+      "triangles": 79396,
+      "vertices": 44715,
+      "rigged": false,
+      "rigidAssemblies": 14,
+      "textured": true,
+      "texture": "material-atlas.png",
+      "boundsMetres": [
+        5.048,
+        2.409,
+        2.633
+      ],
+      "animations": [],
+      "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+      "id": "queen-wasp-boss",
+      "name": "여왕말벌 · 보스",
+      "role": "쌍발 폭격 보스",
+      "concept": "/models/wild-robots-v1/boss-queen-concept.png",
+      "glb": "queen-wasp-boss.glb",
+      "preview": "queen-wasp-boss.png",
+      "blend": "queen-wasp-boss.blend",
+      "embeddedImages": 1,
+      "bytes": 7243672
+    },
+    {
+      "meshObjects": 18,
+      "triangles": 69740,
+      "vertices": 41013,
+      "rigged": false,
+      "rigidAssemblies": 18,
+      "textured": true,
+      "texture": "material-atlas.png",
+      "boundsMetres": [
+        3.385,
+        3.809,
+        2.779
+      ],
+      "animations": [],
+      "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+      "id": "moss-reaper-boss",
+      "name": "이끼 사신 · 보스",
+      "role": "대형 낫팔 근접 보스",
+      "concept": "/models/wild-robots-v1/boss-reaper-concept.png",
+      "glb": "moss-reaper-boss.glb",
+      "preview": "moss-reaper-boss.png",
+      "blend": "moss-reaper-boss.blend",
+      "embeddedImages": 1,
+      "bytes": 7123696
+    },
+    {
+      "meshObjects": 28,
+      "triangles": 46724,
+      "vertices": 29943,
+      "rigged": false,
+      "rigidAssemblies": 28,
+      "textured": true,
+      "texture": "material-atlas.png",
+      "boundsMetres": [
+        2.466,
+        2.871,
+        2.671
+      ],
+      "animations": [],
+      "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+      "id": "slag-beetle",
+      "name": "용재 포격벌레",
+      "role": "곡사 화염 지원형",
+      "concept": "/models/wild-robots-v1/slag-beetle-concept.png",
+      "glb": "slag-beetle.glb",
+      "preview": "slag-beetle.png",
+      "blend": "slag-beetle.blend",
+      "embeddedImages": 1,
+      "bytes": 6774064
     }
   ]
 }

@@ -1,3 +1,4 @@
+import {bindNewEnemyImports} from './new-enemy-test-bindings.mjs';
 import * as SALVAGE from '../sortie-runtime.js';
 import {sortieMission} from '../sortie-mission.js';
 import {configureUpgradeLighting} from '../asset-upgrades.js';
@@ -42,4 +43,4 @@ reset(false);thirdPerson=true;rightDrag=true;damageGrace=999;for(const type of [
 for(const level of [0,.25,.5,1]){updatePhotonGlow(level);for(const model of [weaponModels.rail,thirdView.models.rail]){assert(model.userData.chargeVents.every(({vent,spill})=>vent.material.emissiveIntensity===level*5&&spill.visible===(level>.01)),'charge lights all vents in both views');assert(model.userData.chargeLight.intensity===level*8,'charge light proportional');}}updatePhotonGlow(0);assert(!weaponModels.rail.userData.chargeVents[0].spill.visible,'release clears light spill');
 reset(false);active=false;$('overlay').style.display='flex';assert(showingIntro(),'initial menu uses orbit');const orbitStart=introCamera.position.clone();updateIntroCamera(1);assert(introCamera.position.distanceTo(orbitStart)>1&&introCamera.position.y===48,'distant camera slowly orbits');active=true;assert(!showingIntro(),'start leaves intro');active=false;time=5;assert(!showingIntro(),'pause keeps gameplay camera');
 console.log('PASS: Tab view toggle/no pause/repeat, world weapons, camera obstruction/aim origin, TPS knife/saw damage, channel continuity, menu focus');`;
-context.assert=(ok,label)=>assert.ok(ok,label);vm.runInContext(source.replaceAll('import.meta.env.DEV','false'),context);
+context.assert=(ok,label)=>assert.ok(ok,label);vm.runInContext(bindNewEnemyImports(source,context).replaceAll('import.meta.env.DEV','false'),context);

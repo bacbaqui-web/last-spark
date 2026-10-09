@@ -1,0 +1,25 @@
+{
+  "meshObjects": 17,
+  "triangles": 88148,
+  "vertices": 50493,
+  "rigged": false,
+  "rigidAssemblies": 17,
+  "textured": true,
+  "texture": "material-atlas.png",
+  "boundsMetres": [
+    3.075,
+    3.933,
+    1.423
+  ],
+  "animations": [],
+  "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+  "id": "siege-beetle-boss",
+  "name": "포격 딱정벌레 · 보스",
+  "role": "미사일 중장갑 보스",
+  "concept": "/models/wild-robots-v1/boss-siege-concept.png",
+  "glb": "siege-beetle-boss.glb",
+  "preview": "siege-beetle-boss.png",
+  "blend": "siege-beetle-boss.blend",
+  "embeddedImages": 1,
+  "bytes": 7735024
+}
