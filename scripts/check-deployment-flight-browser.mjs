@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
+import {mkdirSync,writeFileSync} from 'node:fs';
+mkdirSync('output/drone-flight',{recursive:true});
+const browser=await chromium.launch({headless:true,executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});
+const report={checks:[],errors:[]};
+const page=await browser.newPage({viewport:{width:1280,height:900}});page.setDefaultTimeout(120000);
+page.on('pageerror',e=>report.errors.push(e.message));page.on('console',m=>{if(m.type()==='error')report.errors.push(m.text());});
+try{
+ await page.goto('http://127.0.0.1:5191/',{waitUntil:'networkidle'});
+ await page.evaluate(async()=>{const {createRobot}=await import('/robot.js');const {showDeploymentFlight}=await import('/deployment-flight.js');window.makeFlight=()=>showDeploymentFlight({cargo:createRobot(false,'player',.82).root,stage:1});window.flight=await window.makeFlight();window.flight.progress('도시 구역 준비 4 / 12',4,12);});
+ await page.waitForFunction(()=>Number(document.querySelector('.deploymentFlight')?.dataset.frames)>30);
+ const before=await page.locator('.deploymentFlight').evaluate(e=>({...e.dataset}));
+ await page.evaluate(()=>{const start=performance.now();while(performance.now()-start<1500){Math.sqrt(Math.random());}});
+ await page.waitForTimeout(80);
+ const after=await page.locator('.deploymentFlight').evaluate(e=>({...e.dataset}));
+ assert.equal(after.renderer,'worker');assert(Number(after.frames)-Number(before.frames)>=24,'worker continues rendering through 1.5s main-thread freeze');report.blockedFlight={before,after};
+ report.checks.push('Worker renders during a 1.5 second main-thread stall');
+ await page.screenshot({path:'output/drone-flight/flight.png'});
+ await page.setViewportSize({width:430,height:932});await page.waitForTimeout(500);
+ assert.equal(await page.evaluate(()=>document.querySelector('.deploymentFlight').scrollWidth),430);await page.screenshot({path:'output/drone-flight/mobile.png'});report.checks.push('Resizes without horizontal overflow');
+ await page.evaluate(()=>window.flight.close());await page.waitForTimeout(100);assert.equal(page.workers().length,0);assert.equal(await page.locator('.deploymentFlight').count(),0);
+ await page.evaluate(async()=>{HTMLCanvasElement.prototype.transferControlToOffscreen=undefined;window.flight=await window.makeFlight();});assert.equal(await page.locator('.deploymentFlight').getAttribute('data-renderer'),'main');await page.evaluate(()=>window.flight.close());report.checks.push('Unsupported-worker fallback renders and closes');
+ await page.setViewportSize({width:1280,height:900});
+ await page.route('**/street-random-map.js',async route=>{const response=await route.fetch();let source=await response.text();source=source.replace("const root=new T.Group();try{for(const progress", "if(!globalThis.__flightFailOnce){globalThis.__flightFailOnce=true;await new Promise(r=>setTimeout(r,1500));throw Error('검증용 지도 생성 실패');}const root=new T.Group();try{for(const progress");await route.fulfill({response,body:source});});
+ await page.reload({waitUntil:'networkidle'});await page.click('#hangarDeploy');await page.click('#recoveryMode');
+ const save=await page.evaluate(()=>localStorage.getItem('last-spark-salvage-v1'));
+ await page.click('#deploySortie');await page.waitForSelector('.deploymentFlight[data-renderer="worker"]');
+ assert.equal(await page.evaluate(()=>window.gameStatus().sortie),null,'no campaign launch before map is ready');
+ await page.waitForFunction(()=>document.getElementById('recoveryRequirement')?.textContent.includes('검증용 지도 생성 실패'));
+ assert.equal(await page.locator('.deploymentFlight').count(),0);assert.equal(await page.evaluate(()=>window.atomicMapLoading),false);assert.equal(await page.evaluate(()=>localStorage.getItem('last-spark-salvage-v1')),save);report.checks.push('Map failure removes flight, preserves campaign and allows retry');
+ await page.click('#deploySortie');await page.waitForSelector('.deploymentFlight[data-renderer="worker"]');report.heading=await page.locator('.flightHeading').evaluate(e=>({text:e.textContent,rect:e.getBoundingClientRect().toJSON(),visibility:getComputedStyle(e).visibility,display:getComputedStyle(e).display}));await page.screenshot({path:'output/drone-flight/loading-real.png'});
+ await page.waitForFunction(()=>window.gameStatus?.().active&&!window.atomicMapLoading&&window.gameStatus().enemies>0);
+ assert.equal(await page.locator('.deploymentFlight').count(),0);assert.equal(page.workers().length,0);const perf=await page.evaluate(()=>window.performanceStatus());assert.equal(perf.error,null);assert.equal(perf.contextLost,false);await page.screenshot({path:'output/drone-flight/landed.png'});report.checks.push('Retry completes actual city, descent and encounter launch; worker removed');
+ assert.deepEqual(report.errors,[]);
+ console.log(JSON.stringify(report,null,2));
+}finally{writeFileSync('output/drone-flight/browser-checks.json',JSON.stringify(report,null,2));await browser.close();}

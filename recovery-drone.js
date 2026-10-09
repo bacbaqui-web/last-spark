@@ -2,10 +2,10 @@ import * as T from 'three';
 let sharedPaintTexture; // One bounded, immutable texture shared across regenerated maps.
 
 // Heavy cargo UAV: open landing frame and an unobstructed underslung robot cradle.
-export function createRecoveryDrone(){
+export function createRecoveryDrone({loadTextures=true}={}){
  const root=new T.Group();root.position.z=12;
  const paint=new T.MeshStandardMaterial({color:0xffffff,metalness:.35,roughness:.85}),metal=new T.MeshStandardMaterial({color:0x465459,metalness:.65,roughness:.65}),rubber=new T.MeshStandardMaterial({color:0x202725,roughness:1}),yellow=new T.MeshStandardMaterial({color:0xb89342,roughness:.85}),lamp=new T.MeshStandardMaterial({color:0x99ebde,emissive:0x56c7ac,emissiveIntensity:1});
- if(typeof document!=='undefined'){paint.map=sharedPaintTexture ||=new T.TextureLoader().load(new URL('./textures/street/return-drone-top-v1.png',document.baseURI).href);paint.map.colorSpace=T.SRGBColorSpace;metal.map=paint.map;}
+ if(loadTextures&&typeof document!=='undefined'){paint.map=sharedPaintTexture ||=new T.TextureLoader().load(new URL('./textures/street/return-drone-top-v1.png',document.baseURI).href);paint.map.colorSpace=T.SRGBColorSpace;metal.map=paint.map;}
  root.userData.ownedMaterials=[paint,metal,rubber,yellow,lamp];
  function mesh(parent,g,m,pos,solid=true){const o=new T.Mesh(g,m);o.position.set(...pos);o.castShadow=o.receiveShadow=true;o.userData={ownedGeometry:true,...(solid?{collisionKind:'building'}:{})};parent.add(o);return o;}
  const box=(p,x,y,z,w,h,d,m=paint,solid=true)=>mesh(p,new T.BoxGeometry(w,h,d),m,[x,y,z],solid);
@@ -18,12 +18,14 @@ export function createRecoveryDrone(){
  box(root,0,2.48,1.18,.65,.22,.28,metal);mesh(root,new T.SphereGeometry(.12,8,6),lamp,[0,2.48,1.34],false);
  box(root,0,3.56,0,1.55,.08,1.9,paint);
  // Four separate round duct shrouds, open centers and recessed propellers.
+ const rotors=[];
  for(const side of [-1,1])for(const z of [-1.65,1.65]){
   const x=side*2.65;rod(root,[side*.9,3.05,z*.42],[x,3.05,z],.11);rod(root,[side*.7,2.67,z*.5],[x,3.02,z],.055);
   const shroud=mesh(root,new T.CylinderGeometry(.98,.98,.35,24,1,true),paint,[x,3.08,z]);shroud.material=paint;
   for(const y of [2.91,3.25]){const ring=mesh(root,new T.TorusGeometry(.98,.045,4,24),metal,[x,y,z]);ring.rotation.x=Math.PI/2;}
   const hub=mesh(root,new T.CylinderGeometry(.17,.17,.3,10),metal,[x,3.06,z]);
-  for(const a of [0,Math.PI/2]){const blade=box(root,x,3.05,z,1.7,.04,.12,rubber);blade.rotation.y=a;}
+  const rotor=new T.Group();rotor.position.set(x,3.05,z);root.add(rotor);rotors.push(rotor);
+  for(const a of [0,Math.PI/2]){const blade=box(rotor,0,0,0,1.7,.04,.12,rubber);blade.rotation.y=a;}
   for(const a of [0,Math.PI/2]){const brace=box(root,x,2.94,z,1.85,.045,.05,metal);brace.rotation.y=a;}
   // Angled long outriggers carry load to wide landing feet.
   rod(root,[side*.75,2.58,z*.5],[side*2.05,.22,z*1.04],.065);
@@ -49,10 +51,11 @@ export function createRecoveryDrone(){
  for(let i=0;i<6;i++){const a=i*Math.PI/3,barrel=mesh(barrels,new T.CylinderGeometry(.037,.037,1.15,6),metal,[Math.cos(a)*.11,Math.sin(a)*.11,.62]);barrel.rotation.x=Math.PI/2;}
  for(const z of [.2,1.12]){const ring=mesh(barrels,new T.TorusGeometry(.145,.035,4,12),metal,[0,0,z]);}
  const muzzle=mesh(gun,new T.ConeGeometry(.13,.42,6),new T.MeshBasicMaterial({color:0xffdf70}),[0,0,1.4],false);muzzle.rotation.x=Math.PI/2;muzzle.visible=false;muzzle.userData.ownedMaterial=true;
- if(typeof document!=='undefined'){
+ if(loadTextures&&typeof document!=='undefined'){
   const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='#fff3b8';ctx.fillRect(0,0,512,128);ctx.fillStyle='#153d46';ctx.textAlign='center';ctx.font='bold 60px sans-serif';ctx.fillText('RETURN HERE',256,86);const map=new T.CanvasTexture(c);map.colorSpace=T.SRGBColorSpace;
   const sign=box(root,0,3.48,1.3,1.5,.36,.03,new T.MeshBasicMaterial({map}),false);sign.userData.ownedMaterial=true;
  }
+ root.userData.updateFlight=time=>{rotors.forEach((rotor,i)=>{rotor.rotation.y=time*43*(i%2?-1:1);});};
  let targets=[],lastShot=-1,lastScan=-1,current=null;const local=new T.Vector3(),world=new T.Vector3(),origin=new T.Vector3();
  root.userData.setDefenseTargets=value=>{targets=value;current=null;};
  root.userData.updateDefense=time=>{
