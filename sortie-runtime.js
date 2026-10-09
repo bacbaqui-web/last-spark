@@ -1,6 +1,6 @@
 export {prepareCombatAssets} from './asset-loading.js';
 export {frameSteps,createPerformanceWindow,installQualityControls,installFPSMeter} from './runtime-performance.js';
-export {navigationColliders} from './collision-broadphase.js';
+export {navigationColliders,enemyBlocked} from './collision-broadphase.js';
 export {assistedDirection} from './aim-assist.js';
 export {createBackEquipmentRuntime} from './back-equipment-runtime.js';
 export {createEquipmentModel} from './equipment-models.js';
@@ -68,3 +68,7 @@ export {createCombatLightPool} from './combat-lights.js';
 
 export {gameMode,gameModeURL,trainingWaveSize} from './game-modes.js';
 export {createWeaponSlotHUD} from './weapon-slot-hud.js';
+
+export {withFrameWork,scheduleFrameWork} from './frame-work.js';
+export {flushEnemyPoses} from './wild-enemy-models.js';
+export {createEnemyRenderBatch} from './enemy-render-batch.js';

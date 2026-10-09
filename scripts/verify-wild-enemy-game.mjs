@@ -1,3 +1,4 @@
+import * as CAMPAIGN from '../salvage-campaign.js';
 import {configureUpgradeLighting} from '../asset-upgrades.js';
 import './verify-wild-enemies.mjs';
 import {sortieMission} from '../sortie-mission.js';
@@ -18,8 +19,8 @@ import * as REAL from '../node_modules/three/build/three.module.js';
 import * as ROBOT from '../robot.js';import * as AI from '../enemy-ai.js';
 import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
 const elements=new Map(),events=new Map();const element=()=>({style:{},textContent:'',innerHTML:'',querySelector:()=>({style:{}}),addEventListener(){},requestPointerLock:async()=>{}});
-const context={configureUpgradeLighting,sortieMission,createStepLocomotion,decorateMinigunFlash,MOVE,events,THIRD,MOTION,VIEW,NAV,PROGRESS,DETAIL,BOSSES,REAL,ROBOT,AI,WM,poseSword,console,Math:Object.create(Math),performance,innerWidth:1200,innerHeight:800,devicePixelRatio:1,window:{addEventListener(){}},document:{body:{appendChild(){}},createElement:()=>({style:{},remove(){},addEventListener(){},getContext:()=>null}),getElementById(id){if(!elements.has(id))elements.set(id,element());return elements.get(id)},addEventListener(name,fn){events.set(name,fn)},exitPointerLock(){}},requestAnimationFrame(){}};
-vm.createContext(context);let source=fs.readFileSync('main.js','utf8').replace("import {configureUpgradeLighting} from './asset-upgrades.js';",'').replace("import {sortieMission} from './sortie-mission.js';",'').replace("import './salvage.css';",'').replace("import * as SALVAGE from './sortie-runtime.js';",'').replace("import {createStepLocomotion} from './step-locomotion.js';",'').replace("import {decorateMinigunFlash} from './minigun-fire.js';",'').replace("import * as THREE from 'three';",`const THREE={...REAL,WebGLRenderer:class{constructor(){this.shadowMap={}}setPixelRatio(){}setSize(){}render(){}}};`);
+const context={createTrainingRun:CAMPAIGN.createTrainingRun,configureUpgradeLighting,sortieMission,createStepLocomotion,decorateMinigunFlash,MOVE,events,THIRD,MOTION,VIEW,NAV,PROGRESS,DETAIL,BOSSES,REAL,ROBOT,AI,WM,poseSword,console,Math:Object.create(Math),performance,innerWidth:1200,innerHeight:800,devicePixelRatio:1,window:{addEventListener(){}},document:{body:{appendChild(){}},createElement:()=>({style:{},remove(){},addEventListener(){},getContext:()=>null}),getElementById(id){if(!elements.has(id))elements.set(id,element());return elements.get(id)},addEventListener(name,fn){events.set(name,fn)},exitPointerLock(){}},requestAnimationFrame(){}};
+vm.createContext(context);let source=fs.readFileSync('main.js','utf8').replace("import {createTrainingRun} from './salvage-campaign.js';",'').replace("import {configureUpgradeLighting} from './asset-upgrades.js';",'').replace("import {sortieMission} from './sortie-mission.js';",'').replace("import './salvage.css';",'').replace("import * as SALVAGE from './sortie-runtime.js';",'').replace("import {createStepLocomotion} from './step-locomotion.js';",'').replace("import {decorateMinigunFlash} from './minigun-fire.js';",'').replace("import * as THREE from 'three';",`const THREE={...REAL,WebGLRenderer:class{constructor(){this.shadowMap={}}setPixelRatio(){}setSize(){}render(){}}};`);
 source=source.replace("import {movePlayerWithSlide} from './player-movement.js';",'const {movePlayerWithSlide}=MOVE;');
 source=source.replace("import {createThirdPersonView} from './third-person.js';",'const {createThirdPersonView}=THIRD;');
 source=source.replace("import {createWeaponMotion} from './weapon-motion.js';",'const {createWeaponMotion}=MOTION;');
@@ -58,5 +59,12 @@ const effectsBeforeSuicide=explosions.length;spawn(false,'spider');const suicide
 for(const e of [...enemies,...dying]){scene.remove(e.group);disposeRobot(e.robot);}enemies.length=0;dying.length=0;platforms.push(...ground);worldObstacles.push(...occluders);sortie.bossSpawned=false;startRoadSortie();
 assert(enemies.some(e=>e.robot.wildId==='forest-warden'),'campaign guardian uses warden');for(const id of ['rust-scout','iron-beetle','assault-mantis','wall-sniper-spider'])assert(enemies.some(e=>e.robot.wildId===id),'campaign includes '+id);
 for(let i=0;i<6;i++)update(.016);assert(enemies.every(e=>e.group.position.toArray().every(Number.isFinite)),'campaign ticks with textured-model rig adapters');
+firing=false;cooldown=999;countdownTime=0;arrival=null;active=true;dead=false;
+for(const d of drops){clearItem(d.m);clearItem(d.beam);}drops.length=0;
+const frameStart=time,originalFrameHUD=updateFrameHUD;let frameHUDCalls=0;
+updateFrameHUD=()=>{frameHUDCalls++;originalFrameHUD();};
+SALVAGE.withFrameWork(()=>{for(let i=0;i<4;i++)update(1/60);});
+assert(Math.abs(time-frameStart-4/60)<1e-8,'frame batching preserves all four simulation steps');
+updateFrameHUD=originalFrameHUD;assert(frameHUDCalls===1,'one HUD refresh for four physics steps without firing/pickups');
 console.log('PASS actual game: five spawn types, hit ownership, projectile muzzle, mantis attack, warden impact, wall sniper, death lifecycle, beetle self-detonation, campaign population and update');`;
 context.assert=(ok,label)=>assert.ok(ok,label);vm.runInContext(source.replaceAll('import.meta.env.DEV','false'),context);

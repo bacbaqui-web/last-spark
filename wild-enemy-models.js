@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {inFrameWork,scheduleFrameWork,flushFrameWork,cancelFrameWork} from './frame-work.js';
 import {batchWildSurfaces} from './wild-enemy-surfaces.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {wildGait,wildFootfall,wildLegPhase} from './wild-enemy-gait.js';
@@ -44,7 +45,7 @@ export function wildEnemyId(boss,type){
   return null; // Existing aerial and missile bosses keep their own weapons.
 }
 const v=new THREE.Vector3(),a=new THREE.Vector3(),b=new THREE.Vector3(),q=new THREE.Quaternion();
-const legTarget=new THREE.Vector3(),jointInverse=new THREE.Matrix4(),soleOrientation=new THREE.Quaternion();
+const legTarget=new THREE.Vector3(),jointInverse=new THREE.Matrix4(),soleOrientation=new THREE.Quaternion(),jointPosition=new THREE.Vector3(),jointScale=new THREE.Vector3();
 function meshList(node){const list=[];node.traverse(o=>{if(o.isMesh)list.push(o);});return list;}
 function socket(parent,position,name){const n=new THREE.Group();n.name=name;n.position.fromArray(position);parent.add(n);return n;}
 
@@ -119,16 +120,33 @@ export function createWildEnemy(id,{scale=WILD_ENEMIES[id]?.scale}={}){
   r.getAimOrigin=()=>head.getWorldPosition(new THREE.Vector3());
   r.aimAt=target=>aimWildEnemy(r,target);
   r.mountOnWall=(platforms,anchor,lookAt)=>mountWildSniper(r,platforms,anchor,lookAt);
+  r.legNodes=new Set(legs.flatMap(leg=>[...leg.chain,leg.foot]));
+  r.legParents=[...new Set(legs.map(leg=>leg.hip.parent))];
+  r.finishLegPose=()=>{pendingLegs.delete(r);solveLegPose(r);r.motion.updateWorldMatrix(true,true);};
+  // Rigid mesh offsets and decorative groups never animate; their joint parents do.
+  const moving=new Set([root,mount,motion,body,head,weapon,...r.rotors,nodes.Pelvis,nodesRifle(r),muzzleFlash,muzzleGlow,...arms.flatMap(arm=>[arm.shoulder,arm.elbow,arm.hand]),...r.legNodes]);
+  r.poseRest=new Map([...rest].filter(([node])=>moving.has(node)));
+  root.traverse(node=>{if(!moving.has(node)){node.updateMatrix();node.matrixAutoUpdate=false;}});
   animateWildEnemy(r,0);return r;
 }
-function restore(r){for(const [node,rest]of r.rest){node.position.copy(rest.p);node.quaternion.copy(rest.q);}r.motion.position.set(0,0,0);r.motion.rotation.set(0,0,0);}
+function restore(r,deferLegs=false){for(const [node,rest]of r.poseRest){if(deferLegs&&r.legNodes.has(node))continue;node.position.copy(rest.p);node.quaternion.copy(rest.q);}r.motion.position.set(0,0,0);r.motion.rotation.set(0,0,0);}
+const pendingLegs=new Set();
+function solveLegPose(r){
+ for(const node of r.legNodes){const rest=r.rest.get(node);node.position.copy(rest.p);node.quaternion.copy(rest.q);}
+ r.motion.updateWorldMatrix(true,false);r.motion.getWorldQuaternion(soleOrientation);
+ for(const parent of r.legParents)parent.updateWorldMatrix(true,false);
+ for(const leg of r.legs)plantLeg(r,leg,leg.goal,true);
+}
+function flushLegPose(r){if(pendingLegs.has(r))flushFrameWork(r);}
+// Exact mesh hits, melee poses and death capture cannot use a pending foot pose.
+export function flushEnemyPoses(){for(const r of pendingLegs)flushLegPose(r);}
 // Hips carry the lateral weight shift; knees and hocks stay mechanical hinges.
 function updateLegChain(leg,from){for(let j=from;j<3;j++)leg.chain[j].updateWorldMatrix(false,false);leg.foot.updateWorldMatrix(false,false);}
-function plantLeg(r,leg,goal){
+function plantLeg(r,leg,goal,prepared=false){
   // CCD only needs the three joints and foot. Updating descendants here used
   // to visit every decorative mesh, then repeat the same work for each joint.
-  r.motion.updateWorldMatrix(true,false);legTarget.copy(goal).applyMatrix4(r.motion.matrixWorld);
-  leg.hip.parent.updateWorldMatrix(true,false);
+  if(!prepared){r.motion.updateWorldMatrix(true,false);r.motion.getWorldQuaternion(soleOrientation);leg.hip.parent.updateWorldMatrix(true,false);}
+  legTarget.copy(goal).applyMatrix4(r.motion.matrixWorld);
   updateLegChain(leg,0);
   for(let pass=0;pass<12;pass++){
    if(a.setFromMatrixPosition(leg.foot.matrixWorld).distanceToSquared(legTarget)<.000004)break;
@@ -144,10 +162,12 @@ function plantLeg(r,leg,goal){
   }
   }
   // Keep soles aligned with the support plane after solving the articulated chain.
-  leg.foot.quaternion.copy(leg.foot.parent.getWorldQuaternion(q).invert().multiply(r.motion.getWorldQuaternion(soleOrientation)));
+  leg.foot.parent.matrixWorld.decompose(jointPosition,q,jointScale);
+  leg.foot.quaternion.copy(q.invert().multiply(soleOrientation));
 }
 // Sample the intact mechanical rig before the final burst, preserving every joint.
 function captureHeadDeath(r){
+  flushLegPose(r);
   const nodes=[...r.rest.keys(),r.motion],rest=nodes.map(n=>({n,p:n.position.clone(),q:n.quaternion.clone()}));
   const feet=r.legs.map(l=>r.motion.worldToLocal(l.foot.getWorldPosition(new THREE.Vector3())));
   const hipHeight=(r.nodes.Pelvis||r.body).position.y;
@@ -198,7 +218,7 @@ function captureHeadDeath(r){
 }
 export function animateWildEnemy(r,dt,{speed=0,aim=0,elevation=0,hit=0,rolling=false,rollTime=0,grounded=true,velocityX,velocityZ}={}){
   if(r.destruction)resetWildDestruction(r);
-  dt=Math.min(.05,Math.max(0,dt));restore(r);r.age+=dt;r.lastSpeed=speed;
+  dt=Math.min(.05,Math.max(0,dt));const deferLegs=inFrameWork();restore(r,deferLegs);r.age+=dt;r.lastSpeed=speed;
   const supported=grounded&&!r.wallMounted;
   r.walkBlend=THREE.MathUtils.damp(r.walkBlend,supported?Math.min(1,speed/.8):0,10,dt);
   r.gaitSpeed=THREE.MathUtils.damp(r.gaitSpeed,Math.max(0,speed),8,dt);
@@ -235,8 +255,8 @@ export function animateWildEnemy(r,dt,{speed=0,aim=0,elevation=0,hit=0,rolling=f
     leg.goal.y+=leg.step.height*walk*gait.lift;
     leg.planted=supported&&(walk<.01||leg.step.planted);
     if(!grounded){leg.goal.z-=.10;leg.goal.y+=.16;leg.planted=false;}
-    plantLeg(r,leg,leg.goal);
   }
+  if(deferLegs){pendingLegs.add(r);scheduleFrameWork(r,r.finishLegPose);}else solveLegPose(r);
   if(!r.spec.count)for(const arm of r.arms){
     const swing=Math.sin(r.phase-.30+(arm.side>0?Math.PI:0))*walk*(.22+gait.run*.16);
     if(mantis){
@@ -248,17 +268,17 @@ export function animateWildEnemy(r,dt,{speed=0,aim=0,elevation=0,hit=0,rolling=f
     if(r.wildId==='rust-scout'&&arm.side<0){
       // Raise the upper arm to shoulder height, then extend the gun arm along the aim.
       const direction=new THREE.Vector3(0,Math.sin(elevation),Math.cos(elevation)).applyQuaternion(r.root.getWorldQuaternion(new THREE.Quaternion()));
-      r.motion.updateWorldMatrix(true,true);
+      arm.shoulder.parent.updateWorldMatrix(true,false);
       const localAim=direction.clone().applyQuaternion(arm.shoulder.parent.getWorldQuaternion(new THREE.Quaternion()).invert());
       arm.shoulder.quaternion.slerp(new THREE.Quaternion().setFromUnitVectors(arm.elbow.position.clone().normalize(),localAim),r.aimBlend);
-      arm.shoulder.updateWorldMatrix(false,true);
+      arm.shoulder.updateWorldMatrix(false,false);
       const gunAim=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),direction);
       gunAim.premultiply(arm.elbow.parent.getWorldQuaternion(new THREE.Quaternion()).invert());
       arm.elbow.quaternion.slerp(gunAim,r.aimBlend);arm.elbow.rotateX(-r.recoil*.08);
     }
   }
   if(nodesRifle(r))nodesRifle(r).position.z-=r.recoil*.25;
-  if(rolling){r.body.position.y-=.16;r.body.rotation.z=Math.sin(Math.min(1,rollTime/.72)*Math.PI)*.5;}
+  if(rolling){flushLegPose(r);r.body.position.y-=.16;r.body.rotation.z=Math.sin(Math.min(1,rollTime/.72)*Math.PI)*.5;}
   r.motion.updateWorldMatrix(true,true);r.posePrepared=true;
 }
 function nodesRifle(r){return r.nodes.Sniper_rifle||(r.wildId==='forest-warden'?r.nodes.Heavy_forearm_1:null);}
@@ -271,7 +291,7 @@ export function aimWildEnemy(r,target){
 }
 export function animateWildAttack(r,remaining){
   // Remaining time follows the game's .65 s melee attack, with impact at .27 s.
-  if(!remaining)return;const age=.65-remaining,t=THREE.MathUtils.clamp(age/.65,0,1);
+  if(!remaining)return;flushLegPose(r);const age=.65-remaining,t=THREE.MathUtils.clamp(age/.65,0,1);
   if(r.wildId==='assault-mantis'){
     // Upper arm, forearm and absolute blade pitch: lift above the head, chop
     // down through the .27 s damage window, then recover to a downward guard.
@@ -306,9 +326,10 @@ function updateMuzzleFlash(r){
 }
 export function fireWildEnemy(r){r.recoil=1;r.flashTime=.12;updateMuzzleFlash(r);}
 export function dieWildEnemy(r,progress){
+  flushLegPose(r);
   updateWildDestruction(r,progress);
 }
-export function disposeWildEnemy(r){resetWildDestruction(r);r.eyeGlow.material.dispose();r.muzzleFlash.geometry.dispose();r.muzzleFlash.material.dispose();r.muzzleGlow.material.dispose();r.muzzleLight.dispose();r.root.removeFromParent();}
+export function disposeWildEnemy(r){pendingLegs.delete(r);cancelFrameWork(r);resetWildDestruction(r);r.eyeGlow.material.dispose();r.muzzleFlash.geometry.dispose();r.muzzleFlash.material.dispose();r.muzzleGlow.material.dispose();r.muzzleLight.dispose();r.root.removeFromParent();}
 export function mountWildSniper(r,platforms,anchor,lookAt){
   if(r.wildId!=='wall-sniper-spider')return false;
   const faces=[];

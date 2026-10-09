@@ -2,7 +2,8 @@
 // Use an isolated Chrome profile and memory-only recovery campaign.
 import assert from 'node:assert/strict';
 import {createServer} from 'vite';
-import {mkdirSync,writeFileSync} from 'node:fs';
+import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
+import {basename,join} from 'node:path';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const counts=(process.env.CROWD_COUNTS??'40,80,120,200').split(',').filter(Boolean).map(Number),seconds=Number(process.env.CROWD_SECONDS||20),liveSeconds=Number(process.env.CROWD_LIVE_SECONDS||60),modes=(process.env.CROWD_MODES||'training,recovery').split(',');
 const label=process.env.CROWD_LABEL||'current',preset=process.env.CROWD_QUALITY||'balanced';
@@ -30,6 +31,15 @@ update=function(dt){
 const crowdRecord=frameStats.record.bind(frameStats);
 frameStats.record=sample=>{crowdRecord(sample);if(crowdSamples){crowdSamples.push(sample);if(crowdSamples.length%30===0)crowdPopulation.push({time,enemies:enemies.length,active:enemies.filter(e=>!e.dormant).length,visible:enemies.filter(e=>e.group.visible).length,drawCalls:renderer.info.render.calls,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,dying:dying.length,drops:drops.length,projectiles:projectiles.length});}};
 window.crowdCheck={
+ compareRender(){
+  const saved=enemyRenderBatch.render,wasActive=active;active=false;
+  try{
+   const capture=batched=>{enemyRenderBatch.render=batched?saved:(_enemies,draw)=>draw();shadowBudget.invalidate();renderGame();const gl=renderer.getContext(),w=gl.drawingBufferWidth,h=gl.drawingBufferHeight,pixels=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,pixels);return {pixels,png:canvas.toDataURL('image/png'),calls:renderer.info.render.calls};};
+   capture(false);capture(true);const original=capture(false),batched=capture(true);let different=0,totalError=0;
+   for(let i=0;i<original.pixels.length;i+=4){let delta=0;for(let j=0;j<3;j++){const d=Math.abs(original.pixels[i+j]-batched.pixels[i+j]);delta=Math.max(delta,d);totalError+=d;}if(delta>24)different++;}
+   return {differentFraction:different/(original.pixels.length/4),meanChannelError:totalError/(original.pixels.length/4*3),calls:{original:original.calls,batched:batched.calls},original:original.png,batched:batched.png};
+  }finally{enemyRenderBatch.render=saved;active=wasActive;prev=performance.now();}
+ },
  graphics(){const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');return {renderer:gl.getParameter(debug?debug.UNMASKED_RENDERER_WEBGL:gl.RENDERER),vendor:gl.getParameter(debug?debug.UNMASKED_VENDOR_WEBGL:gl.VENDOR),version:gl.getParameter(gl.VERSION)};},
  async init(){
   await SALVAGE.prepareCombatAssets();let seed=319;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
@@ -48,7 +58,9 @@ window.crowdCheck={
  stop(){crowdFixture=null;active=false;firing=false;reset(false);}
 };`;
 const server=await createServer({plugins:[{name:'crowd-test-hooks',enforce:'pre',transform(source,id){
+ if(process.env.CROWD_BASELINE_DIR&&['main.js','wild-enemy-models.js','sortie-runtime.js'].includes(basename(id)))source=readFileSync(join(process.env.CROWD_BASELINE_DIR,basename(id)),'utf8');
  if(id.endsWith('/main.js'))return source+injection;
+ if(process.env.CROWD_BASELINE_DIR&&['wild-enemy-models.js','sortie-runtime.js'].includes(basename(id)))return source;
  // Diagnostic comparison only: do not change the shipped death animation.
  if(id.endsWith('/death-budget.js')&&process.env.CROWD_DEATH_DETAIL==='simple'){
   assert(source.includes('maxDetailed=6'),'Death budget configuration changed');return source.replace('maxDetailed=6','maxDetailed=0');
@@ -73,6 +85,12 @@ try{
    const intervals=raw.samples.map(s=>s.elapsed),frameMs=summary(intervals),slowest=intervals.toSorted((a,b)=>b-a).slice(0,Math.max(1,Math.ceil(intervals.length*.01)));
    const result={mode,quality:preset,deathDetail:process.env.CROWD_DEATH_DETAIL||'default',...config,frames:intervals.length,frameMs,averageFPS:1000/frameMs.mean,onePercentLowFPS:1000/(slowest.reduce((a,b)=>a+b,0)/slowest.length),over33ms:intervals.filter(n=>n>33.4).length,over50ms:intervals.filter(n=>n>50.1).length,updateMs:summary(raw.samples.map(s=>s.update)),renderSubmissionMs:summary(raw.samples.map(s=>s.render)),activeEnemies:summary(raw.population.map(p=>p.active)),status:raw.status,spawned:raw.spawned,fpsText:raw.fpsText};
    const name=mode+'-'+config.count+(config.live?'-live':'')+'-'+label;if(profiler){const {profile}=await profiler.send('Profiler.stop');writeFileSync(directory+'/'+name+'.cpuprofile',JSON.stringify(profile));await profiler.detach();}writeFileSync(directory+'/'+name+'.json',JSON.stringify({...result,population:raw.population,samples:raw.samples},null,2));await page.screenshot({path:directory+'/'+name+'.png'});results.push(result);console.log(JSON.stringify(result));
+  }
+  if(process.env.CROWD_RENDER_CHECK==='1'){
+   const {original,batched,...comparison}=await page.evaluate(()=>crowdCheck.compareRender());
+   writeFileSync(directory+'/'+mode+'-original-'+label+'.png',Buffer.from(original.split(',')[1],'base64'));writeFileSync(directory+'/'+mode+'-batched-'+label+'.png',Buffer.from(batched.split(',')[1],'base64'));
+   writeFileSync(directory+'/'+mode+'-render-comparison-'+label+'.json',JSON.stringify(comparison,null,2));console.log(JSON.stringify({renderComparison:comparison}));
+   assert(comparison.differentFraction<.01,'batched render differs from original poses');
   }
   await page.evaluate(()=>crowdCheck.pause());await page.waitForTimeout(100);assert(await page.locator('#fpsCounter').isHidden(),'FPS counter should hide while paused');
   await page.evaluate(()=>crowdCheck.resume());await page.waitForFunction(()=>/^\d+ FPS$/.test(document.querySelector('#fpsCounter').textContent)&&!document.querySelector('#fpsCounter').hidden);

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {enemyBlocked} from '../collision-broadphase.js';
+let seed=314159;const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
+const platforms=Array.from({length:600},()=>({x:(random()-.5)*240,z:(random()-.5)*420,w:1+random()*24,d:1+random()*20,h:2+random()*18,base:random()>.6?random()*3:0}));
+const brute=(x,y,z,r,m)=>platforms.some(p=>y<p.h-m&&y>=(p.base||0)&&Math.abs(x-p.x)<p.w/2+r&&Math.abs(z-p.z)<p.d/2+r);
+const queries=[];for(let i=0;i<12000;i++)queries.push([(random()-.5)*300,random()*24-2,(random()-.5)*480,random()*1.5,i%2?.15:.1]);
+for(const p of platforms.slice(0,40))for(const d of [-1e-8,0,1e-8])queries.push([p.x+p.w/2+.5+d,p.h-.1,p.z,.5,.1],[p.x,p.base+d,p.z,.5,.15]);
+for(const query of queries)assert.equal(enemyBlocked(platforms,...query),brute(...query),'spatial query equals the exact full-map body check');
+const changed=platforms[0];changed.x=500;changed.z=500;changed.base=0;platforms.collisionRevision=1;assert(enemyBlocked(platforms,500,0,500));
+platforms.length=0;assert(!enemyBlocked(platforms,500,0,500),'map clear invalidates index');platforms.push({x:0,z:0,w:2,d:2,h:3});assert(enemyBlocked(platforms,0,0,0),'regeneration invalidates index');
+console.log(`PASS enemy collision broad phase: ${queries.length} exact comparisons, cell/height boundaries, raised platforms, moved/replaced/cleared map`);
