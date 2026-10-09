@@ -1,7 +1,9 @@
+import {createHangarMusic} from './hangar-music.js';
 import {showOperationBriefing} from './operation-briefing.js';
 import {EQUIPMENT,EQUIPMENT_SLOTS,equipmentDescription,equipmentIcon} from './equipment.js';
 import {PARTS,frameStats,partDescription,weaponPerk} from './salvage-campaign.js';
 export function createBaseUI(campaign,{prepare,prepareMission,training,appearance,weapons=[]}){
+ const music=createHangarMusic();
  const root=document.createElement('section');root.id='baseCamp';root.setAttribute('aria-label','본거지 원격 조종실');document.body.appendChild(root);
  const briefing=document.createElement('section');briefing.id='sortieBriefing';briefing.hidden=true;document.body.appendChild(briefing);
  const result=document.createElement('section');result.id='sortieResult';result.hidden=true;result.setAttribute('role','dialog');result.setAttribute('aria-modal','true');result.setAttribute('aria-labelledby','sortieResultTitle');document.body.appendChild(result);
@@ -38,8 +40,8 @@ export function createBaseUI(campaign,{prepare,prepareMission,training,appearanc
   result.hidden=false;result.querySelector('.resultClose').onclick=closeResult;result.querySelector('#confirmSortieResult').onclick=closeResult;result.querySelector('#confirmSortieResult').focus({preventScroll:true});
  }
  result.addEventListener('keydown',e=>{if(e.code==='Escape'){e.preventDefault();closeResult();}if(e.code==='Tab'){const first=result.querySelector('.resultClose'),last=result.querySelector('#confirmSortieResult');if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
- function show(report=null){acknowledgeModules();root.hidden=false;briefing.hidden=true;result.hidden=true;panel=null;root.inert=false;root.classList.remove('preparingSortie');briefing.classList.remove('inHangar');render();if(report)showResult(report);}
- function hide(){acknowledgeModules();root.hidden=true;result.hidden=true;}
+ function show(report=null){music.setActive(true);acknowledgeModules();root.hidden=false;briefing.hidden=true;result.hidden=true;panel=null;root.inert=false;root.classList.remove('preparingSortie');briefing.classList.remove('inHangar');render();if(report)showResult(report);}
+ function hide(){music.setActive(false);acknowledgeModules();root.hidden=true;result.hidden=true;}
 
  function sorted(items,isGun=false,isGear=false){const list=[...items],name=p=>isGear?EQUIPMENT[p.type].name:isGun?gunInfo(p).name:PARTS[p.type].name;if(sort==='recent')return list.reverse();return list.sort((a,b)=>sort==='levelDown'?b.level-a.level:sort==='levelUp'?a.level-b.level:sort==='type'?a.type.localeCompare(b.type):name(a).localeCompare(name(b),'ko'));}
  function card(p,isGun=false){const list=isGun?campaign.state.stashWeapons:campaign.state.stash,matches=list.filter(q=>q.type===p.type&&q.level===p.level).length,cost=8*p.level,fresh=!isGun&&newModuleIds.has(p.id);
