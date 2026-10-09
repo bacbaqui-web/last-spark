@@ -15,6 +15,9 @@ try{
  page.on('console',message=>{if(message.type()==='error')evidence.errors.push(message.text());});
  await page.addInitScript(()=>localStorage.setItem('last-spark-quality','balanced'));
  await page.goto(base,{waitUntil:'networkidle'});await page.waitForSelector('#hangarDeploy');
+ // The first return to a newly created campaign fills zero-count ammo fields.
+ // Normalize that initial save before measuring whether training changes it.
+ await page.reload({waitUntil:'networkidle'});await page.waitForSelector('#hangarDeploy');
  await page.click('#hangarDeploy');
  assert.equal(await page.locator('.operationMode').count(),2);
  for(const mode of ['recovery','training']){
