@@ -180,7 +180,7 @@ scene.updateMatrixWorld();const worldObstacles=scene.children.filter(o=>o.isMesh
 const enemyHealthBars=new Map();
 const enemyHealthAnchor=new THREE.Vector3();
 function revealEnemyHealth(e){
- if(e.hp<=0)return;
+ if(e.hp<=0||!e.group?.parent)return;
  if(!enemyHealthBars.has(e)){const el=document.createElement('div');el.className='enemyHealthBar'+(e.boss?' bossHealthBar':'');el.innerHTML='<span></span><i><b></b></i>';document.body.appendChild(el);enemyHealthBars.set(e,{el,hp:null,max:null});}
  updateEnemyHealthBars();
 }
