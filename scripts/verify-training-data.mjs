@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+import {createTrainingDataEffects} from '../training-data-effects.js';
+const scene=new THREE.Scene(),shared=new THREE.MeshStandardMaterial({color:0xb56532}),geometry=new THREE.BoxGeometry(1,2,1);
+function actor(x){const root=new THREE.Group(),mesh=new THREE.Mesh(geometry,shared);root.add(mesh);root.position.x=x;scene.add(root);return {root,mesh,hp:100};}
+const fx=createTrainingDataEffects(scene,{maxEffects:2}),robots=Array.from({length:5},(_,i)=>actor(i*3));
+for(const r of robots)fx.spawn(r,.2);
+assert.equal(fx.snapshot().dataEffects,2,'cosmetic bursts stay capped with many simultaneous enemies');
+assert.equal(shared.color.getHex(),0xb56532,'shared textures and live robot appearance are not recolored');
+assert.equal(robots[0].hp,100,'visual assembly does not change combat stats');
+const shader={uniforms:{},vertexShader:THREE.ShaderLib.standard.vertexShader,fragmentShader:THREE.ShaderLib.standard.fragmentShader};
+robots[0].mesh.material.onBeforeCompile(shader);
+assert(shader.fragmentShader.includes('discard;'));assert(shader.vertexShader.includes('vDataWorld='));
+const level=shader.uniforms.dataLevel;fx.spawn(robots[0],.8);assert(level.value>.8,'assembly reveals the original model progressively');
+const a=robots[0];fx.spawn(a,1);assert.equal(a.mesh.material,shared);assert.equal(a.trainingData,false,'assembly restores batching eligibility');
+fx.death(a,.2);const deathShader={uniforms:{},vertexShader:THREE.ShaderLib.standard.vertexShader,fragmentShader:THREE.ShaderLib.standard.fragmentShader};a.mesh.material.onBeforeCompile(deathShader);const before=deathShader.uniforms.dataLevel.value;fx.death(a,.9);assert(deathShader.uniforms.dataLevel.value<before,'deletion removes the actual silhouette');
+fx.clear();assert.equal(fx.snapshot().dataActors,0);assert.equal(scene.children.length,5,'reset removes all cosmetic nodes');for(const r of robots)assert.equal(r.mesh.material,shared);
+for(let i=0;i<100;i++){fx.spawn(a,.5);fx.death(a,.5);fx.release(a);}assert.equal(scene.children.length,5,'repeated spawns/deaths do not accumulate scene objects');
+fx.dispose();geometry.dispose();shared.dispose();console.log('PASS data assembly/deletion, shared material isolation, bounded visual effects, render batching restoration and reset cleanup');
+const {readFileSync}=await import('node:fs'),{default:vm}=await import('node:vm');
+const source=readFileSync(new URL('../main.js',import.meta.url),'utf8');
+const setup=source.slice(source.indexOf('function enterTrainingEnemy('),source.indexOf('function updateEnemyEntrance('));
+const wave=source.slice(source.indexOf('function beginWave(){'),source.indexOf('function updateWaves('));
+const queue=[];const context=vm.createContext({THREE,salvageMode:false,trainingMode:true,wave:0,wavePending:true,waveWait:3,bossCount:0,SALVAGE:{trainingWaveSize:()=>7},enemies:queue,Math,notify(){},tone(){},spawn(boss,type){queue.push({boss,type,group:new THREE.Group()});},createWaveTransport(){throw Error('training must not create a transport');}});
+vm.runInContext(setup+wave+'beginWave();',context);
+assert.equal(queue.length,8);assert(queue.every(e=>e.dataEntry&&e.entryTarget&&!e.group.visible));assert.equal(queue[7].dataEntry.age,-7*.12,'assembly is staggered without changing the roster');
+console.log('PASS training wave has the same enemy roster and staggered data assembly without creating aircraft');

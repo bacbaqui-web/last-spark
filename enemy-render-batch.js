@@ -14,7 +14,7 @@ export function createEnemyRenderBatch(scene){
    scene.updateWorldMatrix(true,false);inverseScene.copy(scene.matrixWorld).invert();
    for(const enemy of enemies){
     const r=enemy.robot,root=enemy.group;
-    if(!r.wildId||r.destruction||enemy.hp<=0||!root.visible||enemy.dormant)continue;
+    if(!r.wildId||r.trainingData||r.destruction||enemy.hp<=0||!root.visible||enemy.dormant)continue;
     root.updateWorldMatrix(true,true);
     let batched=false;
     for(const mesh of r.hitMeshes){

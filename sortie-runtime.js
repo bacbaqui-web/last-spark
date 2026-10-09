@@ -72,3 +72,5 @@ export {createWeaponSlotHUD} from './weapon-slot-hud.js';
 export {withFrameWork,scheduleFrameWork} from './frame-work.js';
 export {flushEnemyPoses} from './wild-enemy-models.js';
 export {createEnemyRenderBatch} from './enemy-render-batch.js';
+
+export {createTrainingDataEffects} from './training-data-effects.js';
