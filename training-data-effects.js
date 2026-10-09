@@ -36,7 +36,7 @@ export function createTrainingDataEffects(scene,{maxEffects=8}={}){
    release(robot);robot.trainingData=true;robot.root.updateWorldMatrix(true,true);
    const bounds=new THREE.Box3().setFromObject(robot.root),center=bounds.getCenter(new THREE.Vector3());
    const group=new THREE.Group();group.name='training-data-parts';group.userData.effect=true;scene.add(group);
-   const material=new THREE.MeshBasicMaterial({color:0x30bfff,transparent:true,opacity:1,depthWrite:true,toneMapped:false});
+   const material=new THREE.MeshStandardMaterial({color:0x30bfff,emissive:0x087abe,emissiveIntensity:.8,roughness:.4,metalness:.25,transparent:true,opacity:1,depthWrite:true,toneMapped:false});
    state={kind:'parts',materials:[],copies:[],visualMaterials:[material],visual:group,visibility:[],parts:[]};actors.set(robot,state);
    const candidates=[];robot.root.traverse(mesh=>{if(mesh.isMesh&&mesh.visible&&mesh.geometry&&!mesh.userData.effect)candidates.push(mesh);});
    const limit=Math.min(robot.deathPartLimit||96,96),step=Math.max(1,Math.ceil(candidates.length/limit));
