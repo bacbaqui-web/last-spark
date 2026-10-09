@@ -229,3 +229,5 @@
 #baseCamp .hangarVitals>span,#baseCamp .hangarServiceMonitor .supplyRows article{background:#092b30b0;border-color:#478d86!important}
 #baseCamp .hangarServiceMonitor button{background:#163b40;border-color:#638782}
 #baseCamp #buildModule{display:block;width:100%;margin:12px 0;padding:9px;background:#102c32;color:#d5f3ed;border:1px solid #599b99;font-size:12px}#baseCamp #buildAtSlot{width:100%;margin-top:14px;padding:13px;background:#b67a26;color:#fff0cf;border:1px solid #ffd38a;font-weight:700}#baseCamp .hangarIdentity p{font-size:12px;line-height:1.7}
+/* In-room briefing layout must never override completion of the launch transition. */
+#sortieBriefing.inHangar[hidden]{display:none}
