@@ -201,3 +201,7 @@
 #baseCamp .hangarHeader #hangarDeploy{position:fixed;top:auto;right:auto;left:50%;bottom:22px;transform:translateX(-50%);margin:0;width:270px}
 #sortieBriefing.inHangar .modeBrief{border:10px solid #121e27;border-top:14px solid #182933;outline:1px solid #44738a;box-shadow:0 24px 80px #000b,inset 0 0 35px #127ca329;animation:hangarMonitorArrival .8s cubic-bezier(.2,.8,.2,1) both}
 @keyframes hangarMonitorArrival{from{opacity:0;transform:translateX(115%) rotateY(-16deg)}to{opacity:1;transform:translateX(0) rotateY(0)}}
+
+/* Illuminated physical push button between the two service monitors. */
+#baseCamp .hangarHeader #hangarDeploy{border:5px solid #27343d;border-bottom:8px solid #101a23;border-radius:14px;background:linear-gradient(#228db2,#10516c)!important;box-shadow:0 0 22px #3dcfff55,inset 0 0 15px #8ee8ff44,0 7px 0 #070d12;text-shadow:0 0 10px #a4eeff80}
+#baseCamp .hangarHeader #hangarDeploy:active:not(:disabled){bottom:19px;box-shadow:0 0 22px #3dcfff55,inset 0 0 15px #8ee8ff44,0 3px 0 #070d12}
