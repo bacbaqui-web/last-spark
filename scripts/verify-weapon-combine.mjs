@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {createCampaign,makeWeapon} from '../salvage-campaign.js';
+const campaign=createCampaign({getItem(){return null;},setItem(){}});
+campaign.state.stashWeapons=['a','b','c'].map(id=>makeWeapon('shotgun',id));
+campaign.state.stashWeapons.push(makeWeapon('sniper','keep'));
+assert.equal(campaign.craftWeapon('combine','a'),true);
+assert.equal(campaign.state.stashWeapons.find(w=>w.id==='a').level,2);
+assert.deepEqual(campaign.state.stashWeapons.map(w=>w.id),['a','keep']);
+assert.equal(campaign.craftWeapon('combine','a'),false);
+assert.equal(campaign.state.stashWeapons.length,2);
+console.log('PASS weapon combine consumes exactly two matching spare weapons and preserves other stock');

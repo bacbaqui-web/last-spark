@@ -214,3 +214,12 @@
 #baseCamp .hangarHeader #hangarDeploy:focus-visible{outline:2px solid #b7f3ff;outline-offset:3px}
 #baseCamp .hangarHeader #hangarDeploy:active:not(:disabled){bottom:auto;background:#a2edff30!important}
 #baseCamp .hangarHeader #viewSortieResult{position:absolute;top:28px;left:36px;pointer-events:auto}
+
+@keyframes heapPanelDrop{from{opacity:0;transform:translateY(-90px)}to{opacity:1;transform:translateY(0)}}
+#baseCamp.browsingHeap .hangarModal{inset:6% auto 6% 50%;width:min(880px,90vw);transform:translateX(-50%);z-index:14}
+#baseCamp.browsingHeap .equipmentWorkshop{animation:heapPanelDrop .45s cubic-bezier(.2,.75,.25,1);padding:30px;background:linear-gradient(145deg,#102b3df5,#07141ff5);border:2px solid #498aa5;box-shadow:0 20px 65px #000b,0 0 22px #31a8cf22}
+#baseCamp.browsingHeap .warehouseInventory{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#baseCamp.browsingHeap .hangarHoverCard,#baseCamp.browsingHeap .hangarArrow,#baseCamp.browsingHeap .hangarInteractionHint{display:none}
+#baseCamp.browsingHeap .hangarIdentity,#baseCamp.browsingHeap .hangarServiceMonitor{pointer-events:none;transition:opacity .25s;opacity:0}
+#baseCamp.browsingHeap #hangarDeploy{pointer-events:none}
+@media(max-width:700px){#baseCamp.browsingHeap .warehouseInventory{grid-template-columns:1fr}#baseCamp.browsingHeap .equipmentWorkshop{padding:20px}}
