@@ -716,7 +716,7 @@ async function launchRemoteFrame(){
  sortie.mission=selectedMission;progression.enemy.damage=selectedMission.difficulty;progression.enemy.speed=1+(selectedMission.blocks-1)*.025;progression.enemy.attackRate=1+(selectedMission.blocks-1)*.035;
  baseBack.hidden=true;progression.player.damage=sortie.stats.damage;progression.player.speed=sortie.stats.speed*.85;progression.player.damageTaken=sortie.stats.damageTaken;
  backEquipment.reset(sortie);player.hp=robot.hp/100*sortie.stats.maxHP;SALVAGE.applyFrameVisual(playerAvatar,sortie.stats);player.pos.set(sortieWorld.route.start.x,1.703,sortieWorld.route.start.z);camera.position.copy(player.pos);yaw=sortieWorld.route.spawnYaw??0;pitch=0;
- slotAmmo=selectedWeapons.map(w=>sortie.ammo[w]||0);equipSlot(1);sortieHUD.hidden=false;sortieWorld.reset(); }finally{flight?.close();window.atomicMapLoading=false;}
+ slotAmmo=selectedWeapons.map(w=>sortie.ammo[w]||0);equipSlot(1);sortieWorld.reset();baseUI.hide({keepMusic:true});sortieHUD.hidden=false; }finally{flight?.close();window.atomicMapLoading=false;}
 }
 const backEquipment=SALVAGE.createBackEquipmentRuntime(scene,{hit:dealEnemyDamage,beam:weaponBeam,spend:SALVAGE.spendBattery,ground:(x,z)=>platforms.reduce((h,p)=>Math.abs(x-p.x)<p.w/2&&Math.abs(z-p.z)<p.d/2?Math.max(h,p.h):h,0),blocked:(a,b)=>{const delta=b.clone().sub(a);ray.set(a,delta.clone().normalize());ray.far=Math.max(0,delta.length()-.1);return ray.intersectObjects(worldObstacles,false).length>0;}});
 function validRoadSpawn(candidate){

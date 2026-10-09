@@ -43,7 +43,7 @@ export function createBaseUI(campaign,{prepare,prepareMission,training,appearanc
  }
  result.addEventListener('keydown',e=>{if(e.code==='Escape'){e.preventDefault();closeResult();}if(e.code==='Tab'){const first=result.querySelector('.resultClose'),last=result.querySelector('#confirmSortieResult');if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
  function show(report=null){music.setActive(true);acknowledgeModules();root.hidden=false;briefing.hidden=true;result.hidden=true;panel=null;selectedSlot=null;root.inert=false;root.classList.remove('preparingSortie');briefing.classList.remove('inHangar');render();if(report)showResult(report);}
- function hide(){music.setActive(false);acknowledgeModules();root.hidden=true;result.hidden=true;}
+ function hide({keepMusic=false}={}){if(!keepMusic)music.setActive(false);acknowledgeModules();root.hidden=true;briefing.hidden=true;result.hidden=true;}
 
  function sorted(items,isGun=false,isGear=false){const list=[...items],name=p=>isGear?EQUIPMENT[p.type].name:isGun?gunInfo(p).name:PARTS[p.type].name;if(sort==='recent')return list.reverse();return list.sort((a,b)=>sort==='levelDown'?b.level-a.level:sort==='levelUp'?a.level-b.level:sort==='type'?a.type.localeCompare(b.type):name(a).localeCompare(name(b),'ko'));}
  function card(p,isGun=false){const list=isGun?campaign.state.stashWeapons:campaign.state.stash,matches=list.filter(q=>q.type===p.type&&q.level===p.level).length,cost=8*p.level,fresh=!isGun&&newModuleIds.has(p.id);
