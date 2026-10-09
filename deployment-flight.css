@@ -1,7 +1,7 @@
 .deploymentFlight{position:fixed;inset:0;z-index:150;background:#84b9d5;color:#eff6eb;overflow:hidden;font-family:inherit}
-.deploymentFlight canvas{width:100%;height:100%;display:block}
-.deploymentFlight::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(5,19,27,.65),transparent 30%,transparent 58%,rgba(5,19,27,.93))}
-.flightHeading,.flightStatus{position:absolute;z-index:1;left:clamp(22px,5vw,80px);right:clamp(22px,5vw,80px)}
+.deploymentFlight canvas{position:absolute;inset:0;z-index:0;width:100%;height:100%;display:block}
+.deploymentFlight::after{content:"";position:absolute;inset:0;z-index:1;transform:translateZ(0);pointer-events:none;background:linear-gradient(180deg,rgba(5,19,27,.65),transparent 30%,transparent 58%,rgba(5,19,27,.93))}
+.flightHeading,.flightStatus{position:absolute;z-index:2;transform:translateZ(0);left:clamp(22px,5vw,80px);right:clamp(22px,5vw,80px)}
 .flightHeading{top:clamp(24px,5vh,64px)}
 .flightHeading small{color:#cee8b1;font-size:12px;letter-spacing:.2em}.flightHeading h1{margin:10px 0;font-size:clamp(24px,3.2vw,44px);line-height:1.2}.flightHeading p{margin:0;font-size:14px;color:#d4e2e3}
 .flightStatus{bottom:clamp(25px,5vh,64px);max-width:540px}.flightStatus small{color:#c8e69b;letter-spacing:.12em;font-size:11px}.flightStatus h2{font-size:clamp(19px,2.2vw,26px);margin:9px 0}.flightStatus p{color:#b7c9cb;font-size:13px;margin:14px 0 0;line-height:1.7}
