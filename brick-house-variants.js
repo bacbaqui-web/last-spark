@@ -106,4 +106,50 @@ for(let k=0;k<10;k++){const zz=z-edge/2+(k+.5)*edge/10,hLow=Math.max(.12,Math.fl
  if(d.damage.some(n=>n<d.floors)){const cut=collapseCut(d);parts.forEach(p=>p.cut=cut);brick.cut=collapseCut(d,true);plaster.cut=brick.cut;}
  return parts.map(p=>p.geometry());
 }
-export function createBrickHouse(index=0){index=((index%houseVariants.length)+houseVariants.length)%houseVariants.length;if(!cache.has(index))cache.set(index,build(index));const root=new T.Group(),materials=mats();cache.get(index).forEach((g,i)=>{if(!g.attributes.position.count)return;const mesh=new T.Mesh(g,materials[i]);mesh.castShadow=mesh.receiveShadow=true;root.add(mesh);});root.name=houseVariants[index].name;root.userData={variant:index,triangles:root.children.reduce((n,m)=>n+m.geometry.attributes.position.count/3,0)};return root;}
+export function createBrickHouse(index=0){index=((index%houseVariants.length)+houseVariants.length)%houseVariants.length;if(!cache.has(index))cache.set(index,build(index));const root=new T.Group(),materials=mats();cache.get(index).forEach((g,i)=>{if(!g.attributes.position.count)return;const mesh=new T.Mesh(g,materials[i]);mesh.userData.houseSurface=i;mesh.castShadow=mesh.receiveShadow=true;root.add(mesh);});root.name=houseVariants[index].name;root.userData={variant:index,triangles:root.children.reduce((n,m)=>n+m.geometry.attributes.position.count/3,0)};return root;}
+
+const detailCache=new Map();
+// Texture-bearing planes replace masonry chips, room fragments and railings.
+// Keep the authored footprint, storeys, window decals and broken roof profile.
+export function brickHouseDetail(index,level){
+ const key=index+':'+level;if(detailCache.has(key))return detailCache.get(key);
+ const d=houseVariants[index],parts=Array.from({length:9},()=>new Parts()),[brick,detail,stone,iron,,sign,plaster,woodFloor,tileFloor]=parts;
+ const w=d.width,depth=d.depth,front=depth/2,cw=w/d.columns,story=3.2,shade=.9+(index%3)*.04,middle=level===1;
+ const uv=[[0,0],[1,0],[1,1],[0,1]];
+ for(const p of [brick,stone,plaster,woodFloor,tileFloor])p.worldUV=true;
+ const face=(part,x1,y1,x2,y2,z,tint=[1,1,1])=>{if(y2>y1)part.face([[x1,y1,z],[x2,y1,z],[x2,y2,z],[x1,y2,z]],uv,tint);};
+ const side=(x,y1,y2,z1,z2)=>{if(y2>y1)brick.face([[x,y1,z1],[x,y1,z2],[x,y2,z2],[x,y2,z1]],uv,[shade*.94,shade*.94,shade*.94]);};
+ const floor=(part,x1,x2,y,z1,z2)=>part.face([[x1,y,z2],[x2,y,z2],[x2,y,z1],[x1,y,z1]],uv,[.88,.88,.88]);
+ floor(stone,-w/2-.25,w/2+.25,.24,-front-.25,front+.25);
+ for(let c=0;c<d.columns;c++){
+  const x=-w/2+cw*(c+.5),left=x-cw/2,right=x+cw/2;
+  face(brick,left,.24,right,.24+d.floors*story+.4,front+.15,[shade,shade,shade]);
+  face(brick,right,.24,left,.24+d.floors*story,-front-.15,[shade*.86,shade*.86,shade*.86]);
+  for(let f=0;f<d.floors;f++){
+   const y=.24+f*story,shop=f===0&&d.shop,door=f===0&&!d.shop&&c===1,openingW=cw*(shop?.77:.56),openingH=shop?2.35:door?2.4:1.85,lower=door||shop?.16:.75;
+   // The near model also uses opaque window/door decals, not transparent holes.
+   detail.decal(x,y+lower+openingH/2,front+.153,openingW,openingH,shop?(c===1?4:3):door?5:(f+c+index)%3);
+   floor(shop?tileFloor:woodFloor,left+.06,right-.06,y+.184,-front+.19,front-.19);
+   if(middle){stone.box(x,y+lower-.025,front+.08,openingW+.20,.10,.40);if(!shop&&!door)stone.box(x,y+lower+openingH+.06,front+.08,openingW+.22,.15,.40);}
+  }
+  const roofDepth=d.damage[c]<d.floors?depth*.42:depth*.94;
+  floor(iron,left+.03,right-.03,.24+d.floors*story+.12,-front+.2,-front+.2+roofDepth);
+ }
+ for(const s of [-1,1])for(let j=0;j<4;j++)for(let f=0;f<d.floors;f++){
+  const z=-front+depth/4*(j+.5),bottom=.24+f*story,half=depth/8;
+  if(d.sideHole&&((j===2&&f===1)||(j===1&&f===2))){side(s*(w/2+.15),bottom,bottom+.38,z-half,z+half);side(s*(w/2+.15),bottom+story-.30,bottom+story,z-half,z+half);continue;}
+  side(s*(w/2+.15),bottom,bottom+story,z-half,z+half);
+  if(j%2===0){const sx=s*(w/2+.153),y=bottom+1.70,tile=(j+f+index)%3,u=tile/3,pad=.004;detail.face([[sx,y-.88,z+s*.60],[sx,y-.88,z-s*.60],[sx,y+.88,z-s*.60],[sx,y+.88,z+s*.60]],[[u+pad,.5+pad],[u+1/3-pad,.5+pad],[u+1/3-pad,1-pad],[u+pad,1-pad]]);}
+ }
+ if(middle){
+  for(let c=1;c<d.columns;c++){const x=-w/2+cw*c;plaster.face([[x,.4,-depth*.20],[x,.4,front-.18],[x,d.floors*story,front-.18],[x,d.floors*story,-depth*.20]],uv,[.88,.88,.86]);}
+  if(d.escape){const x=-w/2+cw*.5;for(let f=1;f<d.damage[0];f++){const y=.24+f*story+.56;iron.box(x,y,front+.65,1.8,.10,1.2);iron.box(x,y+.92,front+1.19,1.8,.05,.05);for(const s of [-1,1])iron.box(x+s*.87,y+.46,front+1.19,.05,.90,.05);}}
+ }
+ if(d.shop){const row=['GROCERY','LAUNDRY','DINER','BOOKS'].indexOf(d.shop),v=1-(row+1)/4;sign.face([[-w*.41,2.98,front+.29],[w*.41,2.98,front+.29],[w*.41,3.32,front+.29],[-w*.41,3.32,front+.29]],[[0,v],[1,v],[1,v+.25],[0,v+.25]]);}
+ if(d.damage.some(n=>n<d.floors)){
+  const height=x=>{const t=(x/w+.5)*(d.columns-1),i=Math.min(d.columns-2,Math.max(0,Math.floor(t))),f=Math.max(0,Math.min(1,t-i));return (d.damage[i]*(1-f)+d.damage[i+1]*f)*story+.70;};
+  const count=d.columns-1,bands=Array.from({length:count},(_,i)=>{const left=-w/2+w*i/count,right=-w/2+w*(i+1)/count,slope=(height(right)-height(left))/(right-left);return {left:left-(i===0?1:0),right:right+(i===count-1?1:0),slope,intercept:height(left)-slope*left};});
+  for(const part of parts)part.cut={bands,zSlope:0};
+ }
+ const geometries=parts.map(p=>p.geometry());detailCache.set(key,geometries);return geometries;
+}

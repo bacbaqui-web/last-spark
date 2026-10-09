@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {staticMaterialKey} from './static-material-key.js';
 const blockBounds=new WeakMap(),viewFrustum=new T.Frustum(),viewMatrix=new T.Matrix4();
 
 // A generated street never changes transform after commit. Keep authored meshes
@@ -27,10 +28,10 @@ export function batchStreetStatics(root){
   const buckets=new Map(),inverse=block.matrixWorld.clone().invert(),matrix=new T.Matrix4(),materialKeys=new Map();
   block.traverse(mesh=>{
    if(!mesh.isMesh||mesh.isInstancedMesh||mesh.isSkinnedMesh||!mesh.visible||Array.isArray(mesh.material)||mesh.children.length||mesh.geometry.morphAttributes.position||mesh.geometry.drawRange.start!==0||Number.isFinite(mesh.geometry.drawRange.count))return;
-   for(let parent=mesh;parent&&parent!==block;parent=parent.parent)if(!parent.visible||parent.userData.lod||parent===block.userData.recoveryDrone||parent.userData.effect)return;
+   for(let parent=mesh;parent&&parent!==block;parent=parent.parent)if(!parent.visible||parent.userData.lod||parent.userData.streetLOD||parent===block.userData.recoveryDrone||parent.userData.effect)return;
    const material=mesh.material,custom=material.onBeforeCompile!==T.Material.prototype.onBeforeCompile;
    if(material.transparent||custom&&!material.userData.staticWorldBatch)return;
-   if(!materialKeys.has(material)){if(custom)materialKeys.set(material,'world-shader:'+material.uuid);else{const json=material.toJSON({textures:{},images:{}});delete json.uuid;delete json.name;delete json.metadata;delete json.userData;materialKeys.set(material,JSON.stringify(json));}}
+   if(!materialKeys.has(material))materialKeys.set(material,custom?'world-shader:'+material.uuid:staticMaterialKey(material));
    const format=Object.entries(mesh.geometry.attributes).map(([name,a])=>[name,a.itemSize,a.normalized,a.array.constructor.name]).sort();
    const key=materialKeys.get(material)+':'+JSON.stringify(format)+':'+!!mesh.geometry.index+':'+mesh.castShadow+':'+mesh.receiveShadow;
    if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(mesh);
@@ -47,7 +48,7 @@ export function batchStreetStatics(root){
   }
   // Fully batched hierarchies retain their collision/source data but no longer
   // need to be visited by either the color or shadow render traversal.
-  function prune(node){if(node.userData.lod||node===block.userData.recoveryDrone||node.userData.effect)return;for(const child of node.children)prune(child);if(node!==block&&node.isGroup&&node.children.length&&node.children.every(child=>!child.visible)){node.visible=false;root.userData.prunedBranches=(root.userData.prunedBranches||0)+1;}}
+  function prune(node){if(node.userData.lod||node.userData.streetLOD||node===block.userData.recoveryDrone||node.userData.effect)return;for(const child of node.children)prune(child);if(node!==block&&node.isGroup&&node.children.length&&node.children.every(child=>!child.visible)){node.visible=false;root.userData.prunedBranches=(root.userData.prunedBranches||0)+1;}}
   prune(block);
  }
  return removedCalls;

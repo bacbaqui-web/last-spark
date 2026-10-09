@@ -1,6 +1,6 @@
 import * as T from 'three';
-const sparseCache=new WeakMap();
-function sparseLeaves(source){if(sparseCache.has(source))return sparseCache.get(source);const g=new T.BufferGeometry();for(const [name,attribute] of Object.entries(source.attributes)){const values=[];for(let i=0;i<attribute.count;i+=12)for(let j=0;j<6&&i+j<attribute.count;j++)for(let k=0;k<attribute.itemSize;k++)values.push(attribute.array[(i+j)*attribute.itemSize+k]);g.setAttribute(name,new T.Float32BufferAttribute(values,attribute.itemSize));}g.computeBoundingSphere();g.boundingSphere.radius+=.25;sparseCache.set(source,g);source.addEventListener('dispose',()=>g.dispose());return g;}
+import {streetTreeDetail} from './street-tree-variants.js';
+import {streetDetailLevel} from './street-lod-policy.js';
 export const windTime={value:0};
 export function windMaterial(material,kind){
  if(material.userData.streetWind)return;material.userData.streetWind=true;
@@ -15,11 +15,25 @@ export function windMaterial(material,kind){
 `);};material.customProgramCacheKey=()=>previousKey+'street-wind-'+kind;material.needsUpdate=true;
 }
 export function prepareVegetation(root){
- root.traverse(o=>{if(o.userData.lod){const leaves=o.children[1];windMaterial(leaves.material,'leaves');leaves.userData.vegetation=true;leaves.userData.treeLeaves=true;leaves.userData.fullLeaves=leaves.geometry;leaves.userData.sparseLeaves=sparseLeaves(leaves.geometry);leaves.userData.originalVisible=leaves.visible;leaves.castShadow=false;}});
- root.updateMatrixWorld(true);
- const items=[];root.traverse(o=>{if(o.userData.vegetation){const box=new T.Box3().setFromObject(o);box.expandByScalar(.25);items.push({mesh:o,center:box.getCenter(new T.Vector3())});}});
- return (time,camera,walking)=>{windTime.value=time;for(const item of items){const distance=item.center.distanceTo(camera.position),limit=item.mesh.userData.grass?70:110;
- if(item.mesh.userData.treeLeaves)item.mesh.geometry=walking&&distance>40?item.mesh.userData.sparseLeaves:item.mesh.userData.fullLeaves;
- item.mesh.visible=item.mesh.userData.originalVisible!==false&&(!walking||distance<limit);
- }};
+ root.updateMatrixWorld(true);const trees=[],items=[];
+ root.traverse(o=>{if(o.userData.lod){
+  const [trunk,leaves]=o.children;if(!trunk?.isMesh||!leaves?.isMesh)return;
+  windMaterial(leaves.material,'leaves');leaves.userData.vegetation=true;leaves.userData.treeLeaves=true;leaves.userData.fullLeaves=leaves.geometry;leaves.castShadow=false;
+  const full={wood:trunk.geometry,leaves:leaves.geometry},levels=o.userData.broken?[full,full,full]:[full,streetTreeDetail(o.userData.variant,1),streetTreeDetail(o.userData.variant,2)];
+  trees.push({node:o,trunk,leaves,levels,bounds:new T.Box3().setFromObject(o),originalVisible:leaves.visible,level:0});
+ }});
+ root.traverse(o=>{if(o.userData.vegetation&&!o.userData.treeLeaves){const box=new T.Box3().setFromObject(o).expandByScalar(.25);items.push({mesh:o,center:box.getCenter(new T.Vector3()),originalVisible:o.visible});}});
+ const lastPosition=new T.Vector3(Infinity,Infinity,Infinity);let last=-Infinity,lastWalking;
+ return (time,camera,walking)=>{
+  windTime.value=time;
+  if(time>=last&&time-last<.12&&walking===lastWalking&&camera.position.distanceToSquared(lastPosition)<1)return;
+  last=time;lastWalking=walking;lastPosition.copy(camera.position);let changed=false;
+  for(const item of trees){
+   const distance=item.bounds.distanceToPoint(camera.position),level=walking?streetDetailLevel(distance,item.level):0;
+   if(level!==item.level){item.level=level;item.node.userData.detailLevel=level;item.trunk.geometry=item.levels[level].wood;item.leaves.geometry=item.levels[level].leaves;changed=true;}
+   item.leaves.visible=item.originalVisible&&(!walking||distance<110);
+  }
+  for(const item of items){const distance=item.center.distanceTo(camera.position),limit=item.mesh.userData.grass?70:110;item.mesh.visible=item.originalVisible&&(!walking||distance<limit);}
+  if(changed)root.userData.visibilityRevision=(root.userData.visibilityRevision||0)+1;
+ };
 }

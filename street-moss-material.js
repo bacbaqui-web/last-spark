@@ -16,7 +16,11 @@ export function mossMaterial(material,strength=.65){
     mossPosition=instanceMatrix*mossPosition;
    #endif
    mossWorld=(modelMatrix*mossPosition).xyz;
-   mossNormal=normalize(mat3(modelMatrix)*objectNormal);`);
+   vec3 mossObjectNormal=objectNormal;
+   #ifdef USE_INSTANCING
+    mossObjectNormal=mat3(instanceMatrix)*mossObjectNormal;
+   #endif
+   mossNormal=normalize(mat3(modelMatrix)*mossObjectNormal);`);
   shader.fragmentShader='varying vec3 mossWorld; varying vec3 mossNormal; uniform sampler2D streetMoss; uniform float mossStrength;\n'+shader.fragmentShader;
   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
    vec3 mn=abs(normalize(mossNormal));
@@ -29,5 +33,5 @@ export function mossMaterial(material,strength=.65){
    vec3 mossColor=mossSample*vec3(.85,1.03,.82);
    diffuseColor.rgb=mix(diffuseColor.rgb,mossColor,mossMask);
 `);
- };material.customProgramCacheKey=()=>`street-natural-moss-v3-${strength}-${previousKey}`;return material;
+ };material.customProgramCacheKey=()=>`street-natural-moss-v4-${strength}-${previousKey}`;return material;
 }
