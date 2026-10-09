@@ -37,21 +37,29 @@ export function createTrainingDataEffects(scene,{maxEffects=8}={}){
    const bounds=new THREE.Box3().setFromObject(robot.root),center=bounds.getCenter(new THREE.Vector3());
    const group=new THREE.Group();group.name='training-data-parts';group.userData.effect=true;scene.add(group);
    const material=new THREE.MeshStandardMaterial({color:0x30bfff,emissive:0x087abe,emissiveIntensity:.8,roughness:.4,metalness:.25,transparent:true,opacity:1,depthWrite:true,toneMapped:false});
-   state={kind:'parts',materials:[],copies:[],visualMaterials:[material],visual:group,visibility:[],parts:[]};actors.set(robot,state);
+   const dissolve={level:{value:1e5}};material.onBeforeCompile=shader=>{shader.uniforms.partDataLevel=dissolve.level;shader.vertexShader='varying vec3 vPartWorld;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvPartWorld=(modelMatrix*vec4(transformed,1.0)).xyz;');shader.fragmentShader='varying vec3 vPartWorld;uniform float partDataLevel;\n'+shader.fragmentShader.replace('#include <alphatest_fragment>','#include <alphatest_fragment>\nfloat noise=fract(sin(dot(floor(vPartWorld*18.0),vec3(12.9898,78.233,37.719)))*43758.5453);float edge=vPartWorld.y+(noise-.5)*.06;if(edge>partDataLevel)discard;').replace('#include <opaque_fragment>','outgoingLight=mix(outgoingLight,vec3(.12,1.4,2.8),1.0-smoothstep(0.0,.12,partDataLevel-edge));\n#include <opaque_fragment>');};material.customProgramCacheKey=()=> 'training-parts-top-down-v1';
+   state={kind:'parts',materials:[],copies:[],visualMaterials:[material],visual:group,visibility:[],parts:[],age:0,dissolve};actors.set(robot,state);
    const candidates=[];robot.root.traverse(mesh=>{if(mesh.isMesh&&mesh.visible&&mesh.geometry&&!mesh.userData.effect)candidates.push(mesh);});
    const limit=Math.min(robot.deathPartLimit||96,96),step=Math.max(1,Math.ceil(candidates.length/limit));
    for(let i=0;i<candidates.length;i++){
     const mesh=candidates[i];state.visibility.push([mesh,mesh.visible]);mesh.visible=false;if(i%step)continue;
-    const part=new THREE.Mesh(mesh.geometry,material);mesh.matrixWorld.decompose(part.position,part.quaternion,part.scale);group.add(part);
+    const part=new THREE.Group(),fragment=new THREE.Mesh(mesh.geometry,material);mesh.geometry.computeBoundingBox();const localCenter=mesh.geometry.boundingBox.getCenter(new THREE.Vector3());mesh.matrixWorld.decompose(part.position,part.quaternion,part.scale);part.position.copy(localCenter).applyMatrix4(mesh.matrixWorld);fragment.position.copy(localCenter).negate();part.add(fragment);group.add(part);
     const initial=part.position.clone(),direction=initial.clone().sub(center);direction.y=0;
     if(direction.lengthSq()<.01)direction.set(Math.cos(i*2.399),0,Math.sin(i*2.399));direction.normalize();
-    const velocity=direction.multiplyScalar(2.2+(i%5)*.65);velocity.y=2.3+(i%7)*.38;
-    state.parts.push({mesh:part,initial,rotation:part.quaternion.clone(),velocity,spin:new THREE.Vector3(Math.sin(i+1),Math.cos(i*1.7),Math.sin(i*.7)).normalize(),floor:bounds.min.y+.06});
+    const velocity=direction.multiplyScalar(2.2+(i%5)*.65);velocity.y=.5+(i%7)*.12;
+    state.parts.push({mesh:part,initial,rotation:part.quaternion.clone(),velocity,spin:new THREE.Vector3(Math.sin(i+1),Math.cos(i*1.7),Math.sin(i*.7)).normalize(),floor:0,radius:Math.max(.04,Math.min(.4,mesh.geometry.boundingBox.getSize(new THREE.Vector3()).multiply(part.scale).length()*.22)),spinSpeed:3+(i%5)});
    }
   }
-  robot.deathDuration=1.35;const t=Math.max(0,age);
-  for(const part of state.parts){part.mesh.position.copy(part.initial).addScaledVector(part.velocity,t);part.mesh.position.y=Math.max(part.floor,part.mesh.position.y-4.8*t*t);part.mesh.quaternion.copy(part.rotation).multiply(new THREE.Quaternion().setFromAxisAngle(part.spin,t*5));}
-  state.visualMaterials[0].opacity=1-THREE.MathUtils.smoothstep(t,.85,1.35);
+  robot.deathDuration=2.8;const t=Math.max(0,Math.min(2.8,age));
+  // Fixed substeps keep floor bounce and rolling stable across frame rates.
+  while(state.age<t){const dt=Math.min(1/120,t-state.age);state.age+=dt;
+   for(const part of state.parts){const p=part.mesh.position;part.velocity.y-=12*dt;p.addScaledVector(part.velocity,dt);const floor=part.floor+part.radius;
+    if(p.y<floor){p.y=floor;if(part.velocity.y<-.55)part.velocity.y=-part.velocity.y*.28;else part.velocity.y=0;const friction=Math.exp(-3.5*dt);part.velocity.x*=friction;part.velocity.z*=friction;part.spinSpeed*=Math.exp(-2*dt);}
+    part.mesh.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(part.spin,dt*part.spinSpeed));
+   }
+  }
+  if(t>=1.65){if(!state.deleteBounds)state.deleteBounds=new THREE.Box3().setFromObject(state.visual);const b=state.deleteBounds,u=THREE.MathUtils.smoothstep(t,1.65,2.8);state.dissolve.level.value=THREE.MathUtils.lerp(b.max.y+.08,b.min.y-.08,u);}
+
  }
  function pose(robot,kind,t){
   const state=actors.get(robot)?.kind===kind?actors.get(robot):begin(robot,kind),u=THREE.MathUtils.clamp(t,0,1),level=kind==='spawn'?u:1-u;

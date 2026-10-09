@@ -13,7 +13,7 @@ export function createDeathBudget({maxDetailed=6,maxDistance=90}={}){
     const e=enemies[i];e.deathTime+=dt;
     sphere.center.copy(e.group.position);sphere.center.y+=e.boss?3:1.4;sphere.radius=e.boss?14:10;
     const visible=sphere.center.distanceToSquared(origin)<maxDistance*maxDistance&&frustum.intersectsSphere(sphere);
-    const duration=e.deathDetail==='simple'?.55:(e.robot.deathDuration??.85);
+    const duration=(e.deathDetail==='simple'&&!e.robot.trainingData) ? .55 : (e.robot.deathDuration??.85);
     if(!visible||e.deathTime>duration){if(!visible)culled++;if(e.deathDetail==='full')detailed--;dispose(e.robot);enemies.splice(i,1);continue;}
     e.group.visible=true;
     if(!e.deathDetail){e.deathDetail=detailed<maxDetailed?'full':'simple';if(e.deathDetail==='full')detailed++;else{simplified++;e.robot.deathPartLimit=12;}}
