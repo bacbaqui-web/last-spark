@@ -679,12 +679,11 @@ if(import.meta.env.DEV&&new URLSearchParams(location.search).has('transportCheck
 
 function syncCityCollisions(world){groundPlatforms.length=0;groundPlatforms.push(...SALVAGE.navigationColliders(platforms));groundPlatforms.bounds=platforms.bounds;for(let i=worldObstacles.length-1;i>=0;i--)if(worldObstacles[i].userData.atomicProxy)worldObstacles.splice(i,1);for(const proxy of world.obstacles){proxy.userData.atomicProxy=true;worldObstacles.push(proxy);}}
 function beginDroneArrival(){
- baseUI?.music.enter();
  const drone=sortieWorld.ground.userData.recoveryDrone;if(!drone){beginWave();return;}const start=player.pos.clone();start.y=platforms.streetCollision?.height(start.x,start.z,0)??0;
  arrival={drone,restY:drone.position.y,start,age:0};time=.001;playerAvatar.root.visible=true;playerAvatar.root.position.copy(start);playerAvatar.root.rotation.y=yaw;drone.position.y+=9;keys.clear();firing=false;$('notice').classList?.remove('countdown');$('notice').textContent='REMOTE LINK · 드론 투입 중';$('notice').style.opacity=1;
 }
 function updateDroneArrival(dt){
- const a=arrival;a.age+=dt;a.drone.userData.updateFlight?.(a.age);const t=Math.min(1,a.age/5),ease=1-(1-t)**3,offset=9*(1-ease);a.drone.position.y=a.restY+offset;playerAvatar.root.position.copy(a.start);playerAvatar.root.position.y+=offset;playerAvatar.root.visible=true;introCamera.aspect=camera.aspect;introCamera.position.set(a.start.x+Math.cos(yaw)*7,a.start.y+4+offset*.5,a.start.z+Math.sin(yaw)*7+6);introCamera.lookAt(a.start.x,a.start.y+1+offset,a.start.z);introCamera.updateProjectionMatrix();scene.userData.gameCamera=introCamera;sortieWorld.update(a.age);
+ const a=arrival;if(a.age===0)baseUI?.music.enter();a.age+=dt;a.drone.userData.updateFlight?.(a.age);const t=Math.min(1,a.age/5),ease=1-(1-t)**3,offset=9*(1-ease);a.drone.position.y=a.restY+offset;playerAvatar.root.position.copy(a.start);playerAvatar.root.position.y+=offset;playerAvatar.root.visible=true;introCamera.aspect=camera.aspect;introCamera.position.set(a.start.x+Math.cos(yaw)*7,a.start.y+4+offset*.5,a.start.z+Math.sin(yaw)*7+6);introCamera.lookAt(a.start.x,a.start.y+1+offset,a.start.z);introCamera.updateProjectionMatrix();scene.userData.gameCamera=introCamera;sortieWorld.update(a.age);
  if(t===1){a.drone.position.y=a.restY;playerAvatar.root.visible=thirdPerson;player.pos.copy(a.start);player.pos.y+=1.7;camera.position.copy(player.pos);arrival=null;keys.clear();firing=false;beginWave();notify('REMOTE ONLINE · 위성 모듈 회수 후 RETURN 드론으로 귀환');}
 }
 async function launchRemoteFrame(){
