@@ -4,7 +4,7 @@ import * as THREE from 'three';
 // after assembly. Cosmetic particles never participate in hits or rewards.
 export function createTrainingDataEffects(scene,{maxEffects=8}={}){
  const actors=new Map(),geometry=new THREE.BoxGeometry(1,1,1),ringGeometry=new THREE.RingGeometry(.86,1,48),matrix=new THREE.Matrix4(),q=new THREE.Quaternion(),pos=new THREE.Vector3(),scale=new THREE.Vector3();
- function release(robot){const state=actors.get(robot);if(!state)return;for(const [mesh,original]of state.materials)mesh.material=original;for(const mat of state.copies)mat.dispose();state.visual?.removeFromParent();state.visual?.traverse(node=>{if(node.isInstancedMesh)node.dispose();});for(const mat of state.visualMaterials)mat.dispose();robot.trainingData=false;actors.delete(robot);}
+ function release(robot){const state=actors.get(robot);if(!state)return;for(const [mesh,original]of state.materials)mesh.material=original;for(const [mesh,visible]of state.visibility||[])mesh.visible=visible;for(const mat of state.copies)mat.dispose();state.visual?.removeFromParent();state.visual?.traverse(node=>{if(node.isInstancedMesh)node.dispose();});for(const mat of state.visualMaterials)mat.dispose();robot.trainingData=false;actors.delete(robot);}
  function begin(robot,kind){
   release(robot);robot.trainingData=true;robot.root.updateWorldMatrix(true,true);
   const bounds=new THREE.Box3().setFromObject(robot.root),height=Math.max(.3,bounds.max.y-bounds.min.y),uniforms={dataLevel:{value:kind==='spawn'?-.12:1.12},dataMin:{value:bounds.min.y},dataHeight:{value:height}};
@@ -30,6 +30,29 @@ export function createTrainingDataEffects(scene,{maxEffects=8}={}){
   }
   return state;
  }
+ function scatter(robot,age){
+  let state=actors.get(robot);
+  if(state?.kind!=='parts'){
+   release(robot);robot.trainingData=true;robot.root.updateWorldMatrix(true,true);
+   const bounds=new THREE.Box3().setFromObject(robot.root),center=bounds.getCenter(new THREE.Vector3());
+   const group=new THREE.Group();group.name='training-data-parts';group.userData.effect=true;scene.add(group);
+   const material=new THREE.MeshBasicMaterial({color:0x30bfff,transparent:true,opacity:1,depthWrite:true,toneMapped:false});
+   state={kind:'parts',materials:[],copies:[],visualMaterials:[material],visual:group,visibility:[],parts:[]};actors.set(robot,state);
+   const candidates=[];robot.root.traverse(mesh=>{if(mesh.isMesh&&mesh.visible&&mesh.geometry&&!mesh.userData.effect)candidates.push(mesh);});
+   const limit=Math.min(robot.deathPartLimit||96,96),step=Math.max(1,Math.ceil(candidates.length/limit));
+   for(let i=0;i<candidates.length;i++){
+    const mesh=candidates[i];state.visibility.push([mesh,mesh.visible]);mesh.visible=false;if(i%step)continue;
+    const part=new THREE.Mesh(mesh.geometry,material);mesh.matrixWorld.decompose(part.position,part.quaternion,part.scale);group.add(part);
+    const initial=part.position.clone(),direction=initial.clone().sub(center);direction.y=0;
+    if(direction.lengthSq()<.01)direction.set(Math.cos(i*2.399),0,Math.sin(i*2.399));direction.normalize();
+    const velocity=direction.multiplyScalar(2.2+(i%5)*.65);velocity.y=2.3+(i%7)*.38;
+    state.parts.push({mesh:part,initial,rotation:part.quaternion.clone(),velocity,spin:new THREE.Vector3(Math.sin(i+1),Math.cos(i*1.7),Math.sin(i*.7)).normalize(),floor:bounds.min.y+.06});
+   }
+  }
+  robot.deathDuration=1.35;const t=Math.max(0,age);
+  for(const part of state.parts){part.mesh.position.copy(part.initial).addScaledVector(part.velocity,t);part.mesh.position.y=Math.max(part.floor,part.mesh.position.y-4.8*t*t);part.mesh.quaternion.copy(part.rotation).multiply(new THREE.Quaternion().setFromAxisAngle(part.spin,t*5));}
+  state.visualMaterials[0].opacity=1-THREE.MathUtils.smoothstep(t,.85,1.35);
+ }
  function pose(robot,kind,t){
   const state=actors.get(robot)?.kind===kind?actors.get(robot):begin(robot,kind),u=THREE.MathUtils.clamp(t,0,1),level=kind==='spawn'?u:1-u;
   state.uniforms.dataLevel.value=-.12+level*1.24;
@@ -41,5 +64,5 @@ export function createTrainingDataEffects(scene,{maxEffects=8}={}){
   }
   if(kind==='spawn'&&u>=1)release(robot);
  }
- return {spawn:(robot,t)=>pose(robot,'spawn',t),death:(robot,age)=>{robot.deathDuration=1.15;pose(robot,'death',age/1.15);},release,clear(){for(const robot of [...actors.keys()])release(robot);},snapshot:()=>({dataActors:actors.size,dataEffects:[...actors.values()].filter(s=>s.visual).length}),dispose(){this.clear();geometry.dispose();ringGeometry.dispose();}};
+ return {spawn:(robot,t)=>pose(robot,'spawn',t),death:scatter,release,clear(){for(const robot of [...actors.keys()])release(robot);},snapshot:()=>({dataActors:actors.size,dataEffects:[...actors.values()].filter(s=>s.visual).length}),dispose(){this.clear();geometry.dispose();ringGeometry.dispose();}};
 }
