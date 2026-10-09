@@ -7,7 +7,7 @@ import {WILD_DESTRUCTION_DURATION,updateWildDestruction,resetWildDestruction,rec
 export {resetWildDestruction} from './wild-enemy-destruction.js';
 
 export const WILD_ENEMIES = {
-  'rust-wasp-drone': {name:'녹슨 말벌 드론',scale:.75,body:'Thorax',head:'Head',flying:true,previewOnly:true},
+  'rust-wasp-drone': {name:'녹슨 말벌 드론',scale:.75,body:'Thorax',head:'Head',flying:true},
   'rust-scout': {name:'녹슨 척후병',scale:.82,body:'Torso',head:'Head',leg:'leg',shoulder:'Shoulder',forearm:'Forearm'},
   'forest-warden': {name:'숲의 파수꾼',scale:1.1,body:'Torso',head:'Head',leg:'heavy_leg',shoulder:'Heavy_shoulder',forearm:'Heavy_forearm'},
   'assault-mantis': {name:'이끼 사마귀 돌격병',scale:.86,body:'Thorax',head:'Head',leg:'mantis_leg',shoulder:'Mantis_shoulder',forearm:'Mantis_forearm',hand:'Blade_hand'},
@@ -37,7 +37,8 @@ export async function preloadWildEnemies(){
   return results.flatMap((result,i)=>result.status==='rejected'?[{id:ids[i],error:String(result.reason)}]:[]);
 }
 export function wildEnemyId(boss,type){
-  if(type==='player'||type==='drone'||type==='scoutDrone')return null;
+  if(type==='player')return null;
+  if(type==='drone'||type==='scoutDrone')return 'rust-wasp-drone';
   if(type==='assassin')return 'assault-mantis';
   if(type==='blade')return 'forest-warden';
   if(type==='sniper')return 'wall-sniper-spider';
@@ -116,7 +117,10 @@ export function createWildEnemy(id,{scale=WILD_ENEMIES[id]?.scale}={}){
   const muzzleLight=new THREE.PointLight(flashColor,0,5,2);muzzleLight.position.z=.18;muzzle.add(muzzleLight);
   muzzleFlash.rotation.x=Math.PI/2;muzzleFlash.position.z=.12;muzzleFlash.visible=false;muzzle.add(muzzleFlash);
   const r={root,mount,motion,asset,nodes,body,neck:head,head,arms,legs,hitMeshes,rest,wildId:id,spec,phase:0,age:0,walkBlend:0,aimBlend:0,recoil:0,flashTime:0,hitCooldown:0,blaster:weapon,eyeGlow,muzzle,muzzleFlash,muzzleGlow,muzzleLight,aimEmitter:muzzle,missileMuzzles:[],actions:{},rotors:[],blades:[],wallMounted:false};
-  if(spec.flying)r.rotors=[nodes['Rotor_-1'],nodes.Rotor_1];
+  if(spec.flying){
+    r.rotors=[nodes['Rotor_-1'],nodes.Rotor_1];
+    r.missileMuzzles=[-1,1].map(side=>socket(socket(nodes.Stinger_gun,[side*.10,0,.30],'wasp-launch-pivot-'+side),[0,0,.20],'wasp-launch-port-'+side));
+  }
   r.previousPosition=root.position.clone();r.travel=new THREE.Vector3(0,0,1);r.gaitSpeed=0;r.strideRate=0;
   r.deathDuration=WILD_DESTRUCTION_DURATION;
   r.captureHeadDeath=()=>captureHeadDeath(r);

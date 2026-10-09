@@ -7,7 +7,7 @@ const $=id=>document.getElementById(id);
 const base=new URL('./models/wild-robots-v1/',document.baseURI);
 const conceptBase=new URL('./output/imagegen/wild-robots-2026-10-08/refined-v2/',document.baseURI);
 const descriptions={
-  'rust-wasp-drone':'큰 보호 링 프로펠라 2개, 붉은 외눈, 접힌 여섯 다리와 앞으로 말린 배 총구를 가진 말벌형 드론입니다. 프로펠라 회전·체공·사격을 확인할 수 있는 모델 시안이며 게임 적 교체는 아직 하지 않았습니다.',
+  'rust-wasp-drone':'큰 보호 링 프로펠라 2개, 붉은 외눈, 접힌 여섯 다리와 앞으로 말린 배 총구를 가진 말벌형 드론입니다. 게임의 정찰 드론과 드론 보스에 적용했습니다. 프로펠라 회전·체공·사격을 확인할 수 있습니다.',
   'rust-scout':'큰 상자형 외눈 머리, 두 다리의 역관절, 짧은 팔 기관총과 집게손을 살렸습니다.',
   'forest-warden':'좁은 골반 양옆에서 다리가 이어지는 중장갑 기체입니다. 왼손 포로 원거리 사격하고 가까이 오면 오른팔 집게로 내려찍습니다. 공격 미리보기에서 두 동작을 번갈아 보여 줍니다.',
   'iron-beetle':'낮은 몸체 위에 갈라진 등껍질을 올리고, 여섯 다리와 앞쪽 충돌 장갑을 배치했습니다.',
@@ -74,7 +74,7 @@ async function select(info){
     model.traverse(o=>{if(o.isMesh)o.userData.originalMaterial=o.material;});
     motionAge=0;shotAge=null;scene.add(model);pose();appearance();
     $('triangles').textContent=info.triangles.toLocaleString('ko-KR')+' 삼각형';$('assemblies').textContent=info.rigidAssemblies+'개 기계식 파츠';
-    $('status').textContent=info.id==='rust-wasp-drone'?'신규 모델 시안 · 체공 / 사격':motionMode==='shot'?'로봇의 부위를 클릭해 보세요':'게임 적용 · 검은 파츠 흩어짐';$('viewport').dataset.model=info.id;$('viewport').dataset.status='ready';$('loading').hidden=true;
+    $('status').textContent=info.id==='rust-wasp-drone'?'게임 적용 · 체공 / 사격':motionMode==='shot'?'로봇의 부위를 클릭해 보세요':'게임 적용 · 검은 파츠 흩어짐';$('viewport').dataset.model=info.id;$('viewport').dataset.status='ready';$('loading').hidden=true;
   }catch(error){if(token!==request)return;$('loading').textContent='모델을 불러오지 못했습니다.';$('status').textContent='로드 실패';$('error').textContent=error.message;$('viewport').dataset.status='error';console.error(error);}
 }
 $('home').addEventListener('click',fit);
@@ -82,7 +82,7 @@ $('spin').addEventListener('click',()=>{controls.autoRotate=!controls.autoRotate
 $('wire').addEventListener('click',()=>{wire=!wire;setPressed('wire',wire);appearance();});
 $('clay').addEventListener('click',()=>{clay=!clay;setPressed('clay',clay);appearance();});
 $('wall').addEventListener('click',()=>{if(selected?.id!=='wall-sniper-spider')return;resetWildDestruction(robot);motionAge=0;shotAge=null;wallPose=!wallPose;setPressed('wall',wallPose);pose();});
-$('motion').addEventListener('change',()=>{motionMode=$('motion').value;motionAge=0;shotAge=null;$('replay-death').hidden=$('slow-death').hidden=!['death','shot'].includes(motionMode);$('replay-death').textContent=motionMode==='shot'?'로봇 복구':'다시 파괴';$('status').textContent=selected?.id==='rust-wasp-drone'?'신규 모델 시안 · 체공 / 사격':motionMode==='shot'?'로봇의 부위를 클릭해 보세요':'게임 적용 · 검은 파츠 흩어짐';document.querySelector('.gesture').textContent=motionMode==='shot'?'몸을 클릭 · 피격 파괴 / 드래그 · 회전':'드래그 · 회전 / 휠 · 확대 / 우클릭 · 이동';if(robot){resetWildDestruction(robot);animateWildEnemy(robot,0);fit();}});
+$('motion').addEventListener('change',()=>{motionMode=$('motion').value;motionAge=0;shotAge=null;$('replay-death').hidden=$('slow-death').hidden=!['death','shot'].includes(motionMode);$('replay-death').textContent=motionMode==='shot'?'로봇 복구':'다시 파괴';$('status').textContent=selected?.id==='rust-wasp-drone'?'게임 적용 · 체공 / 사격':motionMode==='shot'?'로봇의 부위를 클릭해 보세요':'게임 적용 · 검은 파츠 흩어짐';document.querySelector('.gesture').textContent=motionMode==='shot'?'몸을 클릭 · 피격 파괴 / 드래그 · 회전':'드래그 · 회전 / 휠 · 확대 / 우클릭 · 이동';if(robot){resetWildDestruction(robot);animateWildEnemy(robot,0);fit();}});
 $('replay-death').addEventListener('click',()=>{if(robot)resetWildDestruction(robot);motionAge=0;shotAge=null;});
 $('slow-death').addEventListener('click',()=>{slowDeath=!slowDeath;setPressed('slow-death',slowDeath);});
 renderer.domElement.addEventListener('pointerdown',event=>{pointerStart=event.button===0?{x:event.clientX,y:event.clientY}:null;});
