@@ -33,7 +33,10 @@ export function createFlightScene(cargoJSON){
  const sun=new T.DirectionalLight(0xffefd8,3);sun.position.set(-12,25,18);scene.add(sun);
  const camera=new T.PerspectiveCamera(43,1,.1,450);
  const carrier=new T.Group(),drone=createRecoveryDrone({loadTextures:false});drone.position.set(0,0,0);carrier.add(drone);
- const cargo=new T.ObjectLoader().parse(cargoJSON);cargo.position.set(0,.09,.45);carrier.add(cargo);scene.add(carrier);
+ const cargo=new T.ObjectLoader().parse(cargoJSON);cargo.position.set(0,-.65,.45);carrier.add(cargo);scene.add(carrier);
+ const slingMetal=new T.MeshStandardMaterial({color:0x8d9da7,metalness:.9,roughness:.32});
+ for(const x of[-.3,.3])for(let i=0;i<9;i++){const link=new T.Mesh(new T.TorusGeometry(.085,.019,6,12),slingMetal);link.position.set(x,1.02+i*.16,.45);link.rotation.y=i%2?Math.PI/2:0;carrier.add(link);}
+
  // A tiny procedural facade keeps the overflight readable without loading a
  // second copy of the detailed destination city.
  const pixels=new Uint8Array(64*64*4);

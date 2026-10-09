@@ -79,7 +79,7 @@ export function createBaseUI(campaign,{prepare,prepareMission,training,appearanc
  function showBrief(_weapons,launch){
   cancelBrief?.();hide();briefing.hidden=false;const robot=campaign.frame(),stats=frameStats(robot);
   const frameHTML=`<h2>투입 기체 · ${safe(robot.name)}</h2><p>현재 내구도 ${Math.round(robot.hp/100*stats.maxHP)} / ${stats.maxHP} · 배터리 ${Math.round(Math.min(robot.battery,stats.battery))} / ${stats.battery}</p><div class="operationLoadout">${robot.weaponSlots.filter(Boolean).map(item=>`<article><b>${safe(gunInfo(item).name)} · Lv.${item.level}</b><p>${gunDescription(item)}</p><small>출격 탄약 ${item.type==='pistol'?'무한':Math.min(campaign.state.ammo[item.type]||0,gunInfo(item).ammo||0)}</small></article>`).join('')}${Object.values(robot.equipment||{}).filter(Boolean).map(item=>`<article><b>${safe(EQUIPMENT[item.type].name)} · Lv.${item.level}</b><p>${safe(equipmentDescription(item))}</p></article>`).join('')}${robot.parts.map(item=>`<article><b>${safe(PARTS[item.type].name)} · Lv.${item.level}</b><p>${safe(partDescription(item))}</p></article>`).join('')}</div>`;
-  cancelBrief=showOperationBriefing(briefing,{campaign,prepareMission,launch,training,back:show,frameHTML});
+  cancelBrief=showOperationBriefing(briefing,{campaign,prepareMission,launch,training,back:show,frameHTML,frame:robot});
  }
  return {show,hide,render,root,showBrief};
 }

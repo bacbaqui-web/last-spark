@@ -1,3 +1,4 @@
+import {showNetworkConnection} from './network-connection.js';
 import {sortieMission} from './sortie-mission.js';
 import {briefingMap} from './sortie-briefing-map.js';
 import {recoveryRewards} from './game-modes.js';
@@ -11,9 +12,9 @@ const arenaDiagram=`<svg viewBox="0 0 360 280" role="img" aria-label="사각 훈
  <text x="180" y="248" text-anchor="middle" fill="#88c3d0" font-size="9" letter-spacing="2">SIMULATION / 86 × 86</text>
 </svg>`;
 
-export function showOperationBriefing(root,{campaign,prepareMission,launch,training,back,frameHTML}){
+export function showOperationBriefing(root,{campaign,prepareMission,launch,training,back,frameHTML,frame}){
  let revision=0,mission=null,launching=false,previewStarted=false;
- root.innerHTML=`<div class="briefShell operationBrief modeBrief"><header class="operationHeading"><small>REMOTE OPERATIONS</small><h1>출격 준비</h1><p>플레이할 모드를 선택하세요.</p></header>
+ root.innerHTML=`<div class="operationFrameStage"><div class="operationFrameCanvas" role="img" aria-label="현재 프레임과 장착 무기 미리보기"></div><div class="operationFrameCaption"><small>REMOTE FRAME / STANDBY</small><b></b><span>무장 연결 완료 · 출격 대기</span></div></div><div class="briefShell operationBrief modeBrief"><header class="operationHeading"><small>REMOTE OPERATIONS</small><h1>출격 준비</h1><p>플레이할 모드를 선택하세요.</p></header>
   <div class="operationModes" role="group" aria-label="게임모드 선택">
    <button id="recoveryMode" class="operationMode" aria-pressed="false" aria-controls="recoveryBrief"><small>01 / FIELD OPERATION</small><b>전쟁위성 회수작전</b><span>실제 기체로 출격해 위성 코어와 장비를 회수합니다.</span><em>회수작전 선택 →</em></button>
    <button id="trainingMode" class="operationMode trainingModeCard" aria-pressed="false" aria-controls="trainingBrief"><small>02 / NETWORK SIMULATION</small><b>전투훈련장</b><span>가상 아레나에서 밀려오는 적과 전투합니다. 아이템 손실이 없습니다.</span><em>전투훈련장 선택 →</em></button>
@@ -28,8 +29,10 @@ export function showOperationBriefing(root,{campaign,prepareMission,launch,train
    <p id="recoveryRequirement" class="operationRequirement" role="status"></p>
    <div class="briefButtons"><button data-brief-back>← 기체 정비로</button><button id="deploySortie" disabled>지도 생성 중…</button></div>
   </section>
-  <section id="trainingBrief" aria-labelledby="trainingMode" hidden><div class="trainingLayout"><div class="trainingDiagram">${arenaDiagram}<p>사각 아레나 · 엄폐물 · 저격탑</p></div><div class="trainingStory"><small>VIRTUAL COMBAT / NO ITEM LOSS</small><h2>기체는 정비실에.<br>전투는 네트워크 안에서.</h2><p>관제망이 만들어 낸 가상 훈련장입니다. 실제 기체 대신 훈련용 가상 기체에 접속해, 끝없이 밀려오는 적과 싸웁니다.</p><ul><li><b>끝없는 웨이브</b><span>적과 보스를 모두 처치하면 다음 웨이브가 시작됩니다.</span></li><li><b>자유로운 가상 무장</b><span>기본 무기와 특수무기 2개로 시작합니다. 탄약과 HP팩을 주워 버티세요.</span></li><li><b>부담 없이 다시 도전</b><span>죽거나 중단해도 실제 기체·장비·창고 탄약은 그대로입니다.</span></li></ul><p class="trainingNote">훈련 중 얻은 아이템과 강화는 이번 훈련에서만 사용됩니다. 회수 보상과 작전 단계 해금은 없습니다.</p></div></div><div class="briefButtons"><button data-brief-back>← 기체 정비로</button><button id="connectTraining">훈련장 접속 →</button></div></section>
+  <section id="trainingBrief" aria-labelledby="trainingMode" hidden><div class="trainingLayout"><div class="trainingDiagram">${arenaDiagram}<p>사각 아레나 · 엄폐물 · 저격탑</p></div><div class="trainingStory"><small>VIRTUAL COMBAT / NO ITEM LOSS</small><h2>기체는 정비실에.<br>전투는 네트워크 안에서.</h2><p>관제망이 만들어 낸 가상 훈련장입니다. 실제 기체 대신 훈련용 가상 기체에 접속해, 끝없이 밀려오는 적과 싸웁니다.</p><ul><li><b>끝없는 웨이브</b><span>적과 보스를 모두 처치하면 다음 웨이브가 시작됩니다.</span></li><li><b>실전과 같은 무장</b><span>현재 프레임과 장착 무기·장비의 성능 그대로 접속합니다. 배터리와 탄약을 보급하며 버티세요.</span></li><li><b>부담 없이 다시 도전</b><span>죽거나 중단해도 실제 기체·장비·창고 탄약은 그대로입니다.</span></li></ul><p class="trainingNote">훈련 중 얻은 보급품은 이번 훈련에서만 사용됩니다. 회수 보상과 작전 단계 해금은 없습니다.</p></div></div><div class="briefButtons"><button data-brief-back>← 기체 정비로</button><button id="connectTraining">훈련장 접속 →</button></div></section>
  </div>`;
+ let preview,disposed=false;const previewReady=import('./operation-frame-stage.js').then(({createOperationFrameStage})=>{if(!disposed)preview=createOperationFrameStage(root.querySelector('.operationFrameCanvas'),frame);return preview;});
+ root.querySelector('.operationFrameCaption b').textContent=frame.name;
  const $=selector=>root.querySelector(selector),deploy=$('#deploySortie'),stage=$('#missionStage');
  const unavailable=()=>campaign.pendingSave?'귀환 결과를 저장한 뒤 출격할 수 있습니다. 기체 정비실에서 저장을 재시도해 주세요.':campaign.storageError?'저장 상태를 확인한 뒤 출격할 수 있습니다.':!campaign.frame().weaponSlots.some(Boolean)?'회수작전에는 무기를 1개 이상 장착해 주세요. 전투훈련장은 바로 이용할 수 있습니다.':'';
  async function generate(){
@@ -52,15 +55,15 @@ export function showOperationBriefing(root,{campaign,prepareMission,launch,train
   if(recovery&&!previewStarted)generate();
  }
  $('#recoveryMode').onclick=()=>select('recovery');$('#trainingMode').onclick=()=>select('training');
- root.querySelectorAll('[data-brief-back]').forEach(button=>button.onclick=()=>{if(launching)return;revision++;root.hidden=true;back();});
- $('#connectTraining').onclick=()=>{if(launching)return;revision++;training();};
+ root.querySelectorAll('[data-brief-back]').forEach(button=>button.onclick=()=>{if(launching)return;revision++;root.hidden=true;preview?.dispose();disposed=true;back();});
+ $('#connectTraining').onclick=async()=>{if(launching)return;launching=true;root.querySelectorAll('button').forEach(b=>b.disabled=true);try{await (await previewReady)?.depart('training');showNetworkConnection();revision++;preview?.dispose();disposed=true;training();}catch(error){launching=false;root.querySelectorAll('button').forEach(b=>b.disabled=false);$('#connectTraining').textContent='접속 다시 시도';}};
  stage.onchange=generate;
  deploy.onclick=async()=>{
   if(launching||unavailable())return;if(!mission){generate();return;}
   launching=true;const buttons=[...root.querySelectorAll('button'),stage];buttons.forEach(button=>button.disabled=true);deploy.textContent='도시 구역 준비 중…';
-  try{await launch(mission);revision++;root.hidden=true;}
-  catch(error){launching=false;buttons.forEach(button=>button.disabled=false);deploy.textContent='다시 출격';$('#recoveryRequirement').textContent=error.message;}
+  try{await (await previewReady)?.depart('recovery');await launch(mission);revision++;root.hidden=true;preview?.dispose();disposed=true;}
+  catch(error){preview?.reset();launching=false;buttons.forEach(button=>button.disabled=false);deploy.textContent='다시 출격';$('#recoveryRequirement').textContent=error.message;}
  };
  root.scrollTop=0;$('#recoveryMode').focus({preventScroll:true});
- return ()=>{revision++;};
+ return ()=>{revision++;disposed=true;preview?.dispose();};
 }
