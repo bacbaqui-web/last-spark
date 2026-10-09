@@ -4,6 +4,7 @@ import {createRobot,disposeRobot} from './robot.js';
 import {applyFrameVisual} from './frame-preview.js';
 import {frameStats} from './salvage-campaign.js';
 import {createWeaponModel} from './weapon-models.js';
+import {createHangarRoom} from './hangar-room.js';
 import {CHEST_SLOTS} from './salvage-chest.js';
 import {disposeObjectResources} from './runtime-resources.js';
 
@@ -11,11 +12,11 @@ import {disposeObjectResources} from './runtime-resources.js';
 export function createHangarScene(host,onAction=()=>{},onHover=()=>{},onLayout=()=>{}){
  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.shadowMap.enabled=true;renderer.setClearColor(0x070b10);host.appendChild(renderer.domElement);
  configureUpgradeLighting(renderer);
- const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x070b10,10,23);const camera=new THREE.PerspectiveCamera(42,1,.05,45);camera.position.set(0,3.1,7.5);camera.lookAt(0,1.65,0);
+ const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x070b10,10,23);const camera=new THREE.PerspectiveCamera(42,1,.05,45);camera.position.set(0,3.45,7.5);camera.lookAt(0,1.9,0);
  const steel=new THREE.MeshStandardMaterial({color:0x252e38,metalness:.75,roughness:.45}),black=new THREE.MeshStandardMaterial({color:0x0d141c,roughness:.8}),edge=new THREE.MeshStandardMaterial({color:0x9abfc8,emissive:0x72d3e5,emissiveIntensity:1.2}),crate=new THREE.MeshStandardMaterial({color:0x39443b,metalness:.25,roughness:.8});
  const box=(parent,size,pos,mat=steel)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(...size),mat);m.position.set(...pos);m.castShadow=m.receiveShadow=true;parent.add(m);return m;};
  scene.add(new THREE.HemisphereLight(0xadc9de,0x151914,1.8));for(const x of[-4,0,4]){const l=new THREE.SpotLight(x===0?0xb6deef:0x50718d,x===0?65:30,16,.62,.65);l.position.set(x,5,3);l.target.position.set(x,1.5,0);l.castShadow=x===0;scene.add(l,l.target);}
- box(scene,[24,.15,22],[0,-.15,-5],black);box(scene,[24,7,.3],[0,3,-6],black);for(let x=-10;x<=10;x+=2){box(scene,[.16,6,.25],[x,3,-5.7]);box(scene,[.03,.02,14],[x,.001,-4]);}box(scene,[20,.3,.35],[0,4.25,0]);
+ const room=createHangarRoom();scene.add(room.root);
  const wheel=new THREE.Group();wheel.position.z=-3;scene.add(wheel);let inspection=null,openAmount=0,rigs=[],signature='',stockSignature='',target=0,angle=0,last=performance.now();
  const screen=new THREE.MeshStandardMaterial({color:0x063356,emissive:0x168cdd,emissiveIntensity:1.4,roughness:.35});const sharedMaterials=[steel,black,edge,crate,screen];
  function clearRigs(){for(const r of rigs){if(r.robot)disposeRobot(r.robot);disposeObjectResources(r.group,{sharedMaterials});}rigs=[];}
@@ -69,7 +70,7 @@ export function createHangarScene(host,onAction=()=>{},onHover=()=>{},onLayout=(
   for(const [i,r]of rigs.entries()){const selected=i===index;r.plate.userData.rotateUnit=r.rim.userData.rotateUnit=selected&&!!r.robot;r.rim.material=selected?edge:steel;}
   selectedRobot=rigs[index]?.robot?.root||null;
  }
- let raf=null,disposed=false;
+ let raf=null,animationTimer=null,disposed=false;
  function requestDraw(){if(!disposed&&raf===null)raf=requestAnimationFrame(draw);}
  function draw(now){
   raf=null;if(document.hidden||!host.isConnected||host.closest('[hidden]')){last=now;return;}
@@ -77,7 +78,7 @@ export function createHangarScene(host,onAction=()=>{},onHover=()=>{},onLayout=(
   const dt=Math.min((now-last)/1000,.05);last=now;angle=THREE.MathUtils.damp(angle,target,6,dt);if(Math.abs(angle-target)<.0001)angle=target;wheel.rotation.y=angle;
   if(canvas.width!==Math.floor(w*renderer.getPixelRatio())||canvas.height!==Math.floor(h*renderer.getPixelRatio())){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
   const robot=rigs.find(r=>r.robot?.root===selectedRobot)?.robot;const focused=inspection==='modules'&&robot;
-  const desiredPosition=new THREE.Vector3(0,3.1,7.5),look=new THREE.Vector3(0,1.65,0);
+  const desiredPosition=new THREE.Vector3(0,3.45,7.5),look=new THREE.Vector3(0,1.9,0);
   if(focused){robot.root.rotation.y=0;(robot.salvageFrame?.anchors.spine_03||robot.body).getWorldPosition(look);desiredPosition.copy(look).add(new THREE.Vector3(0,.08,1.6));}
   camera.position.lerp(desiredPosition,1-Math.exp(-7*dt));camera.lookAt(look);openAmount=THREE.MathUtils.damp(openAmount,focused?1:0,6,dt);robot?.salvageFrame?.chestMechanism.setOpen(openAmount);
   scene.updateMatrixWorld(true);const targets=[];const put=(key,world)=>{const p=world.clone().project(camera);if(p.z>-1&&p.z<1)targets.push({key,x:(p.x*.5+.5)*w,y:(-.5*p.y+.5)*h});};
@@ -86,8 +87,8 @@ export function createHangarScene(host,onAction=()=>{},onHover=()=>{},onLayout=(
    for(let slot=0;slot<2;slot++){const rack=rigs.find(r=>r.robot===robot).unitRack;put('weapon:'+slot,rack.localToWorld(new THREE.Vector3(slot===0?-1.05:1.05,2,.3)));}}
   }
   if(!focused){for(const [key,group,sx,sy]of [['monitor:left',monitorLeft,1.3,2.64],['monitor:right',service,1.3,2.64]]){const points=[[-sx/2,-sy/2],[sx/2,sy/2],[-sx/2,sy/2],[sx/2,-sy/2]].map(([x,y])=>group.localToWorld(new THREE.Vector3(x,y,.14)).project(camera));const xs=points.map(p=>(p.x*.5+.5)*w),ys=points.map(p=>(-.5*p.y+.5)*h);targets.push({key,x:Math.min(...xs),y:Math.min(...ys),width:Math.max(...xs)-Math.min(...xs),height:Math.max(...ys)-Math.min(...ys)});}}
-  onLayout(targets);renderer.render(scene,camera);if(angle!==target||Math.abs(openAmount-(focused?1:0))>.001||camera.position.distanceTo(desiredPosition)>.001)requestDraw();
+  onLayout(targets);room.update(dt);renderer.render(scene,camera);clearTimeout(animationTimer);animationTimer=setTimeout(requestDraw,50);if(angle!==target||Math.abs(openAmount-(focused?1:0))>.001||camera.position.distanceTo(desiredPosition)>.001)requestDraw();
  }
  const resize=new ResizeObserver(requestDraw);resize.observe(host);document.addEventListener('visibilitychange',requestDraw);window.addEventListener('resize',requestDraw);canvas.addEventListener('webglcontextrestored',requestDraw);requestDraw();
- return {update,inspect(mode){inspection=mode;highlight(null);requestDraw();},attach(next){if(disposed)return;resize.unobserve(host);host=next;host.appendChild(canvas);resize.observe(host);requestDraw();},dispose(){if(disposed)return;disposed=true;cancelAnimationFrame(raf);resize.disconnect();document.removeEventListener('visibilitychange',requestDraw);window.removeEventListener('resize',requestDraw);canvas.removeEventListener('webglcontextrestored',requestDraw);drag=null;selectedRobot=null;rotations.clear();highlight(null);outlineMaterial.dispose();clearRigs();disposeObjectResources(scene,{sharedMaterials});sharedMaterials.forEach(m=>m.dispose());renderer.dispose();canvas.remove();}};
+ return {update,inspect(mode){inspection=mode;highlight(null);requestDraw();},attach(next){if(disposed)return;resize.unobserve(host);host=next;host.appendChild(canvas);resize.observe(host);requestDraw();},dispose(){if(disposed)return;disposed=true;cancelAnimationFrame(raf);clearTimeout(animationTimer);room.dispose();resize.disconnect();document.removeEventListener('visibilitychange',requestDraw);window.removeEventListener('resize',requestDraw);canvas.removeEventListener('webglcontextrestored',requestDraw);drag=null;selectedRobot=null;rotations.clear();highlight(null);outlineMaterial.dispose();clearRigs();disposeObjectResources(scene,{sharedMaterials});sharedMaterials.forEach(m=>m.dispose());renderer.dispose();canvas.remove();}};
 }
