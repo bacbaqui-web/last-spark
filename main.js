@@ -66,7 +66,7 @@ function platform(x,z,w,d,h){
 const sniperPerches=[];let arenaCityWorld=null;
 if(salvageMode){sortieWorld=SALVAGE.createSalvageWorld(scene,platforms,box,mats);}else if(typeof window.location==='object'&&!trainingMode){arenaCityWorld=SALVAGE.createSalvageWorld(scene,platforms,box,mats);arenaCityWorld.extraction.visible=false;arenaCityWorld.target.visible=false;}else{
 // Alternating high cover and low vaultable barriers leave lanes through the arena.
-for(const [x,z,w,d,h]of[[-28,-12,4,3,2.8],[-26,4,3,6,2.6],[-23,23,6,2.5,2.8],[-14,27,3,5,1.3],[0,26,5,2.5,2.8],[12,25,3,5,1.4],[27,20,6,3,2.7],[29,7,3,6,2.8],[28,-7,5,2.5,1.3],[27,-27,6,3,2.8],[12,-30,3,5,2.6],[-10,-29,5,3,2.7],[-27,-28,4,4,1.4],[-1,3,3,5,2.7]])platform(x,z,w,d,h);
+for(const [x,z,w,d,h]of[[-28,-12,4,3,2.8],[-26,4,3,6,2.6],[-23,23,6,2.5,2.8],[-14,27,3,5,1.3],[0,26,5,2.5,2.8],[12,25,3,5,1.4],[27,20,6,3,2.7],[29,7,3,6,2.8],[28,-7,5,2.5,1.3],[27,-27,6,3,2.8],[12,-30,3,5,2.6],[-10,-29,5,3,2.7],[-27,-28,4,4,1.4],[-1,3,3,5,2.7]])platform(x,trainingMode&&x===-1&&z===3?9:z,w,d,h);
 for(const [x,z,w,d,h]of[[-35,14,3,5,2.8],[35,-16,3,5,2.7],[-22,-18,3,3,2.6],[-14,4,4,2.5,2.7],[8,16,3,3,2.6],[20,-5,3,3,2.8],[0,-31,4,3,2.8],[25,33,3,3,1.4],[-32,32,3,4,2.7],[-3,33,4,3,1.3]])platform(x,z,w,d,h);
 platform(-12,-8,9,7,2);platform(-18,-8,4,7,1);platform(13,5,10,8,3.5);platform(7,5,3,8,1.6);platform(0,-19,12,6,5);platform(0,-14,6,3,2.5);platform(-8,15,8,8,2.5);platform(17,-18,7,7,2);
 
@@ -336,6 +336,9 @@ function enterWaveEnemy(e,index,ship=waveTransports[index%2]){
  e.transport=ship;e.releaseAt=2.7+Math.floor(index/2)*.23;ship.lastRelease=Math.max(ship.lastRelease,e.releaseAt);e.entryTarget=target;e.entryAge=0;e.entryStart=null;e.group.position.copy(ship.root.position);e.group.visible=false;e.state='transport';
 }
 function enterTrainingEnemy(e,index){
+ const p=SALVAGE.pickTrainingSpawn({boss:e.boss,type:e.type,platforms,occupied:enemies.filter(other=>other!==e).map(other=>other.group.position),player:player.pos,index,wallCapable:!!e.robot.mount});
+ e.group.position.set(p.x,p.y,p.z);e.bossAnchor.copy(e.group.position);
+ if(p.nx!==undefined&&e.robot.mount){e.group.rotation.set(0,Math.atan2(-p.nz,p.nx),0);e.robot.mount.rotation.z=-Math.PI/2;e.robot.wallMounted=true;e.robot.wallYaw=e.group.rotation.y;}
  e.dataEntry={age:-index*.12,duration:1.2};e.entryTarget=e.group.position.clone();e.group.visible=false;e.state='data-assembly';
 }
 function updateEnemyEntrance(e,dt){

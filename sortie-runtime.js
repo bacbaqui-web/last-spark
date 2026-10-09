@@ -74,3 +74,5 @@ export {flushEnemyPoses} from './wild-enemy-models.js';
 export {createEnemyRenderBatch} from './enemy-render-batch.js';
 
 export {createTrainingDataEffects} from './training-data-effects.js';
+
+export {pickTrainingSpawn} from './training-spawns.js';
