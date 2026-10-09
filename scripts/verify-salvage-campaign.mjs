@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {freshCampaign,createCampaign,SAVE_KEY,makePart,makeWeapon,frameStats,lootWeapon,WEAPON_TYPES,spendBattery,tickBattery} from '../salvage-campaign.js';
 const data=new Map(),store={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)};
 let c=createCampaign(store);assert.deepEqual(c.frame().loadout,['rifle']);assert.equal(c.frame().weaponSlots[1],null);assert.equal(c.state.stashWeapons.length,0);
-let run=c.launch(['rifle'],{});assert(run);assert(spendBattery(run,6));tickBattery(run,10,8);assert(run.battery<85&&run.battery>75);
+let run=c.launch(['rifle'],{});assert(run);assert(spendBattery(run,6));tickBattery(run,10,8);assert.equal(run.battery,73.2);
 run.cargo.push(makePart('armor','a'),makePart('weapon','j'),makePart('drive','d'),makePart('reactor','r'));run.lootWeapons.push(makeWeapon('shotgun','s'),makeWeapon('sniper','n',2));assert.equal(c.state.stash.length,0);assert.equal(c.state.stashWeapons.length,0);assert(c.finish(run,true,60,'귀환'));assert(!c.finish(run,true,60,'duplicate'));assert.equal(c.state.stashWeapons.length,2);assert.equal(c.frame().hp,60);
 assert(c.state.stash.find(p=>p.id==='a').isNew,'new module tracked');assert(c.install('a',0));assert(c.install('j',1));assert(c.install('d',2));assert(!c.install('r'),'three slot cap');assert(c.install('r',1),'explicit replacement');assert.equal(c.frame().parts.length,3);assert(c.state.stash.some(p=>p.id==='j'));assert(!c.install('j',3));assert(c.uninstall('r'));assert(c.install('j',1));assert(frameStats(c.frame()).damage>1);
 assert(c.equipWeapon('s',1));assert.deepEqual(c.frame().loadout,['rifle','shotgun']);assert(!c.equipWeapon('n',2));assert(c.unequipWeapon(0));assert(c.equipWeapon('n',0));assert.deepEqual(c.frame().loadout,['sniper','shotgun']);assert(!c.craftWeapon('dismantle','s'),'equipped weapon protected');c.state.ammo={sniper:12,shotgun:24};run=c.launch(c.frame().loadout,{sniper:12,shotgun:24});assert.equal(run.weaponItems[0].level,2);assert.equal(run.ammo.shotgun,24);assert(!c.unequipWeapon(1),'deployed inventory locked');run.ammo.shotgun=7;assert(c.finish(run,true,55,'帰還'));assert.equal(c.state.ammo.shotgun,7);assert.equal(c.frame().weaponSlots[0].id,'n');
@@ -29,5 +29,5 @@ const oldStarter=freshCampaign();oldStarter.frames[0].weaponSlots[0].type='pisto
 
 const {makeCoreWeapon,SALVAGE_DROPS}=await import('../salvage-campaign.js');
 for(let i=0;i<100;i++){const reward=makeCoreWeapon(()=>(i+.5)/100);assert(['rapid','sniper','rail','rocket','flame','laser'].includes(reward.type));assert(reward.level>=3&&reward.level<=5);assert(reward.perk);}
-assert(SALVAGE_DROPS.battery*SALVAGE_DROPS.batteryCharge<3,'battery recovery per enemy is limited');assert(SALVAGE_DROPS.module<.2&&SALVAGE_DROPS.equipment<.1&&SALVAGE_DROPS.weapon<.05);
+assert(SALVAGE_DROPS.battery*SALVAGE_DROPS.batteryCharge===5.2,'battery recovery is increased to 8 per pickup at the existing drop rate');assert(SALVAGE_DROPS.module<.2&&SALVAGE_DROPS.equipment<.1&&SALVAGE_DROPS.weapon<.05);
 console.log('PASS reduced supply rates and guaranteed level 3-5 advanced core weapons');
