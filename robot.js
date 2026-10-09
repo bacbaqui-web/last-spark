@@ -1,4 +1,6 @@
-import {wildEnemyId,createWildEnemy,animateWildEnemy,fireWildEnemy,dieWildEnemy,disposeWildEnemy} from './wild-enemy-models.js';
+import {disposeObjectResources} from './runtime-resources.js';
+import {wildEnemyId,createWildEnemy,animateWildEnemy,fireWildEnemy,disposeWildEnemy} from './wild-enemy-models.js';
+import {ENEMY_DEATH_DURATION,updateEnemyDeathBurst,resetEnemyDeathBurst} from './enemy-death-burst.js';
 import {panelGeometry,panelTexture,detailBatch,decorateRobot} from './model-detail.js';
 import * as THREE from 'three';
 import {attachRobotUpgrade,updateRobotUpgrade,applyRigidUpgrade,attachSpiderUpgrade} from './asset-upgrades.js';
@@ -16,6 +18,8 @@ const bossArmor=new THREE.MeshStandardMaterial({color:0xad7852,metalness:.35,rou
 const joints=new THREE.MeshStandardMaterial({color:0x343b40,metalness:.5,roughness:.7});
 const trim=new THREE.MeshStandardMaterial({color:0xb9b4a5,metalness:.4,roughness:.5});
 const glow=new THREE.MeshBasicMaterial({color:0xff7851});
+for(const geometry of [frameGeometry,pelvisGeometry])geometry.userData.sharedModelGeometry=true;
+for(const material of [armor,bossArmor,joints,trim,glow])material.userData.sharedWeaponMaterial=true;
 armor.map=bossArmor.map=trim.map=panelTexture;
 const clips=rigData.clips.map(c=>new THREE.AnimationClip(c.name,-1,c.tracks.map(t=>new (t.type==='quaternion'?THREE.QuaternionKeyframeTrack:THREE.VectorKeyframeTrack)(t.name,t.times,t.values))));
 const reverse=clips.find(c=>c.name==='Sword_Attack').clone();reverse.name='Sword_Attack_Reverse';for(const t of reverse.tracks){const size=t.getValueSize(),source=t.values.slice();for(let i=0;i<t.times.length;i++)for(let j=0;j<size;j++)t.values[i*size+j]=source[(t.times.length-1-i)*size+j];}clips.push(reverse);
@@ -94,8 +98,8 @@ export function animateRobot(r,dt,{speed=0,aim=0,elevation=0,hit=0,velocityX,vel
 }
 function oneShot(r,name){const a=r.actions[name];a.reset().setLoop(THREE.LoopOnce,1).setEffectiveWeight(1).play();a.clampWhenFinished=false;}
 export function robotFired(r){if(r.wildId){fireWildEnemy(r);return;}oneShot(r,'Pistol_Shoot');r.recoil=.3;r.flashTime=.09;}
-export function animateDeath(r,progress){if(r.wildId){dieWildEnemy(r,progress);return;}if(r.bossKind==='drone'){r.muzzleFlash.visible=false;r.droneBody.rotation.z=progress*3;r.droneBody.position.y=-progress*3;return;}if(r.spider){r.motion.rotation.z=Math.min(1,progress/.5)*Math.PI;r.motion.position.y=-progress*.1;return;}if(!r.deathStarted){r.deathStarted=true;r.mixer.stopAllAction();const a=r.actions.Death01;a.reset().setLoop(THREE.LoopOnce,1).play();a.clampWhenFinished=true;}r.mixer.setTime(progress*2);updateRobotUpgrade(r);r.muzzleFlash.visible=false;}
-export function disposeRobot(r){if(r.wildId){disposeWildEnemy(r);return;}r.root.traverse(o=>{if(o.userData.cosmetic)o.geometry.dispose();});if(r.spider)return;r.mixer.stopAllAction();r.mixer.uncacheRoot(r.motion);r.skeleton.dispose();r.muzzleFlash.geometry.dispose();r.muzzleFlash.material.dispose();}
+export function animateDeath(r,progress){if(!r.salvageFrame){r.deathDuration=ENEMY_DEATH_DURATION;updateEnemyDeathBurst(r,progress);return;}if(!r.deathStarted){r.deathStarted=true;r.mixer.stopAllAction();const a=r.actions.Death01;a.reset().setLoop(THREE.LoopOnce,1).play();a.clampWhenFinished=true;}r.mixer.setTime(progress*2);updateRobotUpgrade(r);r.muzzleFlash.visible=false;}
+export function disposeRobot(r){if(r.disposed)return;r.disposed=true;if(r.wildId){disposeWildEnemy(r);return;}resetEnemyDeathBurst(r);r.mixer?.stopAllAction();r.mixer?.uncacheRoot(r.motion);r.skeleton?.dispose();disposeObjectResources(r.root);}
 
 export function swordFired(r,combo=1,duration=.5){r.swordAction=combo===2?'Sword_Attack_Reverse':'Sword_Attack';const old=r.lastSwordAction;if(old)r.actions[old].stop();oneShot(r,r.swordAction);r.actions[r.swordAction].setEffectiveTimeScale(r.actions[r.swordAction].getClip().duration/duration);r.lastSwordAction=r.swordAction;}
 

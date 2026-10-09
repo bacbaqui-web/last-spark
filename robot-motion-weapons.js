@@ -15,7 +15,7 @@ export function createArmedMotionSampler(robot){
   const bones=Object.fromEntries(robot.bones.map(b=>[b.name,b]));
   const view=createThirdPersonView(robot,Object.keys(MOTION_WEAPONS));
   const gameUpdate=view.motion.update.bind(view.motion);
-  let study=MOTION_STUDIES[0],frames=reference.frames,tracks=[],weapon='pistol',aim=false,sampleTime=0;
+  let study=MOTION_STUDIES[0],frames=reference.frames,tracks=[],weapon='pistol',aim=false,firing=false,sampleTime=0;
   const rawClips=new Map();
   for(const entry of MOTION_STUDIES){
     const clip=robot.actions[entry.clip].getClip();
@@ -29,6 +29,7 @@ export function createArmedMotionSampler(robot){
     const upperRotation=bones.spine_01.getWorldQuaternion(new THREE.Quaternion());
     // These clips already contain the corrected player bind translations.
     for(const {bone,property,interpolant}of tracks)bone[property].fromArray(interpolant.evaluate(sampleTime));
+    if(weapon==='bow'&&study.id==='walk')for(const {b,q}of rest)if(/^(thigh|calf|foot|ball)/.test(b.name))b.quaternion.slerp(q,.18);
     // Gait clips already include pelvis travel. Do not add the game's sprint bounce.
     robot.motion.position.y=0;
     robot.root.updateMatrixWorld(true);
@@ -45,13 +46,13 @@ export function createArmedMotionSampler(robot){
     view.pose({
       position:robot.root.position.clone().add(new THREE.Vector3(0,1.7,0)),yaw:Math.PI,pitch:0,
       weapon,speed,velocity:new THREE.Vector3(0,0,speed),grounded:true,time:sampleTime,dt:0,
-      adsBlend:aim?1:0,bowDrawing:weapon==='bow'&&aim,bowCharge:aim?2.2:0,knifeGuard:weapon==='knife'&&aim,
+      adsBlend:aim?1:0,firing:firing&&!['knife','bow','chainsaw'].includes(weapon),bowDrawing:weapon==='bow'&&aim,bowCharge:aim?2.2:0,knifeGuard:weapon==='knife'&&aim,
       motionStudy:study.id,
       motionPreview:{action:moving?'move':'idle',phase:(index-1)/frames},disableCustomMotion:true,
     });
     // The frame has articulated fingers; the source combat clips only key arms.
     // Close the grip without moving the wrist or the game's weapon attachment.
-    if(!view.models[weapon].userData.reclaimedWeapon)for(const [i,side]of ['l','r'].entries()){
+    if(!view.models[weapon].userData.reclaimedWeapon&&!view.models[weapon].userData.utilityWeapon)for(const [i,side]of ['l','r'].entries()){
       if(weapon==='knife'&&side==='l'&&!aim)continue;
       const hand=robot.arms[i].hand,axis=new THREE.Vector3(0,0,1).applyQuaternion(hand.getWorldQuaternion(new THREE.Quaternion()));
       const sign=side==='l'?-1:1,amount=weapon==='bow'&&side==='r'&&!aim?.4:1;
@@ -75,5 +76,5 @@ export function createArmedMotionSampler(robot){
   }
   function setWeapon(type){if(!MOTION_WEAPONS[type])throw Error('Unknown weapon: '+type);weapon=type;if(type==='rapid'&&study.id==='sprint')select('walk');}
   select('idle');
-  return {sample,select,setWeapon,setAim(value){aim=!!value;},view,get weapon(){return weapon;},get aim(){return aim;},get study(){return study;},get frames(){return frames;}};
+  return {sample,select,setWeapon,setAim(value){aim=!!value;},setFiring(value){firing=!!value;},view,get weapon(){return weapon;},get aim(){return aim;},get study(){return study;},get frames(){return frames;}};
 }

@@ -4,6 +4,7 @@ import {World,Body,Box,Plane,Vec3,Quaternion,Material,ContactMaterial,SAPBroadph
 export const WILD_DEBRIS_STEP=1/180;
 export const WILD_DEBRIS_GRAVITY=22;
 const stride=13;
+const savedRotation=new THREE.Quaternion(),savedArm=new THREE.Vector3(),savedPosition=new THREE.Vector3(),savedVelocity=new THREE.Vector3(),sampleVector=new THREE.Vector3(),sampleRotation=new THREE.Quaternion();
 // Welded armour shares one compound body. Limbs remain joined to that frame;
 // a severed limb retains its own elbow/wrist links and falls as a separate branch.
 export function createWildDebris(pieces,{floor,scale,links=[],blast=null,finalBurstAt=Infinity,collidePieces=true}){
@@ -104,10 +105,12 @@ function launchPose(p,age,target=p.mesh){
 function save(sim){
   const values=new Float32Array(sim.pieces.length*stride);
   sim.pieces.forEach((p,index)=>{
-    const b=p.physicsBody,offset=index*stride,rotation=new THREE.Quaternion().copy(b.quaternion),arm=(p.bodyOffset?.clone()||new THREE.Vector3()).applyQuaternion(rotation);
-    const position=new THREE.Vector3().copy(b.position).add(arm),velocity=new THREE.Vector3().copy(b.angularVelocity).cross(arm).add(b.velocity);
-    rotation.multiply(p.bodyQ||new THREE.Quaternion());
-    values.set([...position.toArray(),...rotation.toArray(),...velocity.toArray(),b.angularVelocity.x,b.angularVelocity.y,b.angularVelocity.z],offset);
+    const b=p.physicsBody,offset=index*stride;
+    savedRotation.copy(b.quaternion);savedArm.set(0,0,0);if(p.bodyOffset)savedArm.copy(p.bodyOffset);savedArm.applyQuaternion(savedRotation);
+    savedPosition.copy(b.position).add(savedArm);savedVelocity.copy(b.angularVelocity).cross(savedArm).add(b.velocity);
+    if(p.bodyQ)savedRotation.multiply(p.bodyQ);
+    savedPosition.toArray(values,offset);savedRotation.toArray(values,offset+3);savedVelocity.toArray(values,offset+7);
+    values[offset+10]=b.angularVelocity.x;values[offset+11]=b.angularVelocity.y;values[offset+12]=b.angularVelocity.z;
   });
   sim.frames.push(values);sim.times.push(sim.time);
 }
@@ -187,15 +190,14 @@ export function poseWildDebris(sim,time){
   while(low<high){const middle=Math.ceil((low+high)/2);if(sim.times[middle]<=time)low=middle;else high=middle-1;}
   const next=Math.min(low+1,sim.frames.length-1),a=sim.frames[low],b=sim.frames[next];
   const mix=low===next?0:(time-sim.times[low])/(sim.times[next]-sim.times[low]);
-  const q=new THREE.Quaternion();
   sim.pieces.forEach((p,index)=>{
     if(time<p.delay)return;
     if(time<p.activationTime){launchPose(p,time-p.delay);return;}
     const at=index*stride;
-    p.mesh.position.fromArray(a,at);p.mesh.position.lerp(new THREE.Vector3().fromArray(b,at),mix);
-    p.mesh.quaternion.fromArray(a,at+3).normalize().slerp(q.fromArray(b,at+3).normalize(),mix);
-    p.motionVelocity.fromArray(a,at+7).lerp(new THREE.Vector3().fromArray(b,at+7),mix);
-    p.motionAngular.fromArray(a,at+10).lerp(new THREE.Vector3().fromArray(b,at+10),mix);
+    p.mesh.position.fromArray(a,at).lerp(sampleVector.fromArray(b,at),mix);
+    p.mesh.quaternion.fromArray(a,at+3).normalize().slerp(sampleRotation.fromArray(b,at+3).normalize(),mix);
+    p.motionVelocity.fromArray(a,at+7).lerp(sampleVector.fromArray(b,at+7),mix);
+    p.motionAngular.fromArray(a,at+10).lerp(sampleVector.fromArray(b,at+10),mix);
   });
 }
 
@@ -210,5 +212,5 @@ export function disposeWildDebris(sim){
 export function sampleWildDebrisPosition(sim,index,time,target){
   const frame=Math.min(sim.frames.length-1,Math.max(0,Math.floor(time/WILD_DEBRIS_STEP)));
   const next=Math.min(frame+1,sim.frames.length-1),mix=THREE.MathUtils.clamp((time-sim.times[frame])/WILD_DEBRIS_STEP,0,1);
-  return target.fromArray(sim.frames[frame],index*stride).lerp(new THREE.Vector3().fromArray(sim.frames[next],index*stride),mix);
+  return target.fromArray(sim.frames[frame],index*stride).lerp(sampleVector.fromArray(sim.frames[next],index*stride),mix);
 }

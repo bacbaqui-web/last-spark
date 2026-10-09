@@ -72,6 +72,7 @@ function setAim(value){
   $('#aim').checked=value;samplers.forEach(s=>s.setAim(value));lastFrame=0;syncFrame();
 }
 $('#aim').addEventListener('change',e=>setAim(e.target.checked));
+$('#firing').addEventListener('change',e=>{samplers.forEach(s=>s.setFiring(e.target.checked));lastFrame=0;syncFrame();});
 controls.mouseButtons.RIGHT=null;
 let heldAim=false,previousAim=false;
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
@@ -117,7 +118,7 @@ function selectMotion(id){
   document.querySelector('[data-motion="sprint"]').disabled=walkingOnly;
   $('#motionSelect').querySelector('option[value="sprint"]').disabled=walkingOnly;
   samplers.forEach(s=>s.select(id));clock.reset(samplers[0].frames);lastFrame=0;
-  clock.rate=id==='sprint'?.9:1;$('#rate').value=String(clock.rate);
+  clock.rate=id==='sprint'?.9:$('#weapon').value==='bow'&&id==='walk'?.75:1;$('#rate').value=String(clock.rate);
   const motion=samplers[0].study;
   $('#motionSelect').value=id;
   $('#motionName').textContent=motion.name;$('#motionNote').textContent=walkingOnly?'미니건은 걷기만 가능합니다. 뒤쪽 손잡이와 위쪽 손잡이의 양손 파지를 살펴보세요.':motion.note;

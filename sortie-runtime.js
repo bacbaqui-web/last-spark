@@ -1,4 +1,6 @@
-export {navigationColliders} from './collision-broadphase.js';
+export {prepareCombatAssets} from './asset-loading.js';
+export {frameSteps,createPerformanceWindow,installQualityControls,installFPSMeter} from './runtime-performance.js';
+export {navigationColliders,enemyBlocked} from './collision-broadphase.js';
 export {assistedDirection} from './aim-assist.js';
 export {createBackEquipmentRuntime} from './back-equipment-runtime.js';
 export {createEquipmentModel} from './equipment-models.js';
@@ -12,8 +14,9 @@ import {createBaseUI} from './salvage-ui.js';
 export {createCampaign,PARTS,frameStats,makePart,makeWeapon,makeCoreWeapon,SALVAGE_DROPS,weaponPerk,lootWeapon,lootPart,tickBattery,spendBattery,createBaseUI};
 import {createRoadRoute,updateAwareness} from './road-route.js';
 export {updateAwareness};
-export function createSalvageWorld(scene,platforms,box,mats){
- if(typeof document!=='undefined')return new URLSearchParams(location.search).has('arena')?createAtomicCityWorld(scene,platforms,mats):createConnectedStreetWorld(scene,platforms,mats);
+export function createSalvageWorld(scene,platforms,box,mats,{legacyTestWorld=false}={}){
+ if(!legacyTestWorld&&typeof document!=='undefined')return new URLSearchParams(location.search).has('arena')?createAtomicCityWorld(scene,platforms,mats):createConnectedStreetWorld(scene,platforms,mats);
+ if(!legacyTestWorld)return createConnectedStreetWorld(scene,platforms,mats);
  const route=createRoadRoute();platforms.bounds=route.bounds;
  const asphalt=new THREE.MeshStandardMaterial({color:0x626967,roughness:1}),paint=new THREE.MeshStandardMaterial({color:0xd8cfaa}),green=new THREE.MeshStandardMaterial({color:0x55734a,roughness:1}),trunk=new THREE.MeshStandardMaterial({color:0x675542,roughness:1});
  const ground=new THREE.Group();ground.name='long-bent-avenue';scene.add(ground);
@@ -52,3 +55,20 @@ export function createSalvageWorld(scene,platforms,box,mats){
  const orb=new THREE.Mesh(new THREE.IcosahedronGeometry(.7,1),new THREE.MeshStandardMaterial({color:0xa882ff,emissive:0x693fd9,emissiveIntensity:1.2}));orb.position.y=1.7;orb.visible=false;target.add(orb);
  let unlocked=false;return {route,ground,extraction,target,get unlocked(){return unlocked;},reset(){unlocked=false;target.visible=true;orb.visible=false;lid.position.y=1.4;},unlock(){unlocked=true;orb.visible=true;},update(time){orb.rotation.y=time;orb.position.y=1.9+Math.sin(time*2)*.15;if(unlocked)lid.position.y=2.8;}};
 }
+
+export {roadEncounterPlan,budgetEnemy,updateDropVisibility} from './combat-budget.js';
+export {createEnemyVisibility,setEnemySleeping} from './enemy-visibility.js';
+export {createShadowBudget,createWeaponPass} from './runtime-performance.js';
+export {disposeObjectResources} from './runtime-resources.js';
+
+export {createCombatEffectPool} from './combat-effects.js';
+export {createDeathBudget} from './death-budget.js';
+export {createDropBudget} from './combat-budget.js';
+export {createCombatLightPool} from './combat-lights.js';
+
+export {gameMode,gameModeURL,trainingWaveSize} from './game-modes.js';
+export {createWeaponSlotHUD} from './weapon-slot-hud.js';
+
+export {withFrameWork,scheduleFrameWork} from './frame-work.js';
+export {flushEnemyPoses} from './wild-enemy-models.js';
+export {createEnemyRenderBatch} from './enemy-render-batch.js';

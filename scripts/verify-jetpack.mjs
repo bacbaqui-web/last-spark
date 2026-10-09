@@ -15,7 +15,7 @@ view.jetpack.update({jetJump:.2,weapon:'pistol'});const upAxis=new THREE.Vector3
 settle({boostPhase:-1,jetJump:0,speed:0});assert(Math.abs(avatar.motion.rotation.z)<.001,'lean resets after boost');
 console.log('PASS: fixed boost feet, directional torso lean, first/second jump separation, directional exhaust, recovery');
 assert(!avatar.backpack.visible,'original player backpack removed');
-assert.equal(view.jetpack.root.scale.x,.52,'compact jetpack scale');
+const packSize=new THREE.Box3().setFromObject(view.jetpack.root).getSize(new THREE.Vector3());assert(packSize.x<.8&&packSize.y<.8,'compact pack fits the two metre frame');assert.deepEqual(view.jetpack.root.scale.toArray(),[.624,.624,.624],'authored pack scale stays uniform');
 for(const weapon of ['rapid','flame','pistol']){
  settle({weapon,boostPhase:-1,jetJump:0,speed:0});
  assert.equal(view.jetpack.root.userData.variant,weapon==='pistol'?'standard':weapon,'jetpack changes variant with weapon');

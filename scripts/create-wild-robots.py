@@ -463,10 +463,13 @@ def mantis():
 
         hand=part('Blade_hand_'+str(s),wrist)
         hand['joint_role']='blade_hand'
-        hand['blade_tip_local']=[s*-.12,-1.03,.04]
+        hand['blade_tip_local']=[s*.04,.12*math.cos(.18)-1.03*math.sin(.18),.12*math.sin(.18)+1.03*math.cos(.18)]
+        hand['blade_edge_local']=[0,-math.cos(.18),-math.sin(.18)]
         joint('Independent_wrist_hinge',wrist,.15,'x')
         box('Blade_palm',vec(wrist)+vec((0,-.07,.01)),(.22,.21,.19),'dark',.03)
-        # A vertical blade hangs below the wrist in the rest pose. Its hinge axle
+        blade_start=len(ASSET_OBJECTS)
+        # Build the existing blade profile, then orient its spine up and edge down.
+        # Its hinge axle
         # runs left-right so the cutting stroke travels down a vertical plane.
         outline=[(-.07,.025),(.12,.015),(.25,-.19),(.27,-.48),(.13,-.81),(-.12,-1.03),(-.065,-.73),(.045,-.37)]
         outline=[(s*x,y) for x,y in outline]
@@ -475,6 +478,15 @@ def mantis():
         plate('Vertical_sharpened_edge',[(s*x,y) for x,y in edge],.046,vec(wrist)+vec((0,0,.12)),'steel',.006)
         moss('Blade_spine_growth',vec(wrist)+vec((s*.07,.06,.035)),.13,.10,10)
         for offset in (-.18,-.39):bolt('Blade_mount_bolt',vec(wrist)+vec((s*.11,offset,.115)),.026)
+
+        # Turn the broad face into the forward/up plane on BOTH arms. Keep the
+        # wrist hinge and palm unchanged; rotate only the blade and its fittings.
+        c=math.cos(.18);sn=math.sin(.18)
+        game_turn=Matrix(((0,0,s,0),(-s*c,sn,0,0),(-s*sn,-c,0,0),(0,0,0,1)))
+        basis=Matrix(((1,0,0,0),(0,0,-1,0),(0,1,0,0),(0,0,0,1)))
+        pivot=cv(wrist);turn=Matrix.Translation(pivot)@basis@game_turn@basis.inverted()@Matrix.Translation(-pivot)
+        bpy.context.view_layer.update()
+        for obj in ASSET_OBJECTS[blade_start:]:obj.matrix_world=turn@obj.matrix_world
 
         # Preserve the three rigid joints in the editable Blender and GLB assets.
         bpy.context.view_layer.update()
@@ -560,7 +572,82 @@ def spider():
     rifle((0,1.57,.03),1.20,True)
     cable('Rifle_control_hose',[(.16,1.49,-.10),(.29,1.37,-.30),(.24,1.13,-.31)],.022)
 
+def wasp():
+    global PART
+    begin('rust-wasp-drone')
+    thorax=part('Thorax',(0,1.48,0))
+    ellipsoid('Thorax_engine',(0,1.48,0),(.38,.40,.47),'dark',24,12)
+    for x in (-.18,.18):
+        ellipsoid('Split_thorax_armor',(x,1.57,-.045),(.22,.35,.43),'paint',20,12)
+    box('Dorsal_spine',(0,1.83,-.10),(.095,.10,.51),'dark')
+    moss('Dorsal_moss',(0,1.93,-.12),.29,.29,24)
+    for s in (-1,1):
+        PART=thorax
+        joint('Thorax_drive',(s*.38,1.51,-.08),.17,'x')
+        ring('Side_drive_trim',(s*.405,1.51,-.08),.14,.105,.04,'steel','x')
+        cable('Power_line',[(s*.26,1.68,-.25),(s*.35,1.40,-.43),(s*.22,1.12,-.46)],.028)
+        part('Rotor_mount_'+str(s),(s*.32,1.73,-.10))
+        link('Lift_arm',(s*.32,1.73,-.10),(s*.79,1.94,-.12),.12,.14,'dark')
+        link('Lift_arm_armor',(s*.49,1.81,-.10),(s*1.07,2.02,-.12),.11,.13,'paint')
+        joint('Tilt_motor',(s*.80,1.96,-.12),.105,'z')
+        center=(s*1.23,2.04,-.12)
+        ring('Rotor_protective_ring',center,.70,.653,.105,'paint','y',48)
+        ring('Rotor_lower_lip',(s*1.23,2.00,-.12),.701,.675,.025,'dark','y',48)
+        for i in range(4):
+            angle=i*math.tau/4
+            tip=(center[0]+math.cos(angle)*.67,1.99,center[2]+math.sin(angle)*.67)
+            rod('Guard_spoke',(center[0],1.95,center[2]),tip,.018,'steel',n=8)
+        rod('Lift_motor',(center[0],1.88,center[2]),(center[0],2.10,center[2]),.105,'dark',n=20)
+        ring('Motor_collar',(center[0],1.97,center[2]),.12,.095,.055,'steel','y')
+        part('Rotor_'+str(s),center)
+        ellipsoid('Rotor_hub',(center[0],2.075,center[2]),(.115,.065,.115),'steel',16,8)
+        for i in range(3):
+            angle=i*math.tau/3
+            outline=[(.10,-.04),(.51,-.105),(.625,-.065),(.61,.035),(.25,.075)]
+            vs=[]
+            for dy in (-.012,.012):
+                for rad,tan in outline:
+                    vs.append((center[0]+math.cos(angle)*rad-math.sin(angle)*tan,2.065+dy+.045*rad,center[2]+math.sin(angle)*rad+math.cos(angle)*tan))
+            mesh('Propeller_blade',vs,[(4,3,2,1,0),(5,6,7,8,9)]+[(j,(j+1)%5,(j+1)%5+5,j+5) for j in range(5)],'dark',.008)
+    part('Head',(0,1.48,.39))
+    ellipsoid('Head_skull',(0,1.50,.48),(.255,.29,.28),'dark',24,12)
+    for s in (-1,1):
+        ellipsoid('Cheek_armor',(s*.16,1.50,.52),(.105,.255,.25),'paint',16,10)
+        cable('Antenna',[(s*.14,1.70,.49),(s*.21,1.94,.56),(s*.25,2.06,.68)],.018,'steel')
+        rod('Mandible',(s*.12,1.30,.66),(s*.065,1.18,.75),.035,'dark',r2=.009)
+    eye((0,1.52,.755),.133)
+    moss('Head_moss',(0,1.795,.43),.17,.12,9)
+    part('Abdomen',(0,1.21,-.34))
+    cable('Curled_waist',[(0,1.32,-.35),(0,1.07,-.53),(0,.78,-.41),(0,.71,-.17)],.12,'dark')
+    for i in range(4):
+        ring('Waist_collar',(0,1.11-i*.08,-.47),.15,.12,.047,'steel','y')
+    ellipsoid('Abdomen_underframe',(0,.70,.16),(.34,.30,.59),'dark',24,12)
+    for i in range(5):
+        z=-.28+i*.195
+        radius=[.27,.33,.355,.33,.265][i]
+        # Separate armored overlapping barrel segments preserve the curled wasp mass.
+        ring('Abdomen_armor_band',(0,.70,z),radius,radius-.04,.15,'paint','z',24)
+        ring('Abdomen_dark_joint',(0,.70,z+.087),radius*.97,radius*.87,.035,'dark','z',24)
+        for s in (-1,1):bolt('Band_fastener',(s*radius*.67,.70+radius*.68,z+.080),.019)
+    moss('Abdomen_growth',(0,1.04,.08),.22,.26,18)
+    part('Stinger_gun',(0,.70,.58))
+    part_gun=PART;part_gun['muzzle_local']=[0,0,.61]
+    rod('Stinger_receiver',(0,.70,.52),(0,.70,.77),.19,'dark',r2=.14,n=20)
+    ring('Receiver_trim',(0,.70,.75),.155,.105,.04,'steel')
+    rod('Gun_barrel',(0,.70,.74),(0,.70,1.16),.077,'dark',n=16)
+    for z in (.84,.98,1.13):ring('Barrel_collar',(0,.70,z),.091,.070,.038,'steel')
+    ring('Muzzle_bore',(0,.70,1.19),.085,.053,.08,'steel')
+    for s in (-1,1):
+        for i in range(3):
+            z=.28-i*.29
+            a=(s*.30,1.42,z);b=(s*(.56+.07*i),1.15,z+.10);c=(s*(.61+.06*i),.89,z+.28);d=(s*(.52+.07*i),.70,z+.36)
+            part('Wasp_leg_'+str(s)+'_'+str(i),a)
+            for j,(p,q) in enumerate(zip([a,b,c],[b,c,d])):
+                joint('Leg_joint',p,.055,'x');link('Folded_leg',p,q,.073 if j<2 else .037,.06,'paint' if j<2 else 'dark')
+
+
 CONCEPTS = [
+    ('rust-wasp-drone','녹슨 말벌 드론',wasp,'/models/wild-robots-v1/rust-wasp-concept.png','쌍발 프로펠라 공중형'),
     ('rust-scout','녹슨 척후병',scout,'01-rust-scout-v2.png','기본 전투·정찰형'),
     ('forest-warden','숲의 파수꾼',warden,'10-forest-warden-v2.png','중장갑 정예형'),
     ('iron-beetle','철갑 딱정벌레',beetle,'03-iron-beetle-v2.png','지상 돌진형'),

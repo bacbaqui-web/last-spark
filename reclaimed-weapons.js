@@ -94,11 +94,20 @@ export function createReclaimedWeapon(requested){
   for(let i=0;i<6;i++){const a=i*Math.PI/3,x=Math.cos(a)*.056,y=Math.sin(a)*.056;tube(.015,.383,[x,y,-.187],steel,rotor);bore(.011,-.382,y,rotor,x);}
   for(const z of[-.032,-.245,-.347])ring(.072,.014,z,0,dark,rotor);
   tube(.088,.149,[.152,-.021,.069],coat);tube(.091,.020,[.152,-.021,.151],dark);tube(.036,.024,[.152,-.021,.167],steel);
-  grip(.219,.170);box([.064,.055,.081],[0,.102,.216],dark);
+  const rearStart=root.children.length;
+  grip(.13,.170);
+  // Pivot at the receiver mount, so counter-rotation cannot detach the grip base.
+  const rearPivot=new T.Vector3(0,.10,.13),rearTurn=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,0,1),-Math.PI/4);
+  for(const part of root.children.slice(rearStart)){
+   part.position.sub(rearPivot).applyQuaternion(rearTurn).add(rearPivot);
+   part.quaternion.premultiply(rearTurn);
+  }
+  root.userData.triggerGripRoll=-Math.PI/4;
+  box([.09,.035,.095],[0,.094,.13],dark);
   for(const x of[-.078,.078])box([.023,.107,.025],[x,.132,-.10],dark);
   shell(.186,.03,.047,[0,.188,-.10],rubber);
   box([.035,.066,.08],[.152,-.021,.186],dark);root.userData.beltFeed=[.152,-.021,.229];
-  root.userData.rotor=rotor;root.userData.triggerGrip=[0,.170,.219];root.userData.supportGrip=[-.065,.186,-.10];root.userData.muzzle=[0,0,-.507];
+  root.userData.rotor=rotor;root.userData.triggerGrip=new T.Vector3(0,.170,.13).sub(rearPivot).applyQuaternion(rearTurn).add(rearPivot).toArray();root.userData.supportGrip=[0,.188,-.10];root.userData.muzzle=[0,0,-.507];
  }
  if(type==='flame'){
   profile([[-.133,-.018],[-.135,.043],[-.099,.073],[.110,.060],[.160,.010],[.13,-.059],[-.069,-.050]],.111,panel);grip(.137,-.098);foregrip(-.174);
@@ -140,13 +149,21 @@ export function createReclaimedWeapon(requested){
  }
  if(type==='rocket'){
   // Shoulder tube with protective end bumpers and an inboard optical unit.
+  const tubeStart=root.children.length;
   tube(.090,.86,[0,.03,.015],coat);
   for(const z of[-.443,.473]){tube(.118,.066,[0,.03,z],rubber);ring(.102,.009,z+(z<0?-.034:.034),.03,steel);}
   bore(.087,-.482,.03);ring(.085,.008,.511,.03,dark);
   for(const z of[-.31,.30])tube(.092,.025,[0,.03,z],trim);
-  shell(.146,.036,.20,[0,-.085,.18],rubber);
+  const tubePivot=new T.Vector3(0,.03,.015);
+  for(const part of root.children.slice(tubeStart)){
+   part.position.sub(tubePivot).multiplyScalar(1.5).add(tubePivot);
+   part.scale.multiplyScalar(1.5);
+  }
+  shell(.18,.04,.23,[0,-.13,.18],rubber);
+  // Solid saddles join both handles and the forward optical unit to the tube.
+  box([.085,.045,.12],[0,-.10,-.115],dark);
   grip(-.115,-.154);
-  const sight=new T.Group();root.add(sight);
+  const sight=new T.Group();sight.position.set(-.055,0,-.10);root.add(sight);
   shell(.16,.16,.225,[-.163,.058,-.087],dark,sight);
   shell(.182,.027,.25,[-.163,.149,-.087],rubber,sight);
   for(const x of[-.255,-.071])shell(.022,.15,.17,[x,.051,-.10],rubber,sight);
@@ -156,11 +173,12 @@ export function createReclaimedWeapon(requested){
   }
   tube(.029,.057,[-.17,.105,.05],rubber,sight);
   add(new T.CircleGeometry(.023,12),optic,[-.17,.105,.08],sight);
-  shell(.055,.119,.052,[-.23,-.137,-.14],rubber);
-  box([.05,.035,.13],[-.23,-.068,-.11],dark);
-  root.userData.sightAssembly=sight;root.userData.supportGrip=[-.23,-.137,-.14];
-  root.userData.shoulderMount=[0,-.105,.18];root.userData.scopeEye=[-.17,.105,.081];
-  root.userData.sightCenter=[-.17,.105,.081];root.userData.muzzle=[0,.03,-.488];
+  shell(.055,.119,.052,[-.285,-.137,-.24],rubber);
+  box([.065,.065,.13],[-.285,-.058,-.21],dark);
+  box([.12,.055,.14],[-.13,.035,-.19],dark);
+  root.userData.sightAssembly=sight;root.userData.supportGrip=[-.285,-.137,-.24];
+  root.userData.shoulderMount=[0,-.15,.18];root.userData.scopeEye=[-.225,.105,-.019];root.userData.eyeRelief=.10;
+  root.userData.sightCenter=[-.225,.105,-.019];root.userData.muzzle=[0,.03,-.7395];
  }
 
  // Collapse static primitives by material. Keep rotor, charge cells, sight and
@@ -191,5 +209,5 @@ export function createMinigunAmmoPack(){
  box([.30,.215,.15],[0,0,0],mat);box([.32,.032,.165],[0,.112,0],edge);
  for(const x of[-.105,.105]){box([.025,.23,.012],[x,0,-.082],edge);box([.03,.09,.03],[x,.15,.06],edge);}
  box([.072,.036,.015],[0,.06,-.084],salvageChrome);box([.065,.085,.07],[-.174,-.033,0],edge);
- group.position.set(0,-.20,-.235);group.visible=false;return group;
+ group.scale.setScalar(1.2);group.position.set(0,-.295,-.256);group.visible=false;return group;
 }

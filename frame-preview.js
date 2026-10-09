@@ -31,10 +31,10 @@ export function applyFrameVisual(robot,stats){
  }
 }
 export function framePreview(stats){
- const key=JSON.stringify([stats.visualParts||[],stats.visualEquipment||[]]) + [stats.armor,stats.jet,stats.battery,stats.speed,stats.damage].join(':');if(cache.has(key))return cache.get(key);
+ const key=JSON.stringify([stats.visualParts||[],stats.visualEquipment||[]]) + [stats.armor,stats.jet,stats.battery,stats.speed,stats.damage].join(':');if(cache.has(key)){const image=cache.get(key);cache.delete(key);cache.set(key,image);while(cache.size>24)cache.delete(cache.keys().next().value);return image;}
  renderer ||=new THREE.WebGLRenderer({alpha:true,antialias:true,preserveDrawingBuffer:true});renderer.setSize(320,250);renderer.setPixelRatio(1);
  const scene=new THREE.Scene(),robot=createRobot(false,'player',.82);scene.add(robot.root);animateRobot(robot,.1,{speed:0});robot.blaster.visible=false;if(robot.backpack)robot.backpack.visible=false;applyFrameVisual(robot,stats);
  scene.add(new THREE.HemisphereLight(0xddeeff,0x435142,4));const light=new THREE.DirectionalLight(0xffffff,5);light.position.set(2,4,3);scene.add(light);
  const camera=new THREE.PerspectiveCamera(31,320/250,.01,30);camera.position.set(2.6,1.7,3.6);camera.lookAt(0,1,0);renderer.render(scene,camera);
- const image=renderer.domElement.toDataURL('image/png');scene.remove(robot.root);clearModules(robot);disposeRobot(robot);cache.set(key,image);return image;
+ const image=renderer.domElement.toDataURL('image/png');scene.remove(robot.root);clearModules(robot);disposeRobot(robot);cache.set(key,image);while(cache.size>24)cache.delete(cache.keys().next().value);return image;
 }

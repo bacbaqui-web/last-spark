@@ -21,6 +21,19 @@ function materialFor(map){
 }
 export function batchWildSurfaces(scene){
  if(scene.userData.wildBatched)return scene;
+ // Capture the optical center before rigid-part batching removes individual lenses.
+ scene.updateMatrixWorld(true);
+ scene.traverse(mesh=>{
+  if(!mesh.isMesh)return;
+  if([].concat(mesh.material).some(material=>material.name.endsWith('_iris'))){
+   const center=new THREE.Box3().setFromObject(mesh).getCenter(new THREE.Vector3());
+   scene.userData.wildEye=scene.worldToLocal(center).toArray();
+  }
+  for(const material of [].concat(mesh.material))if(/_(eye|iris)$/.test(material.name)){
+   material.color.setHex(0xb90812);material.emissive.setHex(0xff0818);
+   material.emissiveIntensity=material.name.endsWith('_iris')?4:1.8;
+  }
+ });
  let atlas;const assemblies=[];
  scene.traverse(o=>{if(o.isMesh&&o.material.map)atlas=o.material.map;if(o.isGroup&&o.name.endsWith('_Mesh'))assemblies.push(o);});
  if(!atlas)return scene; // Geometry-only Node validation has no browser textures.

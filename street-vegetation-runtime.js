@@ -1,6 +1,6 @@
 import * as T from 'three';
-const sparseCache=new Map();
-function sparseLeaves(source){if(sparseCache.has(source.uuid))return sparseCache.get(source.uuid);const g=new T.BufferGeometry();for(const [name,attribute] of Object.entries(source.attributes)){const values=[];for(let i=0;i<attribute.count;i+=12)for(let j=0;j<6&&i+j<attribute.count;j++)for(let k=0;k<attribute.itemSize;k++)values.push(attribute.array[(i+j)*attribute.itemSize+k]);g.setAttribute(name,new T.Float32BufferAttribute(values,attribute.itemSize));}g.computeBoundingSphere();g.boundingSphere.radius+=.25;sparseCache.set(source.uuid,g);return g;}
+const sparseCache=new WeakMap();
+function sparseLeaves(source){if(sparseCache.has(source))return sparseCache.get(source);const g=new T.BufferGeometry();for(const [name,attribute] of Object.entries(source.attributes)){const values=[];for(let i=0;i<attribute.count;i+=12)for(let j=0;j<6&&i+j<attribute.count;j++)for(let k=0;k<attribute.itemSize;k++)values.push(attribute.array[(i+j)*attribute.itemSize+k]);g.setAttribute(name,new T.Float32BufferAttribute(values,attribute.itemSize));}g.computeBoundingSphere();g.boundingSphere.radius+=.25;sparseCache.set(source,g);source.addEventListener('dispose',()=>g.dispose());return g;}
 export const windTime={value:0};
 export function windMaterial(material,kind){
  if(material.userData.streetWind)return;material.userData.streetWind=true;

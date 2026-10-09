@@ -1,3 +1,4 @@
+import {ConvexHull} from 'three/addons/math/ConvexHull.js';
 import * as THREE from 'three';
 
 const scratch=new THREE.Vector3();
@@ -69,6 +70,14 @@ function simulate(recoil,hit,floor){
   }
 }
 
+const supportHulls=new WeakMap();
+function geometrySupport(geometry){
+ let points=supportHulls.get(geometry);if(points)return points;
+ const vertices=Array.from({length:geometry.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(geometry.attributes.position,i));
+ const hull=new ConvexHull().setFromPoints(vertices),unique=new Set();for(const face of hull.faces){let edge=face.edge;do{unique.add(edge.head().point);edge=edge.next;}while(edge!==face.edge);}
+ points=unique.size?[...unique]:vertices;supportHulls.set(geometry,points);return points;
+}
+
 export function createWildRecoil(r,hit,inverse,scale){
   const parts=r.hitMeshes.map(mesh=>{
     let joint=mesh.parent;if(joint.name.endsWith('_Mesh'))joint=joint.parent;
@@ -77,6 +86,7 @@ export function createWildRecoil(r,hit,inverse,scale){
     const mass=THREE.MathUtils.clamp(.35+size.x*size.y*size.z/(scale**3)*2,.4,5),corners=[];
     for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(new THREE.Vector3(x,y,z).applyMatrix4(matrix).sub(partCenter));
     return {mesh,joint,matrix,center:partCenter,position:partCenter.clone(),previous:partCenter.clone(),previousRotation:new THREE.Quaternion(),velocity:new THREE.Vector3(),angular:new THREE.Vector3(),
+      supportVertices:geometrySupport(mesh.geometry).map(point=>point.clone().applyMatrix4(matrix).sub(partCenter)),
       mass,invMass:1/mass,invInertia:3/(mass*(size.lengthSq()+.12*scale*scale)),corners,
       neighbours:[],leader:null,depth:-1,offset:new THREE.Vector3(),rotation:new THREE.Quaternion(),pieces:[]};
   });
@@ -144,7 +154,7 @@ export function poseWildRecoil(recoil,time){
   if(recoil.failure==='head'){
     recoil.sampleHeadDeath(Math.max(0,time),recoil.parts,recoil.inverse);
     let bottom=Infinity;
-    for(const part of recoil.parts)for(const corner of part.corners){
+    for(const part of recoil.parts)for(const corner of part.supportVertices){
       scratch.copy(corner).applyQuaternion(part.rotation).add(part.center).add(part.offset);
       bottom=Math.min(bottom,scratch.y);
     }

@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {createCampaign,frameStats} from '../salvage-campaign.js';
+let saved=null;const storage={getItem:()=>saved,setItem:(_,value)=>saved=value};
+let c=createCampaign(storage),f=c.frame();c.state.materials=30;f.hp=70;f.battery=23;c.state.ammo.rifle=0;c.save();
+assert.equal(c.supplyQuote('hp').amount,5);assert.equal(c.supplyQuote('battery',null,0,true).cost,4);
+assert.ok(c.resupply('hp'));assert.equal(f.hp,75);assert.ok(c.resupply('battery'));assert.equal(f.battery,43);
+assert.ok(c.resupply('ammo','rifle',120));assert.equal(c.state.ammo.rifle,24);
+assert.ok(c.resupply('ammo','rifle',120,true));assert.equal(c.state.ammo.rifle,120);
+assert.ok(c.resupply('battery',null,0,true));assert.equal(f.battery,100);
+const materials=c.state.materials;assert.equal(c.resupply('battery'),false);assert.equal(c.state.materials,materials);
+f.battery=31;c.save();c=createCampaign(storage);assert.equal(c.frame().battery,31);
+const run=c.launch(['rifle'],{rifle:120});assert.equal(run.battery,31);assert.equal(c.resupply('hp'),false);run.battery=11;run.ammo.rifle=17;c.finish(run,true,60,'return');assert.equal(c.frame().battery,11);assert.equal(c.state.ammo.rifle,17);
+c.state.materials=0;assert.equal(c.resupply('battery'),false);assert.equal(c.frame().battery,11);assert.equal(c.resupply('ammo','pistol',100),false);
+c.state.materials=20;c.frame().parts.push({id:'capacity',type:'reactor',level:1});const stats=frameStats(c.frame());assert.equal(stats.battery,135);assert.ok(c.resupply('battery',null,0,true));assert.equal(c.frame().battery,135);
+console.log('PASS material costs, partial/full refill, caps, no-op and insufficient stock, battery persistence/return/relaunch, deployed lock and equipment capacity');

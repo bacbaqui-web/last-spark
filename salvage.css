@@ -80,3 +80,74 @@
 
 .missionField{display:grid;gap:10px;margin:22px 0;color:#c6d7c8}.missionField select,.missionField input{font:inherit;padding:14px;background:#16221c;color:#e7f0dc;border:1px solid #526348;border-radius:8px;width:100%;box-sizing:border-box}.missionField input{max-width:180px}
 #sortieBriefing{overflow:auto;display:block;padding:30px 4vw;background:rgba(6,15,18,.96)}#sortieBriefing[hidden]{display:none}.operationBrief{width:min(1120px,100%);margin:auto;padding:30px}.operationColumns{display:grid;grid-template-columns:1fr 1fr;gap:30px}.operationStory p{line-height:1.8;color:#b8c9c4}.operationStory h2{font-size:18px}.operationRule{padding:14px;border-left:3px solid #bad784;background:#233531}#operationMap{min-height:260px;background:#101e22;border:1px solid #405351;display:grid;place-items:center}#operationMap svg{width:100%;height:320px}.mapLegend{font-size:12px;color:#b8c9c4}.operationLoadout{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.operationLoadout article{background:#20332e;border:1px solid #3a5147;padding:14px}.operationLoadout p{font-size:12px;line-height:1.7;color:#b6c9bf}.operationBrief .briefButtons{margin-top:26px;display:flex;justify-content:space-between}.operationBrief #deploySortie{padding:16px 60px;background:#c4df91;color:#15231b;font-size:18px}.operationBrief button:disabled{opacity:.45}@media(max-width:750px){.operationColumns{grid-template-columns:1fr}.operationBrief{padding:18px}}
+
+.storageWarning{position:fixed;left:20px;right:20px;top:80px;z-index:1000;padding:16px;background:#412618;color:#fff2d8;border:1px solid #e5a35a;display:flex;gap:12px;align-items:center}.storageWarning span{flex:1}.storageWarning button{padding:8px 12px}
+
+.qualitySetting{position:fixed;right:12px;bottom:24px;z-index:80;color:#d9e4dd;font:12px sans-serif;background:#18231bd9;padding:6px 9px;border-radius:5px}.qualitySetting select{background:#28372c;color:inherit;border:0;padding:3px}
+
+.bootStatus{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:20px;background:#111a16;color:#dceadf;font:16px sans-serif}
+/* Operation selection: field recovery and a separate network simulation. */
+#sortieBriefing .modeBrief{padding:28px 32px;box-sizing:border-box}
+.operationHeading h1{font-size:32px;margin:8px 0}
+.operationHeading>small,.operationStory>small,.trainingStory>small{font-size:10px;letter-spacing:.16em;color:#9cb8bf}
+.operationHeading p{font-size:14px;color:#a8bec5;margin:0 0 24px}
+.operationModes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
+#sortieBriefing .operationMode{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:18px 20px;background:#14232b;border:1px solid #39515b;border-radius:7px;color:#d8e6e9;text-align:left;cursor:pointer;width:100%;min-width:0;white-space:normal}
+.operationMode small{font-size:10px;letter-spacing:.11em;color:#91aab3}
+.operationMode b{font-size:21px;line-height:1.4}
+.operationMode span{font-size:12px;color:#a3b9c1}
+.operationMode em{font-size:13px;font-style:normal;font-weight:700;color:#c4df91;margin-top:auto;padding-top:12px}
+.trainingModeCard em{color:#96dce8}
+#sortieBriefing .operationMode[aria-pressed=true]{border-color:#b5dc8f;background:#23382e;box-shadow:inset 0 3px #b5dc8f}
+#sortieBriefing .trainingModeCard[aria-pressed=true]{border-color:#7fd7e6;background:#17333e;box-shadow:inset 0 3px #7fd7e6}
+#sortieBriefing button:focus-visible,.trainingExit:focus-visible{outline:2px solid #eef9fa;outline-offset:4px}
+.modeBrief [hidden]{display:none!important}
+.recoveryLayout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(240px,1fr);gap:28px}
+.recoveryMapColumn,.recoveryDetails{min-width:0}
+.modeBrief .missionField{display:flex;align-items:center;gap:12px;margin:0 0 14px;font-size:12px;color:#a8bec5}
+.modeBrief #missionStage{flex:1;margin:0;max-width:260px}
+.modeBrief #operationMap{min-height:250px;display:grid;place-items:center;background:#0c1820;border:1px solid #2a4651;border-radius:6px;overflow:hidden}
+.modeBrief #operationMap svg{width:100%;height:290px}
+.modeBrief .mapLegend{font-size:10px;line-height:1.6;color:#a5b8b9;margin:8px 0 18px}
+.modeBrief .operationStory{background:none;border:0;padding:0}
+.modeBrief .operationStory h2{font-size:18px;margin:8px 0 10px}
+.modeBrief .operationStory p{font-size:13px;line-height:1.8;color:#b4c8ce;margin:8px 0}
+.recoveryDetails h2{font-size:18px;margin:0 0 8px}
+.recoveryDetails>p{font-size:12px;line-height:1.7;color:#a5bdc4;margin:0 0 16px}
+.missionRewards{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.missionRewards li{display:grid;gap:5px;padding:12px 15px;border-left:2px solid #7a9d69;background:#1b2c31}
+.missionRewards span{font-size:10px;color:#b8d8a3}
+.missionRewards b{font-size:14px;color:#e0ebe4}
+.missionRewards small{font-size:11px;line-height:1.5;color:#a7bdc3}
+.modeBrief #missionSummary{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0}
+.modeBrief #missionSummary span{font-size:11px;padding:6px 9px;background:#1b2c34;color:#a9c3ca}
+.recoveryDetails .operationRisk{padding:12px;border:1px solid #705b42;border-radius:4px;color:#d7bea1;font-size:12px}
+.operationFrame{margin-top:20px;padding:14px 0;border-block:1px solid #344b54}
+.operationFrame summary{cursor:pointer;font-size:13px;color:#bbd0d6}
+.operationFrame>h2{font-size:17px;margin-top:18px}
+.operationFrame>p{font-size:12px;color:#adc2c8}
+.operationRequirement{font-size:13px;color:#e4bd8e}
+.operationRequirement:empty{display:none}
+.modeBrief .briefButtons{margin-top:20px;display:flex;justify-content:space-between;gap:12px}
+.modeBrief .briefButtons button{font-size:14px;padding:13px 22px;white-space:normal;width:auto;min-width:0;max-width:calc(50% - 6px)}
+#sortieBriefing #deploySortie{padding:13px 22px;font-size:14px}
+.trainingLayout{display:grid;grid-template-columns:1fr 1.3fr;gap:30px;align-items:center;min-height:340px}
+.trainingDiagram{background:radial-gradient(ellipse,#143443,#0d1d29);border:1px solid #2b5260;border-radius:6px;padding:18px 10px}
+.trainingDiagram svg{display:block;width:100%;max-height:300px}
+.trainingDiagram>p{text-align:center;font-size:11px;color:#89b9c6;margin:10px 0}
+.trainingStory h2{font-size:26px;line-height:1.45;margin:10px 0 16px;color:#e0f1f6}
+.trainingStory>p{font-size:13px;line-height:1.8;color:#b7cdd4}
+.trainingStory ul{list-style:none;padding:0;display:grid;gap:15px;margin:22px 0}
+.trainingStory li{display:grid;gap:5px;padding-left:14px;border-left:2px solid #63bdd0}
+.trainingStory li b{font-size:14px;color:#9eddeb}
+.trainingStory li span{font-size:12px;line-height:1.7;color:#b0c8d0}
+.trainingStory .trainingNote{font-size:11px;color:#8faeb9;padding-top:12px;border-top:1px solid #2c4854}
+#sortieBriefing #connectTraining{background:#96dce8;color:#122e39;border:1px solid #a2e0eb}
+.trainingExit{display:block;width:fit-content;margin:18px auto 0;padding:10px;color:#a5deed;font-size:13px;text-decoration:none;border-bottom:1px solid #467d8d}
+.trainingMode #loadoutPicker>p{max-width:800px;line-height:1.8}
+.trainingMode #gameOverTitle{font-size:40px}
+@media(max-width:750px){#sortieBriefing .modeBrief{padding:20px}.operationModes{gap:8px}.operationMode b{font-size:17px}.operationMode span{font-size:11px}#sortieBriefing .operationMode{padding:14px}.recoveryLayout,.trainingLayout{grid-template-columns:1fr;gap:22px}.trainingDiagram svg{max-height:225px}.recoveryDetails{border-top:1px solid #344b54;padding-top:20px}.missionRewards{grid-template-columns:1fr 1fr}.modeBrief .briefButtons button{padding:12px 16px}.trainingStory h2{font-size:24px}}
+@media(max-width:450px){#sortieBriefing{padding:12px}.operationHeading h1{font-size:27px}.operationMode b{font-size:15px}.operationMode small{font-size:8px}.operationModes{margin-bottom:20px}.modeBrief #operationMap svg{height:235px}.modeBrief .briefButtons button{font-size:12px;padding:12px}.missionRewards li{padding:10px}.missionRewards b{font-size:12px}.missionRewards small{font-size:10px}.trainingDiagram{padding:8px}.operationHeading p{font-size:12px}}
+
+.trainingMode #combatRing .ringAmmo{display:none}.trainingMode #combatRing .ringBattery{display:block}
+.supplyRows{display:grid;gap:14px}.supplyRows article{padding:20px;border:1px solid #4a6155;background:#20312b;border-radius:8px}.supplyRows h3{margin:0 0 8px}.supplyRows strong{color:#d4e8aa}.supplyRows article>div{display:flex;gap:10px;margin-top:14px}.supplyRows button{padding:12px 16px}.supplyRows button:disabled{opacity:.4}#openSupplies{background:#344b40;color:#d2e8b8}

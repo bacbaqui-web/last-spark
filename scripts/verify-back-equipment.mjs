@@ -10,3 +10,15 @@ const scene=new THREE.Scene(),avatar={root:new THREE.Group()},enemy={hp:100,grou
 const runFor=type=>({stats:frameStats({parts:[],equipment:{back:makeEquipment(type,type,()=>.5)}}),battery:100,energyUsed:0});let run=runFor('shieldPack');support.reset(run);assert.equal(support.absorb(20),0);assert.equal(run.shieldHP,20);assert.equal(support.absorb(30),10);support.update(4,{position:new THREE.Vector3(0,1.7,0),avatar,enemies:[],time:4});assert(run.shieldHP>0);support.clear();assert.equal(support.shield.visible,false);
 run=runFor('autoTurret');support.reset(run);occluded=true;support.update(1,{position:new THREE.Vector3(0,1.7,0),avatar,enemies:[enemy],time:1});assert.equal(hits,0);occluded=false;support.update(.1,{position:new THREE.Vector3(0,1.7,0),avatar,enemies:[enemy],time:2});assert.equal(hits,1);assert.equal(run.energyUsed,.25);run.battery=0;support.update(1,{position:new THREE.Vector3(0,1.7,0),avatar,enemies:[enemy],time:3});assert.equal(hits,1);
 run=runFor('houndPack');support.reset(run);for(let i=0;i<80;i++)support.update(1/60,{position:new THREE.Vector3(0,1.7,0),avatar,enemies:[enemy],time:i/60});assert(hits>1);assert(support.dog.visible);support.clear();assert(!support.dog.visible);console.log('PASS: exclusive back gear, old jet migration/reload/occupied slot, shield absorption/recharge, turret LOS/energy and hound pursuit/attack/cleanup');
+
+const unusedTargets={*[Symbol.iterator](){throw Error('unnecessary support target scan');}};
+for(const type of ['jetPack','shieldPack']){
+ run=runFor(type);support.reset(run);if(type==='shieldPack')support.absorb(20);
+ for(let i=0;i<300;i++)support.update(1/60,{position:new THREE.Vector3(0,1.7,0),avatar,enemies:unusedTargets,time:i/60});
+ if(type==='shieldPack')assert(run.shieldHP>20,'skipping scans must preserve shield regeneration');
+}
+run=runFor('autoTurret');support.reset(run);occluded=false;
+support.update(1/60,{position:new THREE.Vector3(0,1.7,0),avatar,enemies:[enemy],time:0});const firstShotHits=hits;
+for(let i=0;i<20;i++)support.update(1/60,{position:new THREE.Vector3(0,1.7,0),avatar,enemies:unusedTargets,time:i/60});
+assert.equal(hits,firstShotHits);support.update(.1,{position:new THREE.Vector3(0,1.7,0),avatar,enemies:[enemy],time:.5});assert.equal(hits,firstShotHits+1,'turret reacquires and fires after cooldown');
+console.log('PASS no target scans for passive gear or turret cooldown; shield and turret cadence preserved');

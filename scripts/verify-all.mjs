@@ -1,0 +1,6 @@
+import {readdirSync,mkdirSync,writeFileSync} from 'node:fs';
+import {spawnSync} from 'node:child_process';
+const files=readdirSync(new URL('.',import.meta.url)).filter(name=>/^verify-.*\.mjs$/.test(name)&&name!=='verify-all.mjs').sort();
+const results=[];mkdirSync('output/verification',{recursive:true});
+for(const file of files){const start=performance.now();let result=spawnSync(process.execPath,['scripts/'+file],{encoding:'utf8',timeout:180000,maxBuffer:12*1024*1024});if(result.status!==0&&/ECANCELED: operation canceled, read/.test(result.stderr||'')){console.log('RETRY transient filesystem read: '+file);result=spawnSync(process.execPath,['scripts/'+file],{encoding:'utf8',timeout:180000,maxBuffer:12*1024*1024});}const pass=result.status===0;results.push({file,pass,durationMs:Math.round(performance.now()-start),error:result.error?.message});writeFileSync('output/verification/'+file+'.log',(result.stdout||'')+(result.stderr||''));console.log(`${pass?'PASS':'FAIL'} ${file} (${results.at(-1).durationMs}ms)`);if(!pass)console.log((result.stderr||result.error?.message||result.stdout||'').slice(-2200));}
+writeFileSync('output/verification/results.json',JSON.stringify(results,null,2));console.log(`${results.filter(r=>r.pass).length}/${results.length} checks passed`);process.exitCode=results.some(r=>!r.pass)?1:0;

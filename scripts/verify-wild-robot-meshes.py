@@ -5,7 +5,7 @@ from mathutils import Vector
 ROOT=Path(__file__).resolve().parents[1]
 BASE=ROOT/'public/models/wild-robots-v1'
 manifest=json.loads((BASE/'manifest.json').read_text())
-assert len(manifest['models'])==5
+assert len(manifest['models'])==6
 results=[]
 for model in manifest['models']:
     bpy.ops.wm.read_factory_settings(use_empty=True)

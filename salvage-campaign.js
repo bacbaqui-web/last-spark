@@ -1,3 +1,4 @@
+import {sanitizeCampaign,createCampaignStorage,campaignTabId} from './campaign-storage.js';
 import {createSortieReport} from './sortie-report.js';
 import {EQUIPMENT,EQUIPMENT_SLOTS,applyEquipmentStats,makeEquipment} from './equipment.js';
 export const SAVE_KEY='last-spark-salvage-v1';
@@ -16,13 +17,18 @@ export const WEAPON_PERKS={power:{name:'고출력 회로',description:'무기 �
 export function weaponPerk(item){return WEAPON_PERKS[item?.perk]||{};}
 export function makeWeapon(type,id=`gun-${Date.now()}-${Math.random().toString(36).slice(2)}`,level=1,random=Math.random){const keys=Object.keys(WEAPON_PERKS);return {id,type,level:Math.max(1,Math.floor(level)),perk:keys[Math.min(keys.length-1,Math.floor(random()*keys.length))]};}
 function ensureWeaponPerk(w){if(w&&!WEAPON_PERKS[w.perk])w.perk=makeWeapon(w.type).perk;return w;}
-const freshFrame=(id)=>({id,name:`FRAME ${String(id).padStart(2,'0')}`,hp:100,equipment:{},parts:[],weaponSlots:[makeWeapon('rifle',`starter-${id}`),null],loadout:['rifle']});
+const freshFrame=(id)=>({id,name:`FRAME ${String(id).padStart(2,'0')}`,hp:100,battery:100,equipment:{},parts:[],weaponSlots:[makeWeapon('rifle',`starter-${id}`),null],loadout:['rifle']});
 export function freshCampaign(){return {version:1,inventoryVersion:2,nextId:3,selected:1,frames:[freshFrame(1),freshFrame(2)],stash:[],stashWeapons:[],stashEquipment:[],materials:0,weapons:WEAPON_TYPES,weaponStock:{rifle:2},ammo:{rifle:240},unlockedStage:1,clearedStages:[],sorties:0,lastReport:null,deployed:null};}
 export function frameStats(frame){const stats={damage:1,speed:1,damageTaken:1,battery:100,drain:1,jet:false,armor:0,visualParts:frame.parts.map(p=>({type:p.type,level:p.level||1,...(Number.isInteger(p.slot)?{slot:p.slot}:{})}))};for(const part of frame.parts){const level=part.level||1;if(part.type==='repair'){stats.damageTaken*=.96**level;stats.battery+=10*level;}if(part.type==='armor'){stats.damageTaken*=.88**level;stats.armor++;}if(part.type==='drive'){stats.speed*=1+.05*level;stats.drain*=.85**level;}if(part.type==='reactor')stats.battery+=35*level;if(part.type==='core'){stats.battery+=100*level;stats.drain*=.7**level;}if(part.type==='weapon')stats.damage*=1+.05*level;}return applyEquipmentStats(stats,Object.values(frame.equipment||{}).filter(Boolean));}
 export function normalizeModule(p){const module={id:p.id,type:p.type,level:Math.max(1,Math.floor(p.level||1)),isNew:Boolean(p.isNew??(p.identified===false))};if(Number.isInteger(p.slot))module.slot=p.slot;return module;}
 export function makePart(type,id){return normalizeModule({id,type,level:1,isNew:true});}
-export function createCampaign(storage){let state;try{const parsed=JSON.parse(storage?.getItem(SAVE_KEY)||'null');if(parsed?.version===1&&Number.isFinite(parsed.nextId)&&parsed.ammo&&parsed.weaponStock&&Array.isArray(parsed.weapons)&&Array.isArray(parsed.frames)&&Array.isArray(parsed.stash)&&parsed.frames.every(f=>Number.isFinite(f.id)&&Number.isFinite(f.hp)&&Array.isArray(f.parts)&&f.parts.every(p=>PARTS[p.type]||p.type==='jet'))&&parsed.stash.every(p=>PARTS[p.type]||p.type==='jet'))state=parsed;}catch{}state ||=freshCampaign();state.unlockedStage=Math.max(1,Math.min(12,Math.floor(state.unlockedStage||1)));state.clearedStages=(state.clearedStages||[]).filter(n=>Number.isInteger(n)&&n>=1&&n<=12);state.materials=Math.max(0,Math.floor(state.materials||0));state.stashWeapons ||= [];state.stashEquipment=(state.stashEquipment||[]).filter(p=>EQUIPMENT[p.type]);
+export function createCampaign(storage,options={}){
+ const owner=options.ownerId??(typeof window!=='undefined'?campaignTabId():null);
+ const persistence=createCampaignStorage(storage,SAVE_KEY,value=>sanitizeCampaign(value,{fresh:freshCampaign,parts:PARTS,equipment:EQUIPMENT,weapons:WEAPON_TYPES}),options);
+ let state=persistence.state||freshCampaign(),storageError=!storage||persistence.blocked,pendingSave=false,saveAttempts=0;
+ let foreignSession=!!options.readOnly||!!(!options.exclusive&&owner&&state.deployed?.owner&&state.deployed.owner!==owner&&state.deployed.leaseUntil>Date.now());
  const convertJet=p=>({...makeEquipment('jetPack',p.id,()=>.5),level:p.level||1});for(const f of state.frames){f.equipment ||= {};for(const p of f.parts.filter(p=>p.type==='jet')){const gear=convertJet(p);if(!f.equipment.back)f.equipment.back=gear;else state.stashEquipment.push(gear);}f.parts=f.parts.filter(p=>p.type!=='jet');}state.stashEquipment.push(...state.stash.filter(p=>p.type==='jet').map(convertJet));state.stash=state.stash.filter(p=>p.type!=='jet');if(state.lastReport?.items)state.lastReport.items=state.lastReport.items.map(p=>p.kind==='module'&&p.type==='jet'?{kind:'equipment',...convertJet(p)}:p);
+ for(const f of state.frames){const capacity=frameStats(f).battery;f.battery=Number.isFinite(f.battery)?Math.max(0,Math.min(capacity,f.battery)):capacity;}
  state.stash=state.stash.map(normalizeModule);for(const f of state.frames)f.parts=f.parts.map(normalizeModule);if(state.lastReport?.items)state.lastReport.items=state.lastReport.items.map(p=>p.kind==='module'?{kind:'module',...normalizeModule(p)}:p);
  if(state.inventoryVersion!==2){
   const counts={...state.weaponStock};let serial=0;
@@ -32,17 +38,25 @@ export function createCampaign(storage){let state;try{const parsed=JSON.parse(st
  }
  for(const f of state.frames){f.equipment=Object.fromEntries(Object.entries(f.equipment||{}).filter(([slot,p])=>p&&EQUIPMENT[p.type]?.slot===slot));f.weaponSlots ||= [makeWeapon('rifle'),null];f.weaponSlots=f.weaponSlots.slice(0,2);while(f.weaponSlots.length<2)f.weaponSlots.push(null);if(f.parts.length>3)state.stash.push(...f.parts.splice(3));const used=new Set();for(const p of f.parts){if(!Number.isInteger(p.slot)||p.slot<0||p.slot>2||used.has(p.slot))p.slot=[0,1,2].find(n=>!used.has(n));used.add(p.slot);}}
  for(const f of state.frames)for(const w of f.weaponSlots)if(w?.type==='pistol'&&w.id===`starter-${f.id}`){w.type='rifle';state.ammo.rifle=(state.ammo.rifle||0)+120;}
- let storageError=!storage;
+
  state.stashWeapons.forEach(ensureWeaponPerk);for(const f of state.frames)f.weaponSlots.forEach(ensureWeaponPerk);for(const item of state.lastReport?.items||[])if(item.kind==='weapon')ensureWeaponPerk(item);
  function sync(){state.weapons=WEAPON_TYPES;state.weaponStock={};for(const f of state.frames){f.loadout=f.weaponSlots.filter(Boolean).map(w=>w.type);for(const w of f.weaponSlots.filter(Boolean))state.weaponStock[w.type]=(state.weaponStock[w.type]||0)+1;}for(const w of state.stashWeapons)state.weaponStock[w.type]=(state.weaponStock[w.type]||0)+1;}
- function save(){sync();try{if(!storage)throw Error('storage unavailable');storage.setItem(SAVE_KEY,JSON.stringify(state));storageError=false;}catch{storageError=true;}return !storageError;}
- save();
+ function save(){saveAttempts++;sync();if(foreignSession){storageError=true;return false;}storageError=!persistence.write(state);if(!storageError)pendingSave=false;return !storageError;}
+ if(!foreignSession)save();
  function frame(){return state.frames.find(f=>f.id===state.selected)||state.frames[0];}
- function finish(run,success,hp,reason){if(!run||run.finished)return false;run.finished=true;run.lootEquipment ||= [];run.lootEquipment.push(...(run.cargo||[]).filter(p=>p.type==='jet').map(p=>({...makeEquipment('jetPack',p.id,()=>.5),level:p.level||1})));run.cargo=(run.cargo||[]).filter(p=>p.type!=='jet').map(normalizeModule);const robot=state.frames.find(f=>f.id===run.frameId);if(success&&robot){robot.hp=Math.max(1,Math.min(100,hp/(run.stats?.maxHP||100)*100));state.stash.push(...run.cargo);state.stashWeapons.push(...(run.lootWeapons||[]));state.stashEquipment.push(...(run.lootEquipment||[]));for(const [w,n]of Object.entries(run.ammo||{}))if(w!=='pistol')state.ammo[w]=(state.ammo[w]||0)+Math.max(0,Math.floor(n));}else state.frames=state.frames.filter(f=>f.id!==run.frameId);
- if(success&&robot&&run.core&&run.mission?.stage){const stage=run.mission.stage;if(!state.clearedStages.includes(stage))state.clearedStages.push(stage);state.unlockedStage=Math.max(state.unlockedStage,Math.min(12,stage+1));}state.lastReport=createSortieReport(run,success,hp,reason);state.deployed=null;if(!state.frames.length){state.frames.push(freshFrame(state.nextId++));state.ammo.rifle=(state.ammo.rifle||0)+120;state.lastReport.replacement=true;}state.selected=state.frames.some(f=>f.id===state.selected)?state.selected:state.frames[0].id;save();return true;}
+ function finish(run,success,hp,reason){if(!run||run.finished)return false;run.finished=true;run.lootEquipment ||= [];run.lootEquipment.push(...(run.cargo||[]).filter(p=>p.type==='jet').map(p=>({...makeEquipment('jetPack',p.id,()=>.5),level:p.level||1})));run.cargo=(run.cargo||[]).filter(p=>p.type!=='jet').map(normalizeModule);const robot=state.frames.find(f=>f.id===run.frameId);if(success&&robot){robot.battery=Math.max(0,Math.min(frameStats(robot).battery,run.battery??frameStats(robot).battery));robot.hp=Math.max(1,Math.min(100,hp/(run.stats?.maxHP||100)*100));state.stash.push(...run.cargo);state.stashWeapons.push(...(run.lootWeapons||[]));state.stashEquipment.push(...(run.lootEquipment||[]));for(const [w,n]of Object.entries(run.ammo||{}))if(w!=='pistol')state.ammo[w]=(state.ammo[w]||0)+Math.max(0,Math.floor(n));}else state.frames=state.frames.filter(f=>f.id!==run.frameId);
+ if(success&&robot&&run.core&&run.mission?.stage){const stage=run.mission.stage;if(!state.clearedStages.includes(stage))state.clearedStages.push(stage);state.unlockedStage=Math.max(state.unlockedStage,Math.min(12,stage+1));}state.lastReport=createSortieReport(run,success,hp,reason);state.deployed=null;if(!state.frames.length){state.frames.push(freshFrame(state.nextId++));state.ammo.rifle=(state.ammo.rifle||0)+120;state.lastReport.replacement=true;}state.selected=state.frames.some(f=>f.id===state.selected)?state.selected:state.frames[0].id;if(!save())pendingSave=true;return true;}
+ function supplyQuote(kind,type=null,capacity=0,full=false){const f=frame(),stats=frameStats(f);let current,max,unit;
+ if(kind==='hp'){current=f.hp/100*stats.maxHP;max=stats.maxHP;unit=5;}
+ else if(kind==='battery'){current=Math.min(f.battery,stats.battery);max=stats.battery;unit=20;}
+ else if(kind==='ammo'&&type!=='pistol'&&WEAPON_TYPES.includes(type)&&f.weaponSlots.some(w=>w?.type===type)&&Number.isFinite(capacity)&&capacity>0){current=state.ammo[type]||0;max=Math.floor(capacity);unit=Math.max(1,Math.ceil(max*.2));}
+ else return {amount:0,cost:0,current:0,max:0};
+ const missing=Math.max(0,max-current),cost=missing>1e-7?(full?Math.ceil((missing-1e-7)/unit):1):0;return {current,max,amount:Math.min(missing,full?cost*unit:unit),cost};}
+ function resupply(kind,type=null,capacity=0,full=false){if(state.deployed)return false;const q=supplyQuote(kind,type,capacity,full);if(!q.cost||state.materials<q.cost)return false;const f=frame();state.materials-=q.cost;if(kind==='hp')f.hp=Math.min(100,f.hp+q.amount/frameStats(f).maxHP*100);else if(kind==='battery')f.battery=q.current+q.amount;else state.ammo[type]=q.current+q.amount;save();return true;}
  // A reloaded or closed sortie has no remotely recoverable robot. Preserve the hangar.
- if(state.deployed){const old=state.deployed;finish({...old,cargo:[],weapons:[],finished:false},false,0,'출격 중 원격 연결 종료');}
- return {get state(){return state;},get storageError(){return storageError;},save,frame,
+ if(state.deployed&&!foreignSession){const old=state.deployed;finish({...old,cargo:[],weapons:[],finished:false},false,0,'출격 중 원격 연결 종료');}
+ const api={supplyQuote,resupply,get state(){return state;},get storageError(){return storageError||foreignSession;},get pendingSave(){return pendingSave;},get storageMessage(){return foreignSession?'다른 탭에서 게임을 사용 중입니다. 그 탭을 닫고 이 화면을 새로고침해 주세요.':persistence.message;},exportSave(){return JSON.stringify({campaign:state,original:persistence.exportOriginal()},null,2);},save,frame,
+ heartbeat(){if(state.deployed&&owner&&!foreignSession){state.deployed.leaseUntil=Date.now()+45000;return save();}return true;},
  rename(name){if(state.deployed||typeof name!=='string')return false;const value=name.trim().slice(0,24);if(!value)return false;frame().name=value;save();return true;},
  select(id){if(state.frames.some(f=>f.id===id)){state.selected=id;save();}},
  build(){const spare=state.stash.findIndex(()=>true);if(spare<0)return false;state.stash.splice(spare,1);const f=freshFrame(state.nextId++);state.frames.push(f);state.ammo.rifle=(state.ammo.rifle||0)+120;state.selected=f.id;save();return true;},
@@ -59,7 +73,20 @@ export function createCampaign(storage){let state;try{const parsed=JSON.parse(st
  equipWeapon(id,slot){if(state.deployed||!Number.isInteger(slot)||slot<0||slot>1)return false;const i=state.stashWeapons.findIndex(w=>w.id===id);if(i<0)return false;const f=frame(),w=state.stashWeapons[i];if(f.weaponSlots.some((q,i)=>i!==slot&&q?.type===w.type))return false;state.stashWeapons.splice(i,1);if(f.weaponSlots[slot])state.stashWeapons.push(f.weaponSlots[slot]);f.weaponSlots[slot]=w;save();return true;},
  unequipWeapon(slot){if(state.deployed||![0,1].includes(slot))return false;const f=frame(),w=f.weaponSlots[slot];if(!w)return false;state.stashWeapons.push(w);f.weaponSlots[slot]=null;save();return true;},
  craftWeapon(action,id){if(state.deployed)return false;const i=state.stashWeapons.findIndex(w=>w.id===id);if(i<0)return false;const w=state.stashWeapons[i];if(action==='dismantle'){state.stashWeapons.splice(i,1);state.materials+=4*w.level;}else if(action==='upgrade'){const cost=8*w.level;if(state.materials<cost)return false;state.materials-=cost;w.level++;}else return false;save();return true;},
- launch(loadout,ammoCaps,mission=null){if(mission?.stage&&(mission.stage>state.unlockedStage||mission.stage<1||!Number.isInteger(mission.stage)))return null;const f=frame(),items=f.weaponSlots.filter(Boolean);if(state.deployed||items.length<1||loadout.length!==items.length||loadout.some((w,i)=>w!==items[i].type))return null;const stats=frameStats(f),run={mission,frameId:f.id,name:f.name,stats,initialHP:f.hp/100*stats.maxHP,hpDamage:0,hpRecovered:0,energyUsed:0,energyRecovered:0,ammoRecovered:{},battery:stats.battery,cargo:[],weapons:items.map(w=>w.type),weaponItems:items.map(w=>({...w})),lootWeapons:[],lootEquipment:[],ammo:{},outbound:0,returnAmbush:0,core:false,bossSpawned:false,leftStart:false,finished:false,kills:0,time:0};for(const w of loadout){const n=w==='pistol'?0:Math.min(state.ammo[w]||0,ammoCaps[w]||0);run.ammo[w]=n;if(w!=='pistol')state.ammo[w]=(state.ammo[w]||0)-n;}state.sorties++;state.deployed={frameId:f.id,name:f.name,core:false};save();return run;},finish};}
+ launch(loadout,ammoCaps,mission=null){if(mission?.stage&&(mission.stage>state.unlockedStage||mission.stage<1||!Number.isInteger(mission.stage)))return null;const f=frame(),items=f.weaponSlots.filter(Boolean);if(state.deployed||items.length<1||loadout.length!==items.length||loadout.some((w,i)=>w!==items[i].type))return null;const stats=frameStats(f),run={mission,frameId:f.id,name:f.name,stats,initialHP:f.hp/100*stats.maxHP,hpDamage:0,hpRecovered:0,energyUsed:0,energyRecovered:0,ammoRecovered:{},battery:Math.min(f.battery,stats.battery),cargo:[],weapons:items.map(w=>w.type),weaponItems:items.map(w=>({...w})),lootWeapons:[],lootEquipment:[],ammo:{},outbound:0,returnAmbush:0,core:false,bossSpawned:false,leftStart:false,finished:false,kills:0,time:0};for(const w of loadout){const n=w==='pistol'?0:Math.min(state.ammo[w]||0,ammoCaps[w]||0);run.ammo[w]=n;if(w!=='pistol')state.ammo[w]=(state.ammo[w]||0)-n;}state.sorties++;state.deployed={frameId:f.id,name:f.name,core:false,...(owner?{owner,leaseUntil:Date.now()+45000}:{})};save();return run;},finish};
+ for(const name of ['resupply','rename','select','build','markModulesSeen','install','uninstall','dismantle','combine','upgrade','repair','equipEquipment','unequipEquipment','craftEquipment','equipWeapon','unequipWeapon','craftWeapon','launch','finish']){
+  const operation=api[name];api[name]=(...args)=>{
+   if(foreignSession||pendingSave)return name==='launch'?null:false;
+   const before=JSON.stringify(state),attempt=saveAttempts,result=operation(...args);
+   if(saveAttempts!==attempt&&storageError){
+    if(name==='finish'){pendingSave=true;return false;}
+    state=JSON.parse(before);return name==='launch'?null:false;
+   }
+   return result;
+  };
+ }
+ return api;
+}
 export function spendBattery(run,amount){if(!run||run.finished)return false;if(run.battery+1e-7<amount)return false;run.battery=Math.max(0,run.battery-amount);run.energyUsed=(run.energyUsed||0)+amount;return true;}
 export function tickBattery(run,dt,speed){if(!run||run.finished)return;run.time+=dt;const spent=Math.min(run.battery,dt*(.08+speed*.12*run.stats.drain));run.battery=Math.max(0,run.battery-spent);run.energyUsed=(run.energyUsed||0)+spent;}
 export function lootPart(random=Math.random){const n=random();return n<.34?'repair':n<.54?'armor':n<.72?'drive':n<.86?'reactor':'weapon';}
@@ -67,3 +94,10 @@ export function lootPart(random=Math.random){const n=random();return n<.34?'repa
 export function partDescription(p){const l=p.level||1;return {repair:`받는 피해 −${Math.round((1-.96**l)*100)}% · 배터리 +${10*l}`,armor:`받는 피해 −${Math.round((1-.88**l)*100)}% · 외장 장갑`,drive:`이동 속도 +${5*l}% · 이동 소모 −${Math.round((1-.85**l)*100)}%`,reactor:`배터리 용량 +${35*l}`,weapon:`무기 피해 +${5*l}%`,jet:`제트 대시 · 이단 점프 활성화${l>1?' · 배터리 +'+5*(l-1):''}`,core:`배터리 +${100*l} · 이동 소모 −${Math.round((1-.7**l)*100)}%`}[p.type];}
 
 export function lootWeapon(random=Math.random){return WEAPON_TYPES[Math.min(WEAPON_TYPES.length-1,Math.floor(random()*WEAPON_TYPES.length))];}
+
+export function createTrainingRun(frame,stock,ammoCaps){
+ const f=structuredClone(frame),items=f.weaponSlots.filter(Boolean),mission=null;
+ const stats=frameStats(f),run={mission,frameId:f.id,name:f.name,stats,initialHP:f.hp/100*stats.maxHP,hpDamage:0,hpRecovered:0,energyUsed:0,energyRecovered:0,ammoRecovered:{},battery:Math.min(f.battery??stats.battery,stats.battery),cargo:[],weapons:items.map(w=>w.type),weaponItems:items.map(w=>({...w})),lootWeapons:[],lootEquipment:[],ammo:{},outbound:0,returnAmbush:0,core:false,bossSpawned:false,leftStart:false,finished:false,kills:0,time:0};
+ for(const {type} of items)run.ammo[type]=type==='pistol'?0:Math.min(stock[type]||0,ammoCaps[type]||0);
+ return {...run,training:true};
+}

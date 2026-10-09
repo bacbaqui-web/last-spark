@@ -4,6 +4,31 @@
   "source": "Authored Blender polygon meshes based on selected V2 concepts",
   "models": [
     {
+      "meshObjects": 14,
+      "triangles": 32640,
+      "vertices": 18173,
+      "rigged": false,
+      "rigidAssemblies": 14,
+      "textured": true,
+      "texture": "material-atlas.png",
+      "boundsMetres": [
+        3.862,
+        1.795,
+        2.051
+      ],
+      "animations": [],
+      "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
+      "id": "rust-wasp-drone",
+      "name": "녹슨 말벌 드론",
+      "role": "쌍발 프로펠라 공중형",
+      "concept": "/models/wild-robots-v1/rust-wasp-concept.png",
+      "glb": "rust-wasp-drone.glb",
+      "preview": "rust-wasp-drone.png",
+      "blend": "rust-wasp-drone.blend",
+      "embeddedImages": 1,
+      "bytes": 5652588
+    },
+    {
       "meshObjects": 16,
       "triangles": 23240,
       "vertices": 13433,
@@ -112,9 +137,9 @@
       "textured": true,
       "texture": "material-atlas.png",
       "boundsMetres": [
-        2.1,
+        1.85,
         2.481,
-        1.66
+        2.542
       ],
       "animations": [],
       "note": "Named rigid mesh assemblies; skeletal rig and combat animation are not included.",
@@ -126,7 +151,7 @@
       "preview": "assault-mantis.png",
       "blend": "assault-mantis.blend",
       "embeddedImages": 1,
-      "bytes": 5370584
+      "bytes": 5370780
     }
   ]
 }

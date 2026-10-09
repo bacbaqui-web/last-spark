@@ -2,7 +2,7 @@ import * as T from 'three';
 // Bullet correction only: preserve camera input, existing hits and cover occlusion.
 export function assistedDirection(origin,forward,enemies,strength,obstacles=[],range=90){
  if(strength<=0)return forward.clone();
- const cone=Math.min(.09,strength*.2),ray=new T.Raycaster(origin.clone(),forward.clone(),0,range),alive=enemies.filter(e=>e.hp>0),meshes=alive.flatMap(e=>e.robot.hitMeshes),direct=ray.intersectObjects(meshes,false)[0],wall=ray.intersectObjects(obstacles,false)[0];
+ const cone=Math.min(.09,strength*.2),ray=new T.Raycaster(origin.clone(),forward.clone(),0,range);ray.firstHitOnly=true;const alive=enemies.filter(e=>e.hp>0),meshes=alive.flatMap(e=>e.robot.hitMeshes),direct=ray.intersectObjects(meshes,false)[0],wall=ray.intersectObjects(obstacles,false)[0];
  if(direct&&(!wall||direct.distance<wall.distance))return forward.clone();
  const candidates=[];
  for(const e of alive)for(const mesh of e.robot.hitMeshes){

@@ -1,10 +1,11 @@
 import * as T from 'three';
+let sharedPaintTexture; // One bounded, immutable texture shared across regenerated maps.
 
 // Heavy cargo UAV: open landing frame and an unobstructed underslung robot cradle.
 export function createRecoveryDrone(){
  const root=new T.Group();root.position.z=12;
  const paint=new T.MeshStandardMaterial({color:0xffffff,metalness:.35,roughness:.85}),metal=new T.MeshStandardMaterial({color:0x465459,metalness:.65,roughness:.65}),rubber=new T.MeshStandardMaterial({color:0x202725,roughness:1}),yellow=new T.MeshStandardMaterial({color:0xb89342,roughness:.85}),lamp=new T.MeshStandardMaterial({color:0x99ebde,emissive:0x56c7ac,emissiveIntensity:1});
- if(typeof document!=='undefined'){paint.map=new T.TextureLoader().load(new URL('./textures/street/return-drone-top-v1.png',document.baseURI).href);paint.map.colorSpace=T.SRGBColorSpace;metal.map=paint.map;}
+ if(typeof document!=='undefined'){paint.map=sharedPaintTexture ||=new T.TextureLoader().load(new URL('./textures/street/return-drone-top-v1.png',document.baseURI).href);paint.map.colorSpace=T.SRGBColorSpace;metal.map=paint.map;}
  root.userData.ownedMaterials=[paint,metal,rubber,yellow,lamp];
  function mesh(parent,g,m,pos,solid=true){const o=new T.Mesh(g,m);o.position.set(...pos);o.castShadow=o.receiveShadow=true;o.userData={ownedGeometry:true,...(solid?{collisionKind:'building'}:{})};parent.add(o);return o;}
  const box=(p,x,y,z,w,h,d,m=paint,solid=true)=>mesh(p,new T.BoxGeometry(w,h,d),m,[x,y,z],solid);

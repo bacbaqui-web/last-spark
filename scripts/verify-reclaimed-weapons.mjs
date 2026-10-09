@@ -9,7 +9,7 @@ const ids=Object.keys(RECLAIMED_GUNS),report=[];
 for(const type of ids){
  const model=createWeaponModel(type),other=createWeaponModel(type),bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3());
  assert(model.userData.reclaimedWeapon);assert.deepEqual(model.scale.toArray(),[1,1,1],'all firearms use metres without legacy multipliers');
- assert(size.z>=.6&&size.z<=(type==='rapid'?1.18:1.13),type+' fits the two metre robot');assert(size.x<(type==='rapid'?.855:type==='rocket'?.40:.36)&&size.y<(type==='rapid'?.825:.44),type+' remains hand portable');
+ assert(size.z>=.6&&size.z<=(type==='rapid'?1.18:type==='rocket'?1.53:1.13),type+' fits the two metre robot');assert(size.x<(type==='rapid'?.855:type==='rocket'?.51:.36)&&size.y<(type==='rapid'?.825:.44),type+' remains hand portable');
  for(const anchor of ['triggerGrip','supportGrip','muzzle'])assert(model.userData[anchor]?.length===3&&model.userData[anchor].every(Number.isFinite),type+' has '+anchor);
  const barrelBounds=new T.Box3();
  model.traverse(o=>{if(!o.isMesh)return;let parent=o;while(parent){if(parent===model.userData.pilotFlame)return;parent=parent.parent;}o.geometry.computeBoundingBox();barrelBounds.union(o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld));});
@@ -26,7 +26,7 @@ for(const type of ids){
  report.push({type,lengthCm:Math.round(size.z*100),triangles,meshes});
 }
 const alias=createWeaponModel('rifle');assert(alias.userData.reclaimedWeapon);assert.equal(alias.name,'weapon-rifle');
-for(const type of ['bow','knife','chainsaw','sword'])assert(!createWeaponModel(type).userData.reclaimedWeapon,'non firearms retain their model');
+for(const type of ['bow','knife','chainsaw']){const tool=createWeaponModel(type);assert(tool.userData.utilityWeapon,type+' uses the authored reclaimed tool');assert(new T.Box3().setFromObject(tool).getSize(new T.Vector3()).length()>0,type+' has visible geometry');}assert(!createWeaponModel('sword').userData.reclaimedWeapon,'legacy sword keeps its original model');
 // Exercise the shared attachment API after changing every weapon's dimensions.
 const robot=createRobot(false,'player'),view=createThirdPersonView(robot,ids);
 for(const type of ids)for(const adsBlend of [0,1]){
