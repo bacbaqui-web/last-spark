@@ -18,7 +18,7 @@ export function createHangarScene(host,onAction=()=>{},onHover=()=>{},onLayout=(
  const box=(parent,size,pos,mat=steel)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(...size),mat);m.position.set(...pos);m.castShadow=m.receiveShadow=true;parent.add(m);return m;};
  scene.add(new THREE.HemisphereLight(0xadc9de,0x030507,.22));for(const x of[-4,0,4]){const l=new THREE.SpotLight(x===0?0xb6deef:0x50718d,x===0?24:7,16,.62,.65);l.position.set(x,5,3);l.target.position.set(x,1.5,0);l.castShadow=x===0;scene.add(l,l.target);}
  // Broad, low intensity light over the whole carousel replaces the inspection pin.
- const platformGlow=new THREE.PointLight(0xb5d9df,24,8,2);platformGlow.position.set(0,2.7,-1.5);scene.add(platformGlow);for(const x of [-2.5,2.5]){const fill=new THREE.PointLight(0x8ca9b7,8,5,2);fill.position.set(x,.5,-2);scene.add(fill);}
+ const platformGlow=new THREE.PointLight(0xb5d9df,32,8,2);platformGlow.position.set(0,2.7,1.5);scene.add(platformGlow);for(const x of [-2.5,2.5]){const fill=new THREE.PointLight(0x8ca9b7,8,5,2);fill.position.set(x,.5,-2);scene.add(fill);}
 
  const room=createHangarRoom();scene.add(room.root);
  const departureRig=new THREE.Group();departureRig.visible=false;scene.add(departureRig);for(const x of [-.35,.35]){const hook=new THREE.Mesh(new THREE.TorusGeometry(.15,.035,8,20),steel);hook.position.set(x,3.1,0);departureRig.add(hook);const cable=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,7,8),steel);cable.position.set(x,6.6,0);departureRig.add(cable);}let departure=null,prepareAmount=0,inventoryAmount=0;
