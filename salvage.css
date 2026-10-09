@@ -205,3 +205,12 @@
 /* Illuminated physical push button between the two service monitors. */
 #baseCamp .hangarHeader #hangarDeploy{border:5px solid #27343d;border-bottom:8px solid #101a23;border-radius:14px;background:linear-gradient(#228db2,#10516c)!important;box-shadow:0 0 22px #3dcfff55,inset 0 0 15px #8ee8ff44,0 7px 0 #070d12;text-shadow:0 0 10px #a4eeff80}
 #baseCamp .hangarHeader #hangarDeploy:active:not(:disabled){bottom:19px;box-shadow:0 0 22px #3dcfff55,inset 0 0 15px #8ee8ff44,0 3px 0 #070d12}
+
+/* The launch control is rendered in the room; this projected hit area preserves keyboard access. */
+#baseCamp .hangarHeader #hangarDeploy{position:absolute;inset:auto;min-width:0;min-height:0;padding:0!important;margin:0;border:0!important;background:transparent!important;color:transparent!important;text-shadow:none;box-shadow:none!important;font-size:0;bottom:auto;right:auto}
+#baseCamp .hangarHeader{position:absolute;inset:0;pointer-events:none}
+#baseCamp .hangarHeader #hangarDeploy{pointer-events:auto}
+#baseCamp .hangarHeader #hangarDeploy:hover:not(:disabled){background:#a2edff18!important}
+#baseCamp .hangarHeader #hangarDeploy:focus-visible{outline:2px solid #b7f3ff;outline-offset:3px}
+#baseCamp .hangarHeader #hangarDeploy:active:not(:disabled){bottom:auto;background:#a2edff30!important}
+#baseCamp .hangarHeader #viewSortieResult{position:absolute;top:28px;left:36px;pointer-events:auto}
