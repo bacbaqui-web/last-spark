@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import {createRobot,disposeRobot} from './robot.js';
 import {applyFrameVisual} from './frame-preview.js';
 import {frameStats} from './salvage-campaign.js';
+import {createThirdPersonView} from './third-person.js';
 import {createWeaponModel} from './weapon-models.js';
 import {createHangarRoom} from './hangar-room.js';
 import {CHEST_SLOTS} from './salvage-chest.js';
@@ -12,7 +13,7 @@ import {disposeObjectResources} from './runtime-resources.js';
 export function createHangarScene(host,onAction=()=>{},onHover=()=>{},onLayout=()=>{}){
  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.shadowMap.enabled=true;renderer.setClearColor(0x070b10);host.appendChild(renderer.domElement);
  configureUpgradeLighting(renderer);
- const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x070b10,15,34);const camera=new THREE.PerspectiveCamera(42,1,.05,45);camera.position.set(0,3.45,7.5);camera.lookAt(0,1.9,0);
+ const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x070b10,15,34);const camera=new THREE.PerspectiveCamera(42,1,.05,45);camera.position.set(0,3.85,7.5);camera.lookAt(0,1.9,0);
  const steel=new THREE.MeshStandardMaterial({color:0x252e38,metalness:.75,roughness:.45}),black=new THREE.MeshStandardMaterial({color:0x0d141c,roughness:.8}),edge=new THREE.MeshStandardMaterial({color:0x9abfc8,emissive:0x72d3e5,emissiveIntensity:1.2}),crate=new THREE.MeshStandardMaterial({color:0x39443b,metalness:.25,roughness:.8});
  const box=(parent,size,pos,mat=steel)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(...size),mat);m.position.set(...pos);m.castShadow=m.receiveShadow=true;parent.add(m);return m;};
  scene.add(new THREE.HemisphereLight(0xadc9de,0x030507,.22));for(const x of[-4,0,4]){const l=new THREE.SpotLight(x===0?0xb6deef:0x50718d,x===0?24:7,16,.62,.65);l.position.set(x,5,3);l.target.position.set(x,1.5,0);l.castShadow=x===0;scene.add(l,l.target);}
@@ -22,10 +23,10 @@ export function createHangarScene(host,onAction=()=>{},onHover=()=>{},onLayout=(
  const wheel=new THREE.Group();wheel.position.z=-3;scene.add(wheel);const turntable=new THREE.Mesh(new THREE.CylinderGeometry(4.4,4.5,.16,80),steel);turntable.position.y=-.10;turntable.receiveShadow=true;wheel.add(turntable);const outerRing=new THREE.Mesh(new THREE.TorusGeometry(4.34,.035,6,80),edge);outerRing.rotation.x=Math.PI/2;outerRing.position.y=-.005;wheel.add(outerRing);let inspection=null,openAmount=0,rigs=[],signature='',stockSignature='',target=0,angle=0,last=performance.now();
  const screen=new THREE.MeshStandardMaterial({color:0x063356,emissive:0x168cdd,emissiveIntensity:1.4,roughness:.35});const sharedMaterials=[steel,black,edge,crate,screen];
  function clearRigs(){for(const r of rigs){if(r.robot)disposeRobot(r.robot);disposeObjectResources(r.group,{sharedMaterials});}rigs=[];}
- for(let i=0;i<16;i++){const stack=new THREE.Group();stack.userData.action='stash';scene.add(stack);stack.position.set(-3.35+(i%4)*.42,1.1+Math.floor(i/4)*.42,.15+(i%3)*.3);stack.rotation.set((i%3-1)*.07,i*1.71,(i%4-1.5)*.07);box(stack,[.57,.35,.5],[0,0,0],crate);box(stack,[.6,.04,.52],[0,.18,0]);box(stack,[.13,.06,.02],[0,0,.26],edge);}
+ for(let i=0;i<16;i++){const stack=new THREE.Group();stack.userData.action='stash';scene.add(stack);stack.position.set(-3.35+(i%4)*.42,1.4+Math.floor(i/4)*.45,.15+(i%3)*.3);stack.rotation.set((i%3-1)*.07,i*1.71,(i%4-1.5)*.07);box(stack,[.57,.35,.5],[0,0,0],crate);box(stack,[.6,.04,.52],[0,.18,0]);box(stack,[.13,.06,.02],[0,0,.26],edge);}
  for(const x of [-2.75,2.75]){box(scene,[2.1,.16,1.55],[x,.8,.3],steel);for(const leg of [-.8,.8])box(scene,[.1,.8,.1],[x+leg,.35,.3],black);}
  // The loose weapon pile is warehouse stock; each unit's rack lives on its holder.
- const storage=new THREE.Group();storage.userData.action='guns';scene.add(storage);storage.position.set(2.75,0,.05);box(storage,[2.1,.2,1.1],[0,.95,0],black);for(let i=0;i<10;i++){const gun=createWeaponModel(['rapid','shotgun','sniper'][i%3]);gun.scale.setScalar(.85);gun.position.set((i%3-1)*.48,1.1+Math.floor(i/3)*.32,(i%2)*.3);gun.rotation.set(-Math.PI/2,.3*i,.25);storage.add(gun);}for(const x of [-2.75,2.75]){const stockLight=new THREE.PointLight(0x7da5b5,5,3.5,2);stockLight.position.set(x,3.1,1.2);scene.add(stockLight);}
+ const storage=new THREE.Group();storage.userData.action='guns';scene.add(storage);storage.position.set(2.75,0,.05);box(storage,[2.1,.2,1.1],[0,.95,0],black);for(let i=0;i<10;i++){const gun=createWeaponModel(['rapid','shotgun','sniper'][i%3]);gun.scale.setScalar(.85);gun.position.set((i%3-1)*.48,1.4+Math.floor(i/3)*.4,(i%2)*.3);gun.rotation.set(-Math.PI/2,.3*i,.25);storage.add(gun);}for(const x of [-2.75,2.75]){const stockLight=new THREE.PointLight(0x7da5b5,10,3.5,2);stockLight.position.set(x,3.1,1.2);scene.add(stockLight);}
 
  const monitorLeft=new THREE.Group();monitorLeft.position.set(-1.75,1.55,2.8);monitorLeft.rotation.y=.16;scene.add(monitorLeft);box(monitorLeft,[1.45,1.9,.2],[0,0,0],black);box(monitorLeft,[1.3,1.74,.03],[0,0,.12],screen);box(monitorLeft,[.13,1.5,.13],[0,-1.4,-.1]);
  const service=new THREE.Group();service.position.set(1.75,1.55,2.8);service.rotation.y=-.16;service.userData.action='supplies';scene.add(service);box(service,[1.45,1.9,.2],[0,0,0],black);box(service,[1.3,1.74,.03],[0,0,.12],screen);box(service,[.16,1.45,.16],[0,-1.3,-.15]);
@@ -62,7 +63,7 @@ export function createHangarScene(host,onAction=()=>{},onHover=()=>{},onLayout=(
     const unitRack=new THREE.Group();holder.add(unitRack);
     for(let slot=0;slot<2;slot++){const rack=new THREE.Group();rack.userData.action='weapon:'+slot;rack.position.set(slot===0?-1.05:1.05,0,.15);unitRack.add(rack);box(rack,[.12,2.4,.12],[0,1.4,0],black);box(rack,[.5,.08,.4],[0,.2,0]);const item=frames[i].weaponSlots?.[slot];if(item){const gun=createWeaponModel(item.type);gun.scale.setScalar(1.1);gun.position.set(0,2,.15);gun.rotation.set(-Math.PI/2,Math.PI/2,0,'YXZ');rack.add(gun);}else box(rack,[.4,.2,.12],[0,2,.15],black);}
     for(const [boneName,key]of [['head','head'],['spine_03','chest'],['upperarm_l','arms'],['upperarm_r','arms'],['thigh_l','legs'],['thigh_r','legs']]){const bone=robot.salvageFrame?.anchors[boneName]||robot.bones.find(b=>b.name===boneName)|| (key==='head'?robot.head:null);if(bone)bone.traverse(o=>{if(o.isMesh)o.userData.action='gear:'+key;});}
-    rigs.push({group:holder,robot,plate,rim,unitRack});continue;
+    rigs.push({group:holder,robot,plate,rim,unitRack,weapon:frames[i].weaponSlots?.find(Boolean)?.type||'pistol'});continue;
 
 
 
@@ -83,7 +84,8 @@ export function createHangarScene(host,onAction=()=>{},onHover=()=>{},onLayout=(
   const dt=Math.min((now-last)/1000,.05);last=now;angle=THREE.MathUtils.damp(angle,target,6,dt);if(Math.abs(angle-target)<.0001)angle=target;wheel.rotation.y=angle;
   if(canvas.width!==Math.floor(w*renderer.getPixelRatio())||canvas.height!==Math.floor(h*renderer.getPixelRatio())){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
   const robot=rigs.find(r=>r.robot?.root===selectedRobot)?.robot;const focused=inspection==='modules'&&robot,preparing=inspection==='prepare';prepareAmount=THREE.MathUtils.damp(prepareAmount,preparing?1:0,5,dt);monitorLeft.position.x=-1.75-prepareAmount*4;service.position.x=1.75+prepareAmount*4;monitorLeft.visible=service.visible=prepareAmount<.99;clamp.visible=!preparing;
-  const desiredPosition=new THREE.Vector3(prepareAmount*1.7,3.45-prepareAmount*.25,7.5-prepareAmount*.8),look=new THREE.Vector3(prepareAmount*1.7,1.9,0);
+  const selectedRig=rigs.find(r=>r.robot===robot);if(robot&&preparing){if(!selectedRig.carry){selectedRig.rest=robot.bones.map(b=>({bone:b,p:b.position.clone(),q:b.quaternion.clone()}));selectedRig.baseY=robot.root.position.y;const before=new Set();robot.root.traverse(o=>before.add(o));selectedRig.carry=createThirdPersonView(robot,[selectedRig.weapon]);selectedRig.carryNodes=[];robot.root.traverse(o=>{if(!before.has(o)&&before.has(o.parent))selectedRig.carryNodes.push(o);});}selectedRig.carryNodes.forEach(o=>o.visible=true);selectedRig.carry.pose({position:new THREE.Vector3(0,selectedRig.baseY+1.7,0),yaw:Math.PI,pitch:0,weapon:selectedRig.weapon,speed:0,grounded:true,dt,time:now/1000});selectedRig.unitRack.visible=false;}else if(selectedRig?.carry){selectedRig.rest.forEach(({bone,p,q})=>{bone.position.copy(p);bone.quaternion.copy(q);});selectedRig.carryNodes.forEach(o=>o.visible=false);robot.root.position.y=selectedRig.baseY;selectedRig.unitRack.visible=true;robot.root.updateMatrixWorld(true);}
+  const desiredPosition=new THREE.Vector3(prepareAmount*1.35,3.85-prepareAmount*.7,7.5-prepareAmount*2.1),look=new THREE.Vector3(prepareAmount*1.35,1.9,0);
   if(focused){robot.root.rotation.y=0;(robot.salvageFrame?.anchors.spine_03||robot.body).getWorldPosition(look);desiredPosition.copy(look).add(new THREE.Vector3(0,.08,1.6));}
   if(departure&&robot){const t=Math.min(1,(now-departure.start)/departure.duration),ease=t*t*(3-2*t);if(departure.mode==='recovery'){departureRig.visible=true;const lift=Math.max(0,(t-.4)/.6)**2*7;robot.root.position.y=departure.baseY+lift;departureRig.position.y=(1-Math.min(1,t/.4))*3+lift;}else{const head=robot.head.getWorldPosition(new THREE.Vector3());desiredPosition.lerp(head.clone().add(new THREE.Vector3(0,.02,.2)),ease);look.lerp(head,ease);}if(t===1&&departure.done){const done=departure.done;departure.done=null;done();}}
   camera.position.lerp(desiredPosition,1-Math.exp(-7*dt));camera.lookAt(look);openAmount=THREE.MathUtils.damp(openAmount,focused?1:0,6,dt);robot?.salvageFrame?.chestMechanism.setOpen(openAmount);

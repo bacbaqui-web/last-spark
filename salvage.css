@@ -197,3 +197,7 @@
 #baseCamp.preparingSortie #hangarCanvas{pointer-events:none}
 
 #baseCamp .hangarArrow{top:41%}#baseCamp .hangarArrow.prev{left:35%}#baseCamp .hangarArrow.next{right:35%}
+
+#baseCamp .hangarHeader #hangarDeploy{position:fixed;top:auto;right:auto;left:50%;bottom:22px;transform:translateX(-50%);margin:0;width:270px}
+#sortieBriefing.inHangar .modeBrief{border:10px solid #121e27;border-top:14px solid #182933;outline:1px solid #44738a;box-shadow:0 24px 80px #000b,inset 0 0 35px #127ca329;animation:hangarMonitorArrival .8s cubic-bezier(.2,.8,.2,1) both}
+@keyframes hangarMonitorArrival{from{opacity:0;transform:translateX(115%) rotateY(-16deg)}to{opacity:1;transform:translateX(0) rotateY(0)}}
