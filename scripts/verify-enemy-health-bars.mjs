@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import * as THREE from 'three';
+const source=fs.readFileSync(new URL('../main.js',import.meta.url),'utf8');
+const camera=new THREE.PerspectiveCamera(70,1,.1,100);camera.updateMatrixWorld();
+const nodes=[];const context={THREE,camera,combatView:camera,thirdPerson:true,innerWidth:800,innerHeight:800,document:{createElement:()=>({style:{},remove(){this.removed=true;}}),body:{appendChild(el){nodes.push(el);}}}};vm.createContext(context);
+vm.runInContext(source.slice(source.indexOf('const enemyHealthBars='),source.indexOf('const damageNumbers='))+';globalThis.api={revealEnemyHealth,updateEnemyHealthBars,clearEnemyHealthBars,enemyHealthBars};',context);
+const group=new THREE.Group();new THREE.Scene().add(group);group.position.z=-10;const head=new THREE.Object3D();head.position.y=2;group.add(head);group.updateMatrixWorld(true);const e={hp:70,max:100,head,group};
+context.api.revealEnemyHealth(e);assert.equal(nodes.length,1);assert.match(nodes[0].innerHTML,/70 \/ 100/);assert.match(nodes[0].innerHTML,/width:70%/);context.api.revealEnemyHealth(e);assert.equal(nodes.length,1);
+e.hp=25;context.api.updateEnemyHealthBars();assert.match(nodes[0].innerHTML,/25 \/ 100/);group.visible=false;context.api.updateEnemyHealthBars();assert.equal(nodes[0].style.display,'none');e.hp=0;context.api.updateEnemyHealthBars();assert.equal(context.api.enemyHealthBars.size,0);assert.ok(nodes[0].removed);
+e.hp=100;context.api.revealEnemyHealth(e);context.api.clearEnemyHealthBars();assert.equal(context.api.enemyHealthBars.size,0);assert.ok(nodes[1].removed);
+console.log('PASS damaged enemy health: reveal, ratio, reuse, visibility, death and reset cleanup');

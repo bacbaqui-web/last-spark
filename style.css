@@ -59,3 +59,5 @@
 .bootStatus{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:20px;background:#111a16;color:#dceadf;font:16px sans-serif}
 .fpsCounter{position:fixed;right:12px;top:10px;z-index:81;padding:4px 6px;border-radius:3px;background:#101a18a6;color:#c9d6cbbf;font:11px/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;font-variant-numeric:tabular-nums;pointer-events:none;user-select:none}.fpsCounter[hidden]{display:none}
 @media(max-width:650px){.fpsCounter{top:205px}}
+
+.enemyHealthBar{position:fixed;z-index:6;pointer-events:none;transform:translate(-50%,-100%);width:78px;text-align:center;color:#fff;font:700 12px sans-serif;text-shadow:0 1px 3px #000}.enemyHealthBar>i{display:block;height:6px;margin-top:3px;background:#171b20;border:1px solid #bbc6cdaa;box-shadow:0 1px 4px #000}.enemyHealthBar b{display:block;height:100%;background:#ef6358}.enemyHealthBar.bossHealthBar{width:126px}.bossHealthBar>i{height:8px;background:#291516}.bossHealthBar b{background:#ffb257}
