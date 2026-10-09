@@ -195,3 +195,5 @@
 @media(max-width:750px){#sortieBriefing.inHangar .modeBrief{right:2%;top:8%;width:52%;height:86%;padding:16px}#sortieBriefing.inHangar .operationModes{grid-template-columns:1fr}#sortieBriefing.inHangar .operationHeading h1{font-size:24px}}
 
 #baseCamp.preparingSortie #hangarCanvas{pointer-events:none}
+
+#baseCamp .hangarArrow{top:41%}#baseCamp .hangarArrow.prev{left:35%}#baseCamp .hangarArrow.next{right:35%}
