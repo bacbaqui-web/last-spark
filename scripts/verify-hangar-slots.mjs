@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {createCampaign} from '../salvage-campaign.js';
+import {hangarSlots} from '../hangar-slots.js';
+let saved;const store={getItem:()=>saved??null,setItem:(_,v)=>saved=v};let c=createCampaign(store);
+c.state.stash=Array.from({length:6},(_,i)=>({id:'module-'+i,type:'armor',level:1}));
+assert.equal(c.build(4,'module-3'),true);const id=c.frame().id;
+assert.equal(hangarSlots(c.state.frames)[4].id,id);assert(!c.state.stash.some(p=>p.id==='module-3'));
+const before=c.state.stash.length;assert.equal(c.build(4,'module-1'),false);assert.equal(c.state.stash.length,before);
+c=createCampaign(store);assert.equal(hangarSlots(c.state.frames)[4].id,id);
+assert.equal(c.build(2,'module-0'),true);assert.equal(c.build(3,'module-1'),true);assert.equal(c.state.frames.length,5);
+assert.equal(c.build(),false);assert.equal(hangarSlots(c.state.frames).length,5);
+console.log('PASS five berths, chosen module consumption, occupied berth protection, persisted positions and capacity');

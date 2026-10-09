@@ -1,3 +1,4 @@
+import {hangarSlots,HANGAR_SLOT_COUNT} from './hangar-slots.js';
 import {sanitizeCampaign,createCampaignStorage,campaignTabId} from './campaign-storage.js';
 import {createSortieReport} from './sortie-report.js';
 import {EQUIPMENT,EQUIPMENT_SLOTS,applyEquipmentStats,makeEquipment} from './equipment.js';
@@ -59,7 +60,7 @@ export function createCampaign(storage,options={}){
  heartbeat(){if(state.deployed&&owner&&!foreignSession){state.deployed.leaseUntil=Date.now()+45000;return save();}return true;},
  rename(name){if(state.deployed||typeof name!=='string')return false;const value=name.trim().slice(0,24);if(!value)return false;frame().name=value;save();return true;},
  select(id){if(state.frames.some(f=>f.id===id)){state.selected=id;save();}},
- build(){const spare=state.stash.findIndex(()=>true);if(spare<0)return false;state.stash.splice(spare,1);const f=freshFrame(state.nextId++);state.frames.push(f);state.ammo.rifle=(state.ammo.rifle||0)+120;state.selected=f.id;save();return true;},
+ build(slot=null,moduleId=null){if(state.deployed||state.frames.length>=HANGAR_SLOT_COUNT)return false;const slots=hangarSlots(state.frames);if(slot===null)slot=slots.indexOf(null);if(!Number.isInteger(slot)||slot<0||slot>=HANGAR_SLOT_COUNT||slots[slot])return false;const spare=state.stash.findIndex(p=>moduleId===null||p.id===moduleId);if(spare<0)return false;for(const [i,frame]of slots.entries())if(frame)frame.hangarSlot=i;state.stash.splice(spare,1);const f=freshFrame(state.nextId++);f.hangarSlot=slot;state.frames.push(f);state.ammo.rifle=(state.ammo.rifle||0)+120;state.selected=f.id;save();return true;},
  markModulesSeen(ids){const set=new Set(ids);for(const p of state.stash)if(set.has(p.id))p.isNew=false;save();},
  install(id,slot=null){if(state.deployed)return false;const f=frame(),i=state.stash.findIndex(p=>p.id===id);if(i<0)return false;if(slot===null)slot=[0,1,2].find(n=>!f.parts.some(p=>p.slot===n));if(!Number.isInteger(slot)||slot<0||slot>2)return false;const p=state.stash.splice(i,1)[0],old=f.parts.findIndex(q=>q.slot===slot);if(old>=0)state.stash.push(f.parts.splice(old,1)[0]);p.slot=slot;p.isNew=false;f.parts.push(p);save();return true;},
  uninstall(id){if(state.deployed)return false;const f=frame(),i=f.parts.findIndex(p=>p.id===id);if(i<0)return false;state.stash.push(f.parts.splice(i,1)[0]);save();return true;},
