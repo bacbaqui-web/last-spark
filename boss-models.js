@@ -6,6 +6,7 @@ import {createRobot} from './robot.js';
 const cyan=new THREE.MeshStandardMaterial({color:0xb34132,metalness:.65,roughness:.35}),purple=new THREE.MeshStandardMaterial({color:0x816778,metalness:.5,roughness:.4}),dark=new THREE.MeshStandardMaterial({color:0x152b39,metalness:.7,roughness:.4}),light=new THREE.MeshBasicMaterial({color:0x8df7ff}),bladeLight=new THREE.MeshBasicMaterial({color:0xffa1f7});
 cyan.map=purple.map=panelTexture;
 const cube=panelGeometry,ring=new THREE.TorusGeometry(.63,.13,8,20);
+ring.userData.sharedModelGeometry=true;for(const material of [cyan,purple,dark,light,bladeLight])material.userData.sharedWeaponMaterial=true;
 function part(parent,mat,size,pos){const m=new THREE.Mesh(cube,mat);m.scale.set(...size);m.position.set(...pos);m.castShadow=true;parent.add(m);return m;}
 export function createBoss(kind,variant=kind){
  const r=createRobot(kind!=='blade',variant);r.bossKind=kind;r.rotors=[];r.blades=[];const dronePorts=[];
@@ -33,4 +34,4 @@ export function animateBoss(r,dt,time,attack){
 }
 
 export function createScoutDrone(){const r=createBoss('drone');r.root.scale.setScalar(.32);r.root.name='scout-drone';return r;}
-export function createAssassin(){const r=createBoss('blade','assassin');if(r.wildId)return r;r.root.scale.setScalar(1);r.root.name='assassin';const materials=new Map();r.root.traverse(o=>{if(!o.isMesh||!o.material?.color)return;const original=o.material;if(!materials.has(original)){const m=original.clone();m.color.setHex(original===r.identityMaterial?0xdb2626:original===bladeLight?0xff4568:0x161c24);materials.set(original,m);}o.material=materials.get(original);});if(!r.upgradeRig)attachRobotUpgrade(r,'robot-assassin');return r;}
+export function createAssassin(){const r=createBoss('blade','assassin');if(r.wildId)return r;r.root.scale.setScalar(1);r.root.name='assassin';const materials=new Map();r.root.traverse(o=>{if(!o.isMesh||!o.material?.color)return;const original=o.material;if(!materials.has(original)){const m=original.clone();m.userData.sharedWeaponMaterial=false;m.color.setHex(original===r.identityMaterial?0xdb2626:original===bladeLight?0xff4568:0x161c24);materials.set(original,m);}o.material=materials.get(original);});if(!r.upgradeRig)attachRobotUpgrade(r,'robot-assassin');return r;}

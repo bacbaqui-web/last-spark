@@ -11,7 +11,7 @@ const descriptions={
   'forest-warden':'좁은 골반 양옆에서 다리가 이어지는 중장갑 기체입니다. 왼손 포로 원거리 사격하고 가까이 오면 오른팔 집게로 내려찍습니다. 공격 미리보기에서 두 동작을 번갈아 보여 줍니다.',
   'iron-beetle':'낮은 몸체 위에 갈라진 등껍질을 올리고, 여섯 다리와 앞쪽 충돌 장갑을 배치했습니다.',
   'wall-sniper-spider':'여덟 개의 긴 다리, 벽면 고정 패드와 집게발, 등 위 회전식 저격총을 갖췄습니다.',
-  'assault-mantis':'상완·하완·손목을 나눈 3단 팔입니다. 접힌 하완 끝에서 칼날이 아래로 내려오며, 공격할 때 들어 올려 수직으로 내려칩니다.'
+  'assault-mantis':'상완·하완·손목을 나눈 3단 팔입니다. 양쪽 칼등은 위로, 절삭날은 아래로 향하며, 공격할 때 들어 올려 수직으로 내려칩니다.'
 };
 const scene=new THREE.Scene();scene.background=new THREE.Color('#171e15');
 const camera=new THREE.PerspectiveCamera(38,1,.015,100);
@@ -40,7 +40,7 @@ const clayMaterial=new THREE.MeshStandardMaterial({color:0xaab6a0,roughness:.55,
 function resize(){const rect=$('viewport').getBoundingClientRect();renderer.setSize(rect.width,rect.height,false);camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();}
 new ResizeObserver(resize).observe($('viewport'));resize();
 function setPressed(id,value){$(id).setAttribute('aria-pressed',String(value));}
-function appearance(){if(!model)return;for(const o of [...robot.hitMeshes,...(robot.destruction?.pieces.map(p=>p.mesh)||[])]){o.material=clay?clayMaterial:o.userData.originalMaterial;for(const m of[].concat(o.material))m.wireframe=wire;}}
+function appearance(){if(!model)return;for(const o of robot.hitMeshes){o.material=clay?clayMaterial:o.userData.originalMaterial;for(const m of[].concat(o.material))m.wireframe=wire;}}
 function fit(){
   if(!model)return;const box=new THREE.Box3().setFromObject(robot.asset);
   // Leave room for the wider running stride, especially the front insect feet.
@@ -72,7 +72,7 @@ async function select(info){
     model.traverse(o=>{if(o.isMesh)o.userData.originalMaterial=o.material;});
     motionAge=0;shotAge=null;scene.add(model);pose();appearance();
     $('triangles').textContent=info.triangles.toLocaleString('ko-KR')+' 삼각형';$('assemblies').textContent=info.rigidAssemblies+'개 기계식 파츠';
-    $('status').textContent=motionMode==='shot'?'로봇의 부위를 클릭해 보세요':'게임 적용 · 묵직한 파괴';$('viewport').dataset.model=info.id;$('viewport').dataset.status='ready';$('loading').hidden=true;
+    $('status').textContent=motionMode==='shot'?'로봇의 부위를 클릭해 보세요':'게임 적용 · 검은 파츠 흩어짐';$('viewport').dataset.model=info.id;$('viewport').dataset.status='ready';$('loading').hidden=true;
   }catch(error){if(token!==request)return;$('loading').textContent='모델을 불러오지 못했습니다.';$('status').textContent='로드 실패';$('error').textContent=error.message;$('viewport').dataset.status='error';console.error(error);}
 }
 $('home').addEventListener('click',fit);
@@ -80,7 +80,7 @@ $('spin').addEventListener('click',()=>{controls.autoRotate=!controls.autoRotate
 $('wire').addEventListener('click',()=>{wire=!wire;setPressed('wire',wire);appearance();});
 $('clay').addEventListener('click',()=>{clay=!clay;setPressed('clay',clay);appearance();});
 $('wall').addEventListener('click',()=>{if(selected?.id!=='wall-sniper-spider')return;resetWildDestruction(robot);motionAge=0;shotAge=null;wallPose=!wallPose;setPressed('wall',wallPose);pose();});
-$('motion').addEventListener('change',()=>{motionMode=$('motion').value;motionAge=0;shotAge=null;$('replay-death').hidden=$('slow-death').hidden=!['death','shot'].includes(motionMode);$('replay-death').textContent=motionMode==='shot'?'로봇 복구':'다시 파괴';$('status').textContent=motionMode==='shot'?'로봇의 부위를 클릭해 보세요':'게임 적용 · 묵직한 파괴';document.querySelector('.gesture').textContent=motionMode==='shot'?'몸을 클릭 · 피격 파괴 / 드래그 · 회전':'드래그 · 회전 / 휠 · 확대 / 우클릭 · 이동';if(robot){resetWildDestruction(robot);animateWildEnemy(robot,0);fit();}});
+$('motion').addEventListener('change',()=>{motionMode=$('motion').value;motionAge=0;shotAge=null;$('replay-death').hidden=$('slow-death').hidden=!['death','shot'].includes(motionMode);$('replay-death').textContent=motionMode==='shot'?'로봇 복구':'다시 파괴';$('status').textContent=motionMode==='shot'?'로봇의 부위를 클릭해 보세요':'게임 적용 · 검은 파츠 흩어짐';document.querySelector('.gesture').textContent=motionMode==='shot'?'몸을 클릭 · 피격 파괴 / 드래그 · 회전':'드래그 · 회전 / 휠 · 확대 / 우클릭 · 이동';if(robot){resetWildDestruction(robot);animateWildEnemy(robot,0);fit();}});
 $('replay-death').addEventListener('click',()=>{if(robot)resetWildDestruction(robot);motionAge=0;shotAge=null;});
 $('slow-death').addEventListener('click',()=>{slowDeath=!slowDeath;setPressed('slow-death',slowDeath);});
 renderer.domElement.addEventListener('pointerdown',event=>{pointerStart=event.button===0?{x:event.clientX,y:event.clientY}:null;});
@@ -90,7 +90,7 @@ renderer.domElement.addEventListener('pointerup',event=>{
   const rect=renderer.domElement.getBoundingClientRect(),ray=new THREE.Raycaster();
   ray.setFromCamera(new THREE.Vector2((event.clientX-rect.left)/rect.width*2-1,1-(event.clientY-rect.top)/rect.height*2),camera);model.updateMatrixWorld(true);
   const hit=ray.intersectObjects(robot.hitMeshes,false)[0];if(!hit)return;
-  robot.recordImpact(hit.point,ray.ray.direction,1,hit.object);shotAge=0;dieWildEnemy(robot,0);$('status').textContent=({head:'헤드샷 · 강한 젖힘 → 무릎 꿇고 전방 붕괴 → 폭발',torso:'몸통 이탈 · 상체 즉시 낙하 / 하체 천천히 붕괴',pelvis:'골반·다리 이탈 · 상체 자유낙하',leg:'다리 이탈 · 지지를 잃은 쪽으로 즉시 넘어짐',arm:'팔 연결부 파손 · 반대쪽으로 천천히 붕괴'})[robot.destruction.recoil.failure]||'연결된 파츠 이탈 → 느린 기울어짐 → 붕괴';$('viewport').dataset.hitPoint=hit.point.toArray().map(v=>v.toFixed(3)).join(',');$('viewport').dataset.hitPart=robot.destruction.recoil.source.mesh.name;
+  robot.recordImpact(hit.point,ray.ray.direction,1,hit.object);shotAge=0;dieWildEnemy(robot,0);$('status').textContent='즉시 파괴 · 검은 파츠가 사방으로 흩어집니다';$('viewport').dataset.hitPoint=hit.point.toArray().map(v=>v.toFixed(3)).join(',');$('viewport').dataset.hitPart=hit.object.name;
 });
 const clock=new THREE.Clock();
 function animate(){requestAnimationFrame(animate);const dt=Math.min(.05,clock.getDelta());if(document.hidden)return;
@@ -102,8 +102,8 @@ function animate(){requestAnimationFrame(animate);const dt=Math.min(.05,clock.ge
         else if(robot.wildId==='iron-beetle'){const t=(motionAge%1.8)/1.8;robot.motion.position.y=Math.sin(t*Math.PI)*.35;robot.motion.rotation.x=-Math.sin(t*Math.PI)*.25;}
         else animateWildAttack(robot,Math.max(0,.65-(motionAge%1.25)));}
     }
-    $('viewport').dataset.failure=robot.destruction?.recoil.failure||'none';$('viewport').dataset.motion=mode;$('viewport').dataset.phase=robot.phase.toFixed(3);$('viewport').dataset.electric=robot.destruction?.electric.visible?'on':'off';
-    $('viewport').dataset.destructionStage=!robot.destruction?'intact':robot.destruction.hit&&robot.destruction.age<Math.min(...robot.destruction.pieces.map(p=>p.delay))?'recoil':robot.destruction.age<robot.destruction.collapseAt?'strain':robot.destruction.age>=3?'explosion':'collapse';
+    $('viewport').dataset.failure=robot.destruction?'burst':'none';$('viewport').dataset.motion=mode;$('viewport').dataset.muzzleFlash=robot.muzzleFlash.visible?'on':'off';$('viewport').dataset.aim=robot.aimBlend.toFixed(2);$('viewport').dataset.phase=robot.phase.toFixed(3);$('viewport').dataset.electric='off';
+    $('viewport').dataset.destructionStage=!robot.destruction?'intact':robot.destruction.group.visible?'burst':'finished';
   }controls.update();renderer.render(scene,camera);
 }animate();
 try{

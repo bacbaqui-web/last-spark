@@ -43,7 +43,8 @@ export function createThirdPersonMotion(avatar){
  function update(dt,state){
   for(const [name,position]of restPositions)bones[name].position.copy(position);
   clock+=dt;const {weapon,speed=0,velocity,yaw,pitch=0,grounded=true,knifePhase=-1,rollPhase=-1,meleePhase=-1,throwPhase=-1,bowMotionClip='BowIdle',bowMotionPhase=0,bowDrawing=false,bowCharge=0,flash=false}=state;
-  strideRate=THREE.MathUtils.damp(strideRate,weapon==='rapid'?THREE.MathUtils.clamp(speed/4.2*.7,.25,1):directionalCadence(speed,velocity,yaw),8,dt);strideClock+=dt*strideRate;if(state.motionPreview?.action==='move')strideClock=state.motionPreview.phase*clips.TPSRun.duration;
+  const running=(state.sprinting??speed>=3)&&weapon!=='rapid';
+  strideRate=THREE.MathUtils.damp(strideRate,weapon==='rapid'?THREE.MathUtils.clamp(speed/4.2*.7,.25,1):running?directionalCadence(speed,velocity,yaw):THREE.MathUtils.clamp(speed/2.4*clips.TPSRun.duration,.15,1),8,dt);strideClock+=dt*strideRate;if(state.motionPreview?.action==='move')strideClock=state.motionPreview.phase*clips.TPSRun.duration;
   if(grounded&&!wasGrounded)landAge=0;if(!grounded&&wasGrounded)airAge=0;wasGrounded=grounded;airAge+=dt;landAge+=dt;
   if(lastWeapon!==weapon){lastWeapon=weapon;shotKick=0;}if(flash&&!lastFlash)shotKick=1;lastFlash=flash;shotKick=THREE.MathUtils.damp(shotKick,0,18,dt);
   const gun=['pistol','shotgun','sniper','laser'].includes(weapon),moving=speed>.7;walkBlend=THREE.MathUtils.damp(walkBlend,moving?1:0,10,dt);if(moving!==wasMoving){transitionKind=moving?'TPSStartRun':'TPSStopRun';transitionAge=0;}wasMoving=moving;transitionAge+=dt;
@@ -53,16 +54,16 @@ export function createThirdPersonMotion(avatar){
   if(grounded&&speed<.2)apply('TPSAimIdle',0,n=>lower.test(n));
 
   if(gun&&Math.abs(pitch)>.01)apply(pitch>0?'TPSAimUp':'TPSAimDown',0,n=>upper.test(n),Math.min(.65,Math.abs(pitch)/1.2));
-  // The same preferred forward sprint plays in every travel direction.
+  // Gameplay explicitly selects walking or held sprint; previews may infer it from speed.
   if(speed>.2&&grounded){
-   apply(weapon==='rapid'?'TPSWalk':'Sprint_Loop',(strideClock/clips.TPSRun.duration)%1,n=>lower.test(n));
-   bodyClip+=weapon==='rapid'?' + TPSWalk':' + Sprint_Loop';
+   apply(running?'Sprint_Loop':'TPSWalk',(strideClock/clips.TPSRun.duration)%1,n=>lower.test(n));
+   bodyClip+=running?' + Sprint_Loop':' + TPSWalk';
   }else if(grounded&&transitionKind==='TPSStopRun'&&transitionAge<.22){apply('TPSStopRun',transitionAge/.22,n=>lower.test(n),1-transitionAge/.22);bodyClip+=' + TPSStopRun';}
   if(grounded&&state.locomotion?.action){const action=state.locomotion.action;applyStep(action.name,action.phase);bodyClip+=' + '+action.name;}
   if(!grounded){const clip=airAge<.15?'Jump_Start':'Jump_Loop';apply(clip,airAge<.15?airAge/.15:(clock%clips.Jump_Loop.duration)/clips.Jump_Loop.duration,n=>lower.test(n));bodyClip+=' + '+clip;}
   else if(landAge<.16){apply('Jump_Land',landAge/.16,n=>lower.test(n),1-landAge/.16);bodyClip+=' + Jump_Land';}
   if(knifePhase>=0){
-   apply('Sword_Dash',0,n=>upper.test(n));
+   apply('Sword_Dash',0,n=>state.knifeRush||upper.test(n));
    const slash=sampleKnifeSlash(knifePhase,{combo:state.knifeCombo,rush:state.knifeRush});bones.spine_02.rotateY(slash.twist*.45);bones.spine_03.rotateY(slash.twist*.55);bones.spine_02.rotateX(.12);bones.pelvis.rotateX(.06);
    bodyClip='Sword_Dash';
   }
@@ -102,7 +103,7 @@ export function createThirdPersonMotion(avatar){
   const attack=boosting||jetJump||knifePhase>=0||rollPhase>=0||meleePhase>=0;const alpha=state.motionPreview||previous.size===0?1:dt>0?1-Math.exp(-dt*(knifePhase>=0?90:attack?38:18)):0;
   for(const b of avatar.bones){let old=previous.get(b.name);if(old){b.quaternion.copy(old.q.clone().slerp(b.quaternion,!state.motionPreview&&grounded&&speed>=3&&!attack&&lower.test(b.name)&&dt>0?1-Math.exp(-dt*36):alpha));b.position.copy(old.p.clone().lerp(b.position,alpha));}else old={q:new THREE.Quaternion(),p:new THREE.Vector3()};old.q.copy(b.quaternion);old.p.copy(b.position);previous.set(b.name,old);}
   const localMomentum=velocity.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-(yaw+Math.PI));momentum.lerp(localMomentum,1-Math.exp(-dt*8));avatar.motion.rotation.x=leanX;avatar.motion.rotation.z=leanZ;avatar.root.userData.locomotionAction=state.locomotion?.action?.name??null;avatar.root.userData.footContacts=[null,null];avatar.root.userData.sourceSprint=bodyClip.includes('Sprint_Loop');avatar.root.userData.motion=bodyClip;avatar.root.userData.sourceMotion=knifePhase>=0?'AuthoredDragonSlash':bodyClip;avatar.root.userData.stridePhase=(strideClock/clips.TPSRun.duration)%1;avatar.root.userData.strideRate=directionalCadence(speed,velocity,yaw);const forward=velocity.dot(new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)))>speed*.5;
-  const forwardRun=weapon!=='rapid'&&grounded&&moving&&forward&&!attack&&throwPhase<0;
+  const forwardRun=running&&grounded&&moving&&forward&&!attack&&throwPhase<0;
   const gait=(strideClock/clips.TPSRun.duration)%1;runPoseBlend=state.motionPreview?(forwardRun?1:0):THREE.MathUtils.damp(runPoseBlend,forwardRun?1:0,10,dt);const liftTarget=forwardRun?(1-Math.cos(gait*Math.PI*4))*.022:0,twistTarget=forwardRun?Math.sin(gait*Math.PI*2)*.045:0;runLift=state.motionPreview?liftTarget:THREE.MathUtils.damp(runLift,liftTarget,18,dt);runTwist=state.motionPreview?twistTarget:THREE.MathUtils.damp(runTwist,twistTarget,14,dt);avatar.motion.position.y=runLift;avatar.root.userData.forwardRunPose=forwardRun;
   if(forwardRun){
    const lift=runLift,twist=runTwist;

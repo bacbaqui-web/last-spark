@@ -10,16 +10,23 @@ function sweep(start,delta,b){let enter=-Infinity,exit=Infinity,normal=new THREE
 // movement along the contact plane. Vertical sweeps also handle landing/ceilings.
 export function movePlayerWithSlide(start,desired,velocity,platforms,{dash=false,bounds=41.5,boundsX=bounds,boundsZ=bounds}={}){
  if(platforms.streetCollision){
-  const collision=platforms.streetCollision,position=start.clone(),speed=velocity.clone(),contacts=[],foot=start.y-HEIGHT;
-  const supported=Math.abs(collision.height(start.x,start.z,foot)-foot)<.15&&speed.y<=0;
-  const nextFoot=collision.move(position,desired.x-start.x,desired.z-start.z,supported?foot:desired.y-HEIGHT);
-  const floor=collision.height(position.x,position.z,supported?nextFoot:Math.min(foot,desired.y-HEIGHT));
-  position.y=supported?nextFoot+HEIGHT:Math.max(desired.y,floor+HEIGHT);
-  const grounded=supported||desired.y<=floor+HEIGHT+.003;
-  if(grounded)speed.y=0;
+  const collision=platforms.streetCollision,position=start.clone(),speed=velocity.clone(),contacts=[],path=[start.clone()];
+  const delta=desired.clone().sub(start),steps=Math.ceil(Math.max(Math.abs(delta.x),Math.abs(delta.y),Math.abs(delta.z))/.12)||1;
+  if(![...start.toArray(),...desired.toArray(),...velocity.toArray()].every(Number.isFinite)||steps>512)return {position:start.clone(),velocity:new THREE.Vector3(),grounded:false,contacts,path,blocked:true};
+  let grounded=false;
+  for(let i=0;i<steps;i++){
+   const foot=position.y-HEIGHT,supported=Math.abs(collision.height(position.x,position.z,foot)-foot)<.15&&speed.y<=0;
+   const nextFoot=collision.move(position,delta.x/steps,delta.z/steps,foot);
+   let y=supported?nextFoot+HEIGHT:position.y+delta.y/steps;
+   const floor=collision.height(position.x,position.z,Math.min(foot,y-HEIGHT));
+   grounded=supported||speed.y<=0&&y<=floor+HEIGHT+.003;
+   if(grounded){y=Math.max(y,floor+HEIGHT);speed.y=0;}
+   else if(delta.y>0&&collision.blocked?.(position.x,position.z,y-HEIGHT)){y=position.y;speed.y=0;contacts.push(new THREE.Vector3(0,-1,0));delta.y=0;}
+   position.y=y;path.push(position.clone());
+  }
   for(const axis of ['x','z'])if(Math.abs(position[axis]-desired[axis])>.001){const n=new THREE.Vector3();n[axis]=desired[axis]>start[axis]?-1:1;contacts.push(n);speed[axis]=0;}
   if(grounded)contacts.push(new THREE.Vector3(0,1,0));
-  return {position,velocity:speed,grounded,contacts,path:[start.clone(),position.clone()]};
+  return {position,velocity:speed,grounded,contacts,path};
  }
  platforms=nearbyColliders(platforms,start,desired);
  const boxes=platforms.map(expanded);boxes.push({min:{x:-1000,y:-1000,z:-1000},max:{x:1000,y:HEIGHT,z:1000}});

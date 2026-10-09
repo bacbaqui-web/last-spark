@@ -463,10 +463,13 @@ def mantis():
 
         hand=part('Blade_hand_'+str(s),wrist)
         hand['joint_role']='blade_hand'
-        hand['blade_tip_local']=[s*-.12,-1.03,.04]
+        hand['blade_tip_local']=[s*.04,.12*math.cos(.18)-1.03*math.sin(.18),.12*math.sin(.18)+1.03*math.cos(.18)]
+        hand['blade_edge_local']=[0,-math.cos(.18),-math.sin(.18)]
         joint('Independent_wrist_hinge',wrist,.15,'x')
         box('Blade_palm',vec(wrist)+vec((0,-.07,.01)),(.22,.21,.19),'dark',.03)
-        # A vertical blade hangs below the wrist in the rest pose. Its hinge axle
+        blade_start=len(ASSET_OBJECTS)
+        # Build the existing blade profile, then orient its spine up and edge down.
+        # Its hinge axle
         # runs left-right so the cutting stroke travels down a vertical plane.
         outline=[(-.07,.025),(.12,.015),(.25,-.19),(.27,-.48),(.13,-.81),(-.12,-1.03),(-.065,-.73),(.045,-.37)]
         outline=[(s*x,y) for x,y in outline]
@@ -475,6 +478,15 @@ def mantis():
         plate('Vertical_sharpened_edge',[(s*x,y) for x,y in edge],.046,vec(wrist)+vec((0,0,.12)),'steel',.006)
         moss('Blade_spine_growth',vec(wrist)+vec((s*.07,.06,.035)),.13,.10,10)
         for offset in (-.18,-.39):bolt('Blade_mount_bolt',vec(wrist)+vec((s*.11,offset,.115)),.026)
+
+        # Turn the broad face into the forward/up plane on BOTH arms. Keep the
+        # wrist hinge and palm unchanged; rotate only the blade and its fittings.
+        c=math.cos(.18);sn=math.sin(.18)
+        game_turn=Matrix(((0,0,s,0),(-s*c,sn,0,0),(-s*sn,-c,0,0),(0,0,0,1)))
+        basis=Matrix(((1,0,0,0),(0,0,-1,0),(0,1,0,0),(0,0,0,1)))
+        pivot=cv(wrist);turn=Matrix.Translation(pivot)@basis@game_turn@basis.inverted()@Matrix.Translation(-pivot)
+        bpy.context.view_layer.update()
+        for obj in ASSET_OBJECTS[blade_start:]:obj.matrix_world=turn@obj.matrix_world
 
         # Preserve the three rigid joints in the editable Blender and GLB assets.
         bpy.context.view_layer.update()

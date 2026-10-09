@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import * as T from 'three';
+import {createEnemyVisibility,setEnemySleeping} from '../enemy-visibility.js';
+import {budgetEnemy} from '../combat-budget.js';
+
+const camera=new T.PerspectiveCamera(78,1,.08,900);camera.position.y=1.7;
+const visibility=createEnemyVisibility(),enemy={group:new T.Group(),type:'trooper',hit:0,awareness:{state:'combat'}};
+const bone=new T.Object3D();enemy.group.add(bone);let visits=0;
+const update=bone.updateMatrixWorld;bone.updateMatrixWorld=function(force){visits++;update.call(this,force);};
+enemy.group.position.z=20;enemy.group.updateMatrixWorld(true);visits=0;
+visibility.begin(camera,[],0);assert(!budgetEnemy(enemy,camera.position,visibility),'near enemy behind camera sleeps');
+for(let i=0;i<120;i++)enemy.group.updateMatrixWorld(true);
+assert.equal(visits,0,'sleeping bones are not visited, even by forced scene updates');assert(!enemy.group.visible);
+camera.rotation.y=Math.PI;visibility.begin(camera,[],.01);assert(budgetEnemy(enemy,camera.position,visibility),'turning camera wakes enemy immediately');
+enemy.group.updateMatrixWorld(true);assert.equal(visits,1);assert(enemy.group.visible);
+camera.rotation.y=0;enemy.group.position.z=-20;
+const wall=new T.Mesh(new T.BoxGeometry(12,8,.3),new T.MeshBasicMaterial());wall.position.set(0,3,-10);wall.updateMatrixWorld(true);
+visibility.begin(camera,[wall],1);assert(!budgetEnemy(enemy,camera.position,visibility),'fully covered enemy sleeps');assert(enemy.occluded);
+const count=visibility.rayChecks;assert(count===4,'checks exposed body edges before hiding');
+visibility.visible(enemy);assert.equal(visibility.rayChecks,count,'wall checks cached during frame');
+wall.visible=false;visibility.begin(camera,[wall],1.3);assert(!budgetEnemy(enemy,camera.position,visibility),'hidden collision proxy still blocks sight');
+wall.position.x=10;wall.updateMatrixWorld(true);visibility.begin(camera,[wall],1.6);assert(budgetEnemy(enemy,camera.position,visibility),'open sight wakes enemy');
+wall.position.x=0;wall.geometry.dispose();wall.geometry=new T.BoxGeometry(.3,8,.3);wall.updateMatrixWorld(true);
+visibility.begin(camera,[wall],2);assert(budgetEnemy(enemy,camera.position,visibility),'partly exposed shoulder is not falsely hidden');
+enemy.group.position.z=20;visibility.begin(camera,[],2.1);budgetEnemy(enemy,camera.position,visibility);
+setEnemySleeping(enemy,false);visits=0;enemy.group.updateMatrixWorld(true);assert.equal(visits,1,'death/wake can restore matrix traversal');
+console.log('PASS offscreen and covered enemies sleep; turn/opening/partial exposure wake; wall tests cache; sleeping skeleton traversal stops');

@@ -17,12 +17,15 @@
     "test:brick-streets": "node scripts/verify-brick-streets.mjs",
     "review": "vite --host 127.0.0.1 --port 5175 --strictPort",
     "test:asset-review": "node scripts/verify-asset-review.mjs",
-    "test:wild-enemies": "node scripts/verify-wild-debris.mjs && node scripts/verify-wild-enemy-game.mjs"
+    "test:wild-enemies": "node scripts/verify-wild-debris.mjs && node scripts/verify-wild-enemy-game.mjs",
+    "test": "node scripts/verify-all.mjs",
+    "test:release": "node scripts/check-release.mjs"
   },
   "dependencies": {
     "cannon-es": "0.20.0",
     "fflate": "^0.8.3",
     "three": "^0.180.0",
+    "three-mesh-bvh": "0.9.16",
     "vite": "^7.1.0",
     "yuka": "^0.7.8"
   }

@@ -1,3 +1,4 @@
+import {CITY_SCALE} from '../city-world-scale.js';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {sortieMission} from '../sortie-mission.js';
@@ -11,10 +12,10 @@ assert.equal(sortieMission({blocks:99}).blocks,12);assert.equal(sortieMission({b
 for(const blocks of [1,4,12]){
  const mission=sortieMission({destination:'saved',blocks}),root=new T.Group(),colliders=[];
  const route=populateBrickRoute(127,new Map(),root,colliders,mission);
- assert.equal(root.children.length,blocks);assert.equal(route.length,mission.length);
+ assert.equal(root.children.length,blocks);assert(route.length*CITY_SCALE>=mission.length,'curved routes are at least the nominal straight distance');assert(Math.abs(route.segments.reduce((sum,s)=>sum+s.distance,0)-route.length)<1e-9,'distance follows every curved segment');
  assert.deepEqual(route.sample(route.length),route.end);assert.equal(route.progress(route.end),route.length);
  assert(root.userData.sequence.every(seed=>seed===91||seed===92));
- const boss={x:0,z:route.end.z+3};
+ const boss={x:route.end.x,z:route.end.z+3};
  assert(!colliders.some(c=>Math.abs(boss.x-c.x)<c.w/2&&Math.abs(boss.z-c.z)<c.d/2&&c.h>1),'boss arena must have clear standing space');
  for(const street of root.children)disposeBrickStreet(street);
 }

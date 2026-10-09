@@ -1,0 +1,8 @@
+import assert from 'node:assert/strict';
+import * as T from 'three';
+import {createConnectedStreetWorld} from '../connected-street-world.js';
+import {disposeStreetBlock} from '../salvage-street-block.js';
+const scene=new T.Scene(),platforms=[],world=createConnectedStreetWorld(scene,platforms,{});world.configureMission({mapLevel:1,blocks:2});const preview=world.preview({seed:3040804531,mapLevel:1});assert.equal(preview.tiles.length,9);assert.equal(world.ground.children.length,0,'briefing does not build 3D geometry');
+const start=performance.now(),progress=[];await world.regenerateAsync(3040804531,{onProgress:p=>progress.push(p.completed)});assert.equal(progress.length,9);assert.deepEqual(world.ground.userData.tiles,preview.tiles);assert(platforms.streetCollision.colliderCount>0);assert(platforms.streetCollision.geometryCount<platforms.streetCollision.colliderCount,'instances share geometry BVHs');assert.equal(world.obstacles.length,1);assert.equal(world.route.progress(world.route.end),world.route.length);const existing=world.ground.children[0];
+const canceled=world.regenerateAsync(17,{onProgress:()=>world.cancelGeneration()});await assert.rejects(canceled,{name:'AbortError'});assert.equal(world.ground.children[0],existing,'cancellation preserves the working map');
+console.log(JSON.stringify({pass:true,buildMs:performance.now()-start,tiles:progress.length,colliders:platforms.streetCollision.colliderCount,sharedGeometries:platforms.streetCollision.geometryCount,batchedDrawCalls:world.ground.userData.batchedDrawCalls,heapMiB:process.memoryUsage().heapUsed/1048576}));disposeStreetBlock(existing);

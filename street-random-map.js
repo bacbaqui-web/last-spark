@@ -1,3 +1,4 @@
+import {disposeStreetBlock} from './salvage-street-block.js';
 import {createRecoveryDrone} from './recovery-drone.js';
 import * as T from 'three';
 import {createSatelliteCrashBlock} from './satellite-crash-block.js';
@@ -38,13 +39,18 @@ export function chooseArrival(tiles,random=Math.random){
  for(const t of leaves)t.role=t===arrival?'start':'deadend';arrival.routeDistance=max;
  return tiles;
 }
-export function createRandomStreetMap(seed=2207,level=1){
- const root=new T.Group(),tiles=planStreetMap(seed,level),houses=[],trees=[],cars=[],smallRides=[];let debris=0;const updates=[];
- for(const tile of tiles){const block=tile.shape===6?createSatelliteCrashBlock(tile.seed,{backdrop:false}):createRoadShapeBlock(tile.seed,tile.shape,{backdrop:false,connected:true});block.rotation.y=-tile.rotation*Math.PI/2;block.position.set(tile.x*72,0,tile.z*72);if(tile.role==='start'){block.updateMatrixWorld(true);const clearTrees=[];block.traverse(o=>{if(o.userData.lod)clearTrees.push(o);});clearTrees.forEach(o=>o.parent.remove(o));block.userData.trees=[];const wrecks=[];block.traverse(o=>{if(o.userData.collisionKind==='car')wrecks.push(o);});wrecks.forEach(o=>o.parent.remove(o));block.userData.cars=[];}root.add(block);houses.push(...block.userData.houses);trees.push(...block.userData.trees);cars.push(...block.userData.cars);smallRides.push(...block.userData.smallRides);debris+=block.userData.debris;updates.push(block.userData.updateLife);if(tile.role==='finish')root.userData.updateImpactFire=block.userData.updateImpactFire;if(tile.role==='start'){decorateStart(block);root.userData.recoveryDrone=block.userData.recoveryDrone;}}
+function* buildMap(root,seed,level){
+ const tiles=planStreetMap(seed,level),houses=[],trees=[],cars=[],smallRides=[];let debris=0;const updates=[];
+ for(const tile of tiles){const block=tile.shape===6?createSatelliteCrashBlock(tile.seed,{backdrop:false}):createRoadShapeBlock(tile.seed,tile.shape,{backdrop:false,connected:true});block.rotation.y=-tile.rotation*Math.PI/2;block.position.set(tile.x*72,0,tile.z*72);if(tile.role==='start'){block.updateMatrixWorld(true);const clearTrees=[];block.traverse(o=>{if(o.userData.lod)clearTrees.push(o);});clearTrees.forEach(o=>{disposeStreetBlock(o);o.removeFromParent();});block.userData.trees=[];const wrecks=[];block.traverse(o=>{if(o.userData.collisionKind==='car')wrecks.push(o);});wrecks.forEach(o=>{disposeStreetBlock(o);o.removeFromParent();});block.userData.cars=[];}root.add(block);houses.push(...block.userData.houses);trees.push(...block.userData.trees);cars.push(...block.userData.cars);smallRides.push(...block.userData.smallRides);debris+=block.userData.debris;updates.push(block);if(tile.role==='finish')root.userData.updateImpactFire=block.userData.updateImpactFire;if(tile.role==='start'){decorateStart(block);root.userData.recoveryDrone=block.userData.recoveryDrone;}yield {completed:root.children.length,total:tiles.length};}
  const start=tiles.find(t=>t.role==='start'),angle=-start.rotation*Math.PI/2,spawn={x:start.x*72+13*Math.sin(angle),z:start.z*72+13*Math.cos(angle),yaw:angle+Math.PI};
- root.userData={...root.userData,seed,tiles,spawn,routeDistance:start.routeDistance,startVariant:((start.seed^0x389a)>>>0)%5,houses,trees,cars,smallRides,debris,walkBounds:Math.max(...tiles.map(t=>Math.abs(t.x)*72+40)),walkBoundsZ:Math.max(...tiles.map(t=>Math.abs(t.z)*72+40)),groundBase:-3,updateLife:(time,camera)=>updates.forEach(fn=>fn?.(time,camera))};return root;
+ root.userData={...root.userData,seed,tiles,spawn,routeDistance:start.routeDistance,startVariant:((start.seed^0x389a)>>>0)%5,houses,trees,cars,smallRides,debris,walkBounds:Math.max(...tiles.map(t=>Math.abs(t.x)*72+40)),walkBoundsZ:Math.max(...tiles.map(t=>Math.abs(t.z)*72+40)),groundBase:-3,updateLife:(time,camera)=>updates.forEach(block=>{if(block.visible)block.userData.updateLife?.(time,camera);})};return root;
 }
 
 function decorateStart(block){
  const drone=createRecoveryDrone();block.add(drone);block.userData.recoveryDrone=drone;
+}
+
+export function createRandomStreetMap(seed=2207,level=1){const root=new T.Group();try{for(const _ of buildMap(root,seed,level)){}return root;}catch(error){disposeStreetBlock(root);throw error;}}
+export async function createRandomStreetMapAsync(seed=2207,level=1,{signal,onProgress=()=>{}}={}){
+ const root=new T.Group();try{for(const progress of buildMap(root,seed,level)){if(signal?.aborted)throw new DOMException('지도 생성을 취소했습니다.','AbortError');onProgress(progress);await new Promise(resolve=>setTimeout(resolve,0));}return root;}catch(error){disposeStreetBlock(root);throw error;}
 }

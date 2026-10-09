@@ -3,6 +3,9 @@ let texture;
 export function mossMaterial(material,strength=.65){
  if(typeof document!=='undefined'&&!texture){texture=new T.TextureLoader().load(new URL('./textures/street/natural-moss-lichen.jpg',document.baseURI).href);texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.colorSpace=T.SRGBColorSpace;}
  const previousCompile=material.onBeforeCompile,previousKey=material.customProgramCacheKey();
+ // This shader uses world positions and transformed normals, so immutable
+ // surfaces sharing this exact material may be baked into a block batch.
+ if(previousCompile===T.Material.prototype.onBeforeCompile)material.userData.staticWorldBatch=true;
  material.onBeforeCompile=shader=>{
   previousCompile.call(material,shader);
   shader.uniforms.streetMoss={value:texture};shader.uniforms.mossStrength={value:strength};

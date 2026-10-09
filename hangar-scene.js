@@ -4,6 +4,7 @@ import {createRobot,disposeRobot} from './robot.js';
 import {applyFrameVisual} from './frame-preview.js';
 import {frameStats} from './salvage-campaign.js';
 import {createWeaponModel} from './weapon-models.js';
+import {disposeObjectResources} from './runtime-resources.js';
 
 // One persistent scene: selection rotates the whole platform carousel.
 export function createHangarScene(host,onAction=()=>{}){
@@ -14,7 +15,9 @@ export function createHangarScene(host,onAction=()=>{}){
  const box=(parent,size,pos,mat=steel)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(...size),mat);m.position.set(...pos);m.castShadow=m.receiveShadow=true;parent.add(m);return m;};
  scene.add(new THREE.HemisphereLight(0xadc9de,0x151914,1.8));for(const x of[-4,0,4]){const l=new THREE.SpotLight(x===0?0xb6deef:0x50718d,x===0?65:30,16,.62,.65);l.position.set(x,5,3);l.target.position.set(x,1.5,0);l.castShadow=x===0;scene.add(l,l.target);}
  box(scene,[24,.15,22],[0,-.15,-5],black);box(scene,[24,7,.3],[0,3,-6],black);for(let x=-10;x<=10;x+=2){box(scene,[.16,6,.25],[x,3,-5.7]);box(scene,[.03,.02,14],[x,.001,-4]);}box(scene,[20,.3,.35],[0,4.25,0]);
- const wheel=new THREE.Group();wheel.position.z=-3;scene.add(wheel);let rigs=[],signature='',target=0,angle=0,last=performance.now();
+ const wheel=new THREE.Group();wheel.position.z=-3;scene.add(wheel);let rigs=[],signature='',stockSignature='',target=0,angle=0,last=performance.now();
+ const sharedMaterials=[steel,black,edge,crate];
+ function clearRigs(){for(const r of rigs){if(r.robot)disposeRobot(r.robot);disposeObjectResources(r.group,{sharedMaterials});}rigs=[];}
  for(let i=0;i<16;i++){const stack=new THREE.Group();stack.userData.action='stash';scene.add(stack);stack.position.set(-3.2+(i%4)*.45,.22+Math.floor(i/4)*.34,.7+(i%3)*.28);stack.rotation.set((i%3-1)*.07,i*1.71,(i%4-1.5)*.07);box(stack,[.57,.35,.5],[0,0,0],crate);box(stack,[.6,.04,.52],[0,.18,0]);box(stack,[.13,.06,.02],[0,0,.26],edge);}
  // The loose weapon pile is warehouse stock; each unit's rack lives on its holder.
  const storage=new THREE.Group();storage.userData.action='guns';scene.add(storage);box(storage,[1.9,.35,.8],[3.3,.25,1],black);
@@ -22,14 +25,21 @@ export function createHangarScene(host,onAction=()=>{}){
  let selectedRobot=null,drag=null,suppressClick=false;const rotations=new Map(),canvas=renderer.domElement;canvas.style.touchAction='none';
  function hits(event){const rect=canvas.getBoundingClientRect();pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);scene.updateMatrixWorld(true);ray.setFromCamera(pointer,camera);return ray.intersectObjects(scene.children,true);}
  canvas.addEventListener('pointerdown',event=>{if(event.button!==0||!selectedRobot)return;const hit=hits(event)[0];if(!hit?.object.userData.rotateUnit)return;drag={id:event.pointerId,x:event.clientX,start:event.clientX};suppressClick=false;canvas.setPointerCapture(event.pointerId);canvas.style.cursor='grabbing';});
- canvas.addEventListener('pointermove',event=>{if(drag&&drag.id===event.pointerId){selectedRobot.rotation.y+=(event.clientX-drag.x)*.012;rotations.set(selectedRobot.userData.frameId,selectedRobot.rotation.y);drag.x=event.clientX;if(Math.abs(event.clientX-drag.start)>4)suppressClick=true;}else canvas.style.cursor=hits(event)[0]?.object.userData.rotateUnit?'grab':'';});
+ canvas.addEventListener('pointermove',event=>{if(drag&&drag.id===event.pointerId){selectedRobot.rotation.y+=(event.clientX-drag.x)*.012;rotations.set(selectedRobot.userData.frameId,selectedRobot.rotation.y);drag.x=event.clientX;if(Math.abs(event.clientX-drag.start)>4)suppressClick=true;requestDraw();}else canvas.style.cursor=hits(event)[0]?.object.userData.rotateUnit?'grab':'';});
  function endDrag(event){if(!drag||drag.id!==event.pointerId)return;if(canvas.hasPointerCapture(event.pointerId))canvas.releasePointerCapture(event.pointerId);drag=null;canvas.style.cursor='';}
  canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',endDrag);
  // Scene props are clickable as well as their labels.
- const pointer=new THREE.Vector2(),ray=new THREE.Raycaster();renderer.domElement.addEventListener('click',event=>{if(suppressClick){suppressClick=false;return;}const rect=renderer.domElement.getBoundingClientRect();pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);for(const hit of ray.intersectObjects(scene.children,true)){let o=hit.object;while(o&&!o.userData.action)o=o.parent;if(o){onAction(o.userData.action);break;}}});
+ const pointer=new THREE.Vector2(),ray=new THREE.Raycaster();renderer.domElement.addEventListener('click',event=>{if(suppressClick){suppressClick=false;return;}for(const hit of hits(event)){let o=hit.object;while(o&&!o.userData.action)o=o.parent;if(o){onAction(o.userData.action);break;}}});
 
- function update(frames,selected,stash=[]){const key=JSON.stringify([frames,selected,stash]);const n=Math.max(4,frames.length);const index=frames.findIndex(f=>f.id===selected);let desired=-index*Math.PI*2/n;desired+=Math.round((angle-desired)/(Math.PI*2))*Math.PI*2;target=desired;
-  if(key===signature)return;selectedRobot=null;drag=null;signature=key;for(const gun of [...storage.children].filter(o=>o.userData.storedGun)){storage.remove(gun);gun.traverse(o=>{if(o.isMesh&&!o.geometry.userData.sharedModelGeometry)o.geometry.dispose();});}for(const [i,item]of stash.slice(0,24).entries()){const gun=createWeaponModel(item.type);gun.userData.storedGun=true;gun.scale.setScalar(.6);gun.position.set(2.6+(i%4)*.27,.48+Math.floor(i/4)*.15,.6+(i%3)*.3);gun.rotation.set((i%3-1)*.35,i*2.39,(i%2?1:-1)*(.25+(i%4)*.18));storage.add(gun);}for(const r of rigs){if(r.robot){r.robot.root.removeFromParent();for(const module of r.robot.frameModules||[])module.traverse(o=>{if(o.isMesh){o.geometry.dispose();if(!o.material.userData.sharedSalvageMaterial)o.material.dispose();}});disposeRobot(r.robot);}r.group.traverse(o=>{if(o.isMesh&&!o.geometry.userData.sharedModelGeometry)o.geometry.dispose();});r.group.removeFromParent();}rigs=[];
+ function update(frames,selected,stash=[]){
+  if(disposed)return;
+  // Selection, HP, names and inventory IDs do not change mesh geometry.
+  const key=JSON.stringify(frames.map(f=>[f.id,frameStats(f),f.weaponSlots?.map(w=>w?.type)])),stockKey=JSON.stringify(stash.slice(0,24).map(w=>w.type));
+  const n=Math.max(4,frames.length),index=Math.max(0,frames.findIndex(f=>f.id===selected));let desired=-index*Math.PI*2/n;desired+=Math.round((angle-desired)/(Math.PI*2))*Math.PI*2;
+  const selectionChanged=selectedRobot?.userData.frameId!==frames[index]?.id;
+  if(target!==desired||selectionChanged)requestDraw();target=desired;
+  if(stockKey!==stockSignature){stockSignature=stockKey;for(const gun of [...storage.children].filter(o=>o.userData.storedGun))disposeObjectResources(gun);for(const [i,item]of stash.slice(0,24).entries()){const gun=createWeaponModel(item.type);gun.userData.storedGun=true;gun.scale.setScalar(.6);gun.position.set(2.6+(i%4)*.27,.48+Math.floor(i/4)*.15,.6+(i%3)*.3);gun.rotation.set((i%3-1)*.35,i*2.39,(i%2?1:-1)*(.25+(i%4)*.18));storage.add(gun);}requestDraw();}
+  if(key!==signature){selectedRobot=null;drag=null;signature=key;clearRigs();const ids=new Set(frames.map(f=>f.id));for(const id of rotations.keys())if(!ids.has(id))rotations.delete(id);
   for(let i=0;i<n;i++){const holder=new THREE.Group(),t=i*Math.PI*2/n;holder.position.set(Math.sin(t)*3,0,Math.cos(t)*3);holder.rotation.y=t;wheel.add(holder);const plate=new THREE.Mesh(new THREE.CylinderGeometry(1.12,1.2,.18,48),steel);plate.position.y=.09;plate.receiveShadow=true;plate.userData.rotateUnit=i===index&&!!frames[i];holder.add(plate);const rim=new THREE.Mesh(new THREE.TorusGeometry(1.12,.018,6,48),i===index?edge:steel);rim.rotation.x=Math.PI/2;rim.position.y=.19;rim.userData.rotateUnit=i===index&&!!frames[i];holder.add(rim);
    let robot=null;if(frames[i]){robot=createRobot(false,'player',1.25);robot.mixer.stopAllAction();robot.skeleton.pose();robot.root.updateMatrixWorld(true);const torso=robot.body.children.find(o=>o.isMesh&&!o.userData.cosmetic)||robot.body,sockets=robot.arms.map(a=>torso.worldToLocal(a.shoulder.getWorldPosition(new THREE.Vector3()))),socketX=(Math.abs(sockets[0].x)+Math.abs(sockets[1].x))/2,socketY=(sockets[0].y+sockets[1].y)/2;for(const [j,arm]of robot.arms.entries()){const target=torso.localToWorld(new THREE.Vector3(Math.sign(sockets[j].x)*socketX,socketY,0));arm.shoulder.position.copy(arm.shoulder.parent.worldToLocal(target));arm.shoulder.updateWorldMatrix(false,true);}robot.blaster.visible=false;if(robot.backpack)robot.backpack.visible=false;applyFrameVisual(robot,frameStats(frames[i]));holder.add(robot.root);robot.root.scale.multiplyScalar(1.5);robot.root.position.y=0;
     for(const side of['l','r'])for(const [a,b]of[['upperarm_','lowerarm_'],['lowerarm_','hand_'],['thigh_','calf_'],['calf_','foot_']]){const bone=robot.bones.find(b=>b.name===a+side),end=robot.bones.find(node=>node.name===b+side);if(!bone||!end)continue;robot.root.updateMatrixWorld(true);const direction=end.getWorldPosition(new THREE.Vector3()).sub(bone.getWorldPosition(new THREE.Vector3())).normalize(),world=bone.getWorldQuaternion(new THREE.Quaternion());world.premultiply(new THREE.Quaternion().setFromUnitVectors(direction,new THREE.Vector3((side==='l'?1:-1)*(a==='upperarm_'?.22:a==='lowerarm_'?.12:a==='thigh_'?.16:.08),-1,0).normalize().applyQuaternion(robot.root.getWorldQuaternion(new THREE.Quaternion()))));bone.quaternion.copy(bone.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(world));}
@@ -41,10 +51,24 @@ export function createHangarScene(host,onAction=()=>{}){
     const equipment=new THREE.Group();equipment.userData.action='equipment';equipment.position.set(1.25,0,.35);holder.add(equipment);box(equipment,[.55,.17,.65],[0,.25,0]);box(equipment,[.16,1.2,.16],[0,.85,0]);const arm=box(equipment,[.18,.7,.18],[0,1.62,0]);arm.rotation.z=-.45;box(equipment,[.7,.14,.16],[-.23,1.93,0]);for(const side of[-1,1]){const finger=box(equipment,[.08,.32,.1],[-.55,1.78,side*.16]);finger.rotation.x=side*.35;}box(equipment,[.38,.28,.06],[.15,1.1,.12],edge);
 
 
-   }rigs.push({group:holder,robot});
+   }rigs.push({group:holder,robot,plate,rim});
   }
 
+   requestDraw();
+  }
+  if(selectionChanged)drag=null;
+  for(const [i,r]of rigs.entries()){const selected=i===index;r.plate.userData.rotateUnit=r.rim.userData.rotateUnit=selected&&!!r.robot;r.rim.material=selected?edge:steel;}
+  selectedRobot=rigs[index]?.robot?.root||null;
  }
- let raf;function draw(now){raf=requestAnimationFrame(draw);if(!host.isConnected||host.closest('[hidden]')){last=now;return;}const dt=Math.min((now-last)/1000,.05);last=now;angle=THREE.MathUtils.damp(angle,target,6,dt);wheel.rotation.y=angle;const w=host.clientWidth,h=host.clientHeight;if(renderer.domElement.width!==Math.round(w*renderer.getPixelRatio())||renderer.domElement.height!==Math.round(h*renderer.getPixelRatio())){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}renderer.render(scene,camera);}raf=requestAnimationFrame(draw);
- return {update,attach(next){host=next;host.appendChild(renderer.domElement);},dispose(){cancelAnimationFrame(raf);for(const r of rigs)if(r.robot)disposeRobot(r.robot);renderer.dispose();}};
+ let raf=null,disposed=false;
+ function requestDraw(){if(!disposed&&raf===null)raf=requestAnimationFrame(draw);}
+ function draw(now){
+  raf=null;if(document.hidden||!host.isConnected||host.closest('[hidden]')){last=now;return;}
+  const w=host.clientWidth,h=host.clientHeight;if(!w||!h){last=now;return;}
+  const dt=Math.min((now-last)/1000,.05);last=now;angle=THREE.MathUtils.damp(angle,target,6,dt);if(Math.abs(angle-target)<.0001)angle=target;wheel.rotation.y=angle;
+  if(canvas.width!==Math.floor(w*renderer.getPixelRatio())||canvas.height!==Math.floor(h*renderer.getPixelRatio())){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+  renderer.render(scene,camera);if(angle!==target)requestDraw();
+ }
+ const resize=new ResizeObserver(requestDraw);resize.observe(host);document.addEventListener('visibilitychange',requestDraw);window.addEventListener('resize',requestDraw);canvas.addEventListener('webglcontextrestored',requestDraw);requestDraw();
+ return {update,attach(next){if(disposed)return;resize.unobserve(host);host=next;host.appendChild(canvas);resize.observe(host);requestDraw();},dispose(){if(disposed)return;disposed=true;cancelAnimationFrame(raf);resize.disconnect();document.removeEventListener('visibilitychange',requestDraw);window.removeEventListener('resize',requestDraw);canvas.removeEventListener('webglcontextrestored',requestDraw);drag=null;selectedRobot=null;rotations.clear();clearRigs();disposeObjectResources(scene,{sharedMaterials});sharedMaterials.forEach(m=>m.dispose());renderer.dispose();canvas.remove();}};
 }
