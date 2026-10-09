@@ -145,6 +145,7 @@ for(const id of Object.keys(WILD_ENEMIES).filter(id=>!WILD_ENEMIES[id].bossModel
  fireWildEnemy(r);animateWildEnemy(r,.016,{aim:1});assert(r.muzzleFlash.visible&&r.recoil>0,`${id}: firing response`);
  if(!r.spec.count){const arm=r.arms[0].shoulder.quaternion.clone();animateWildAttack(r,.42);assert(arm.angleTo(r.arms[0].shoulder.quaternion)>.1,`${id}: melee windup`);}
  if(id==='wall-sniper-spider'){
+  assert.equal(r.spec.scale,.62);assert(r.nodes.Sniper_rifle.scale.x>=1.45,'enlarged rifle');assert(r.legs.every(l=>Math.abs(l.hip.position.x)<.2&&Math.abs(l.hip.position.z)<.13),'eight leg roots cluster around core');
   assert(r.mountOnWall([{x:0,z:0,w:6,d:6,h:8}],new THREE.Vector3(5,0,0),new THREE.Vector3(10,1,0)));
   animateWildEnemy(r,.016,{aim:1});const target=new THREE.Vector3(10,1,5);r.aimAt(target);
   const rifle=r.nodes.Sniper_rifle,start=rifle.getWorldPosition(new THREE.Vector3()),forward=new THREE.Vector3(0,0,1).applyQuaternion(rifle.getWorldQuaternion(new THREE.Quaternion()));

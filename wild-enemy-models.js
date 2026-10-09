@@ -16,7 +16,7 @@ export const WILD_ENEMIES = {
   'forest-warden': {name:'숲의 파수꾼',scale:1.1,body:'Torso',head:'Head',leg:'heavy_leg',shoulder:'Heavy_shoulder',forearm:'Heavy_forearm'},
   'assault-mantis': {name:'이끼 사마귀 돌격병',scale:.86,body:'Thorax',head:'Head',leg:'mantis_leg',shoulder:'Mantis_shoulder',forearm:'Mantis_forearm',hand:'Blade_hand'},
   'iron-beetle': {name:'철갑 딱정벌레',scale:.55,body:'Chassis',head:'Front_head',leg:'Beetle',count:3},
-  'wall-sniper-spider': {name:'폐허 거미 저격수',scale:.7,body:'Spider_body',head:'Spider_head',leg:'Spider',count:4}
+  'wall-sniper-spider': {name:'폐허 거미 저격수',scale:.62,body:'Spider_body',head:'Spider_head',leg:'Spider',count:4}
 };
 const templates=new Map(),pending=new Map();
 
@@ -97,6 +97,11 @@ export function createWildEnemy(id,{scale=WILD_ENEMIES[id]?.scale}={}){
     attach(chain[0],nodes.Pelvis||body);attach(chain[1],chain[0]);attach(chain[2],chain[1]);attach(foot,chain[2]);
     legs.push({hip:chain[0],knee:chain[1],hock:chain[2],foot,chain,side,index});
     const hose=nodes[`Leg_supply_hose_${side}_${index}`];if(hose)attach(hose,chain[0]);
+  }
+  if(id==='wall-sniper-spider'){
+    // Cluster all eight leg sockets beneath the core, with the distal legs fanning out.
+    for(const leg of legs){leg.hip.position.x*=.45;leg.hip.position.z*=.3;}
+    nodes.Sniper_rifle.scale.multiplyScalar(1.45);
   }
   // Each clone owns its transforms. The immutable mesh geometry and textures are shared.
   const rest=new Map();asset.traverse(o=>{if(!o.isMesh)rest.set(o,{p:o.position.clone(),q:o.quaternion.clone()});});
