@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import * as THREE from 'three';
 import {batchWildSurfaces} from '../wild-enemy-surfaces.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {createBoss,createScoutDrone,animateBoss} from '../boss-models.js';
 import {wildGait} from '../wild-enemy-gait.js';
 import {WILD_ENEMIES,registerWildTemplate,createWildEnemy,wildEnemyId,animateWildEnemy,animateWildAttack,fireWildEnemy,dieWildEnemy,disposeWildEnemy} from '../wild-enemy-models.js';
 // Exercise the actual GLB geometry and pivot nodes in Node; skip only browser image decoding.
@@ -35,6 +36,14 @@ for(const id of Object.keys(WILD_ENEMIES)){
   fireWildEnemy(drone);assert(drone.muzzleFlash.visible);
   dieWildEnemy(drone,.2);assert(drone.destruction.pieces.length>0);
   animateWildEnemy(drone,.016);assert(!drone.destruction&&drone.mount.visible);
+  const boss=createBoss('drone'),scout=createScoutDrone();
+  for(const actor of [boss,scout]){
+   assert.equal(actor.wildId,id);assert.equal(actor.rotors.length,2);assert.equal(actor.missileMuzzles.length,2);
+   actor.posePrepared=false;animateBoss(actor,.016,1,0);assert(actor.phase>0);
+   for(const port of actor.missileMuzzles){port.parent.rotation.x=-Math.PI/2;assert(port.getWorldPosition(new THREE.Vector3()).toArray().every(Number.isFinite));}
+   disposeWildEnemy(actor);
+  }
+  assert(scout.root.scale.x<boss.root.scale.x,'scout retains small size');
   disposeWildEnemy(drone);disposeWildEnemy(other);console.log('PASS wasp rotor, hover, red eye, fire and destruction');continue;
  }
  const r=createWildEnemy(id),other=createWildEnemy(id),before=r.legs[0].foot.getWorldPosition(new THREE.Vector3()),rest=other.legs[0].foot.getWorldPosition(new THREE.Vector3());
@@ -182,5 +191,5 @@ for(const id of Object.keys(WILD_ENEMIES)){
  const geometry=other.hitMeshes[0].geometry;let disposed=false;geometry.addEventListener('dispose',()=>disposed=true);disposeWildEnemy(r);assert(!disposed,'despawning keeps shared mesh geometry alive');
  console.log(`PASS ${id}: ${r.legs.length} legs, weighted support/compression, walk/run/strafe, 30/60 fps, stop/airborne, attack and destruction`);
 }
-assert.equal(wildEnemyId(false,'trooper'),'rust-scout');assert.equal(wildEnemyId(false,'spider'),'iron-beetle');assert.equal(wildEnemyId(false,'assassin'),'assault-mantis');assert.equal(wildEnemyId(false,'sniper'),'wall-sniper-spider');assert.equal(wildEnemyId(false,'blade'),'forest-warden');assert.equal(wildEnemyId(false,'player'),null);assert.equal(wildEnemyId(true,'drone'),null);
+assert.equal(wildEnemyId(false,'trooper'),'rust-scout');assert.equal(wildEnemyId(false,'spider'),'iron-beetle');assert.equal(wildEnemyId(false,'assassin'),'assault-mantis');assert.equal(wildEnemyId(false,'sniper'),'wall-sniper-spider');assert.equal(wildEnemyId(false,'blade'),'forest-warden');assert.equal(wildEnemyId(false,'player'),null);assert.equal(wildEnemyId(true,'drone'),'rust-wasp-drone');assert.equal(wildEnemyId(false,'scoutDrone'),'rust-wasp-drone');
 console.log('PASS enemy mapping and player/aerial compatibility');
