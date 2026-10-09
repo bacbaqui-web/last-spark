@@ -186,3 +186,12 @@
 #baseCamp .hangarHeader #hangarDeploy:hover:not(:disabled){background:#218fb9!important;box-shadow:0 0 30px #2ab4ef66}
 #baseCamp .hangarHeader button:focus-visible{outline:2px solid #c2f1ff;outline-offset:4px}
 @media(max-width:700px){#baseCamp .hangarHeader{top:16px;left:14px;right:14px;gap:10px}#baseCamp .hangarHeader #hangarDeploy{width:175px;min-width:0;min-height:54px;font-size:18px;padding:13px 18px!important}#baseCamp #viewSortieResult{font-size:12px;padding:12px}}
+
+#baseCamp.preparingSortie .hangarHeader,#baseCamp.preparingSortie .hangarArrow,#baseCamp.preparingSortie .hangarIdentity,#baseCamp.preparingSortie .hangarServiceMonitor,#baseCamp.preparingSortie .hangarInteractionHint{opacity:0;pointer-events:none;transition:opacity .25s}
+#sortieBriefing.inHangar{background:transparent;display:block;padding:0;pointer-events:none;backdrop-filter:none}
+#sortieBriefing.inHangar .operationFrameStage{display:none}
+#sortieBriefing.inHangar .modeBrief{position:absolute;right:3%;top:5%;width:43%;height:90%;padding:28px;pointer-events:auto;background:linear-gradient(145deg,#09283bef,#06131ced);border:1px solid #4ca3c56b;border-radius:10px;box-shadow:0 16px 65px #0008,inset 0 1px #8bd9fb22;animation:hangarModeArrival .55s ease-out both}
+@keyframes hangarModeArrival{from{opacity:0;transform:translateX(90px)}to{opacity:1;transform:translateX(0)}}
+@media(max-width:750px){#sortieBriefing.inHangar .modeBrief{right:2%;top:8%;width:52%;height:86%;padding:16px}#sortieBriefing.inHangar .operationModes{grid-template-columns:1fr}#sortieBriefing.inHangar .operationHeading h1{font-size:24px}}
+
+#baseCamp.preparingSortie #hangarCanvas{pointer-events:none}

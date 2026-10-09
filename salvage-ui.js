@@ -38,7 +38,7 @@ export function createBaseUI(campaign,{prepare,prepareMission,training,appearanc
   result.hidden=false;result.querySelector('.resultClose').onclick=closeResult;result.querySelector('#confirmSortieResult').onclick=closeResult;result.querySelector('#confirmSortieResult').focus({preventScroll:true});
  }
  result.addEventListener('keydown',e=>{if(e.code==='Escape'){e.preventDefault();closeResult();}if(e.code==='Tab'){const first=result.querySelector('.resultClose'),last=result.querySelector('#confirmSortieResult');if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
- function show(report=null){acknowledgeModules();root.hidden=false;briefing.hidden=true;result.hidden=true;panel=null;render();if(report)showResult(report);}
+ function show(report=null){acknowledgeModules();root.hidden=false;briefing.hidden=true;result.hidden=true;panel=null;root.inert=false;root.classList.remove('preparingSortie');briefing.classList.remove('inHangar');render();if(report)showResult(report);}
  function hide(){acknowledgeModules();root.hidden=true;result.hidden=true;}
 
  function sorted(items,isGun=false,isGear=false){const list=[...items],name=p=>isGear?EQUIPMENT[p.type].name:isGun?gunInfo(p).name:PARTS[p.type].name;if(sort==='recent')return list.reverse();return list.sort((a,b)=>sort==='levelDown'?b.level-a.level:sort==='levelUp'?a.level-b.level:sort==='type'?a.type.localeCompare(b.type):name(a).localeCompare(name(b),'ko'));}
@@ -93,9 +93,9 @@ export function createBaseUI(campaign,{prepare,prepareMission,training,appearanc
  }
  let cancelBrief=null;
  function showBrief(_weapons,launch){
-  cancelBrief?.();hide();briefing.hidden=false;const robot=campaign.frame(),stats=frameStats(robot);
+  cancelBrief?.();panel=null;hover(null);root.inert=true;root.classList.add('preparingSortie');hangar?.inspect('prepare');briefing.classList.add('inHangar');briefing.hidden=false;const robot=campaign.frame(),stats=frameStats(robot);
   const frameHTML=`<h2>투입 기체 · ${safe(robot.name)}</h2><p>현재 내구도 ${Math.round(robot.hp/100*stats.maxHP)} / ${stats.maxHP} · 배터리 ${Math.round(Math.min(robot.battery,stats.battery))} / ${stats.battery}</p><div class="operationLoadout">${robot.weaponSlots.filter(Boolean).map(item=>`<article><b>${safe(gunInfo(item).name)} · Lv.${item.level}</b><p>${gunDescription(item)}</p><small>출격 탄약 ${item.type==='pistol'?'무한':Math.min(campaign.state.ammo[item.type]||0,gunInfo(item).ammo||0)}</small></article>`).join('')}${Object.values(robot.equipment||{}).filter(Boolean).map(item=>`<article><b>${safe(EQUIPMENT[item.type].name)} · Lv.${item.level}</b><p>${safe(equipmentDescription(item))}</p></article>`).join('')}${robot.parts.map(item=>`<article><b>${safe(PARTS[item.type].name)} · Lv.${item.level}</b><p>${safe(partDescription(item))}</p></article>`).join('')}</div>`;
-  cancelBrief=showOperationBriefing(briefing,{campaign,prepareMission,launch,training,back:show,frameHTML,frame:robot});
+  cancelBrief=showOperationBriefing(briefing,{campaign,prepareMission,launch,training,back:show,frameHTML,frame:robot,stagePreview:hangar?{depart:mode=>hangar.depart(mode),reset:()=>hangar.resetDeparture(),dispose:()=>{}}:null});
  }
  return {show,hide,render,root,showBrief};
 }
