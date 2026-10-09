@@ -177,3 +177,12 @@
 @media(max-width:700px){#baseCamp .hangarIdentity,#baseCamp .hangarServiceMonitor{padding:8px;font-size:10px}#baseCamp #renameFrame{font-size:13px}.hangarVitals b{font-size:12px}.hangarServiceMonitor h2{font-size:13px}.hangarServiceMonitor>p{font-size:8px}.hangarServiceMonitor .supplyRows article>div{grid-template-columns:1fr}#baseCamp .hangarHoverCard{width:240px;right:8px}#baseCamp .hangarFooter{bottom:15px}.hangarInteractionHint{display:none}}
 #baseCamp .hangarServiceMonitor .supplyRows button,#baseCamp .hangarHoverCard button{width:auto;min-width:0;max-width:100%;white-space:normal}#baseCamp .hangarServiceMonitor .supplyRows article>div{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}#baseCamp .hangarServiceMonitor .supplyRows article{min-width:0}#baseCamp #hangarDeploy{background:#124b6c!important;color:#ddf6ff!important}
 #baseCamp .chestClose{position:static;width:100%;padding:9px;margin-top:18px;background:#0a537b;color:#c3edff;border:1px solid #369ac5;font-size:11px;border-radius:4px}#baseCamp .hangarArrow{width:36px;height:48px;background:transparent!important;border:none!important;box-shadow:none!important}#baseCamp .hangarArrow svg{width:18px}
+
+/* Primary hangar actions stay in the upper corners, clear of the monitors. */
+#baseCamp .hangarHeader{top:24px;left:28px;right:28px;z-index:3;pointer-events:none;letter-spacing:0;gap:16px}
+#baseCamp .hangarHeader button{pointer-events:auto;cursor:pointer}
+#baseCamp #viewSortieResult{margin:0;padding:14px 20px;font-size:15px;border-radius:6px;background:#12374b;color:#def4ff;border:1px solid #5394b4}
+#baseCamp .hangarHeader #hangarDeploy{margin-left:auto;width:250px;min-height:64px;padding:17px 28px!important;font-size:22px;font-weight:800;letter-spacing:.04em;background:linear-gradient(135deg,#1779a3,#105678)!important;color:#ecfbff!important;border:1px solid #8bdeff;box-shadow:0 0 24px #249ed547,inset 0 1px #bcf0ff40;border-radius:7px}
+#baseCamp .hangarHeader #hangarDeploy:hover:not(:disabled){background:#218fb9!important;box-shadow:0 0 30px #2ab4ef66}
+#baseCamp .hangarHeader button:focus-visible{outline:2px solid #c2f1ff;outline-offset:4px}
+@media(max-width:700px){#baseCamp .hangarHeader{top:16px;left:14px;right:14px;gap:10px}#baseCamp .hangarHeader #hangarDeploy{width:175px;min-width:0;min-height:54px;font-size:18px;padding:13px 18px!important}#baseCamp #viewSortieResult{font-size:12px;padding:12px}}
