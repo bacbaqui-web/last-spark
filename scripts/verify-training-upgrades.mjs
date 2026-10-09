@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {createProgression,applyUpgrade,buildSummary,upgradeOptions} from '../progression.js';
 const source=fs.readFileSync(new URL('../main.js',import.meta.url),'utf8');
-assert(source.includes('if(e.boss&&!dead&&(!frameMode||trainingMode)){upgradeDelay=1.1;'),'training boss kills open upgrade choices');
+assert(source.includes('if(e.boss&&!dead&&(!frameMode||trainingMode)){upgradeDelay=trainingMode?1:1.1;'),'training boss kills open upgrade choices');
 const elements=new Map(),$=id=>{if(!elements.has(id))elements.set(id,{style:{}});return elements.get(id);};
 const progression=createProgression(),enemy={hp:50,max:100,speed:4},player={hp:80};let resumed=0;
 const context={progression,applyUpgrade,buildSummary,Math,$,player,enemies:[enemy],rewardChoices:[upgradeOptions.find(o=>o.id==='vitality'),upgradeOptions.find(o=>o.id==='power')],playerAvatar:{setArmorLevel(){}},maxPlayerHP:()=>Math.round(120*progression.player.maxHealth),damageGrace:0,updateCombatRing(){},notify(){},tone(){},frameMode:true,async resumeRecoveryControls(){resumed++;}};

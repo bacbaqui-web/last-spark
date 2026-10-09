@@ -30,3 +30,12 @@ const queue=[];const context=vm.createContext({THREE,salvageMode:false,trainingM
 vm.runInContext(setup+wave+'beginWave();',context);
 assert.equal(queue.length,8);assert(queue.every(e=>e.dataEntry&&e.entryTarget&&!e.group.visible));assert.equal(queue[7].dataEntry.age,-7*.12,'assembly is staggered without changing the roster');
 console.log('PASS training wave has the same enemy roster and staggered data assembly without creating aircraft');
+// Next stage keeps survivors, waits for the boss cycle, then fills only vacancies.
+for(const e of queue)e.hp=100;
+queue.splice(3);context.updateTrainingFrame=()=>{};context.dead=false;context.upgradeDelay=0;context.rewardChoices=null;
+vm.runInContext(source.slice(source.indexOf('function updateWaves('),source.indexOf('function updatePillbugEnemy(')),context);
+context.rewardChoices=['choice'];vm.runInContext('updateWaves(20)',context);assert.equal(context.wave,1,'upgrade selection pauses respawn clock');
+context.rewardChoices=null;vm.runInContext('updateWaves(.01)',context);assert.equal(context.waveWait,10);vm.runInContext('updateWaves(9.9)',context);assert.equal(context.wave,1);
+const survivors=[...queue];vm.runInContext('updateWaves(.2)',context);assert.equal(context.wave,2);assert(survivors.every(e=>queue.includes(e)));assert.equal(queue.filter(e=>!e.boss).length,9,'stage two fills up to nine normal enemies');assert.equal(queue.filter(e=>e.boss).length,1);assert.equal(Math.abs(queue.at(-1).dataEntry.age),0,'new boss starts materializing immediately after countdown');
+vm.runInContext('updateWaves(100)',context);assert.equal(context.wave,2,'no replenishment while boss lives');assert.equal(queue.length,10);
+console.log('PASS boss cycle: selection pause, ten second respawn, preserved survivors, population top-up and no refill during boss fight');
