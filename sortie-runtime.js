@@ -78,3 +78,5 @@ export {createTrainingDataEffects} from './training-data-effects.js';
 export {pickTrainingSpawn} from './training-spawns.js';
 
 export {decorateTrainingRoom} from "./training-room-decor.js";
+
+export {createHangarMusic} from './hangar-music.js';

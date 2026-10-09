@@ -1,4 +1,3 @@
-import {createHangarMusic} from './hangar-music.js';
 import {updateCombatPillbug} from './pillbug-combat.js';
 import {createSlagMortar,advanceMortar} from './slag-mortar.js';
 import {createTrainingRun} from './salvage-campaign.js';
@@ -24,7 +23,7 @@ import {attachEnemyAI,updateEnemyAI,steerEnemy,chooseCover,coverRoute} from './e
 const $=id=>document.getElementById(id),canvas=$('game');
 const gameMode=SALVAGE.gameMode(typeof window.location==='object'?window.location.search:'?arena');
 const salvageMode=gameMode==='recovery',trainingMode=gameMode==='training',frameMode=salvageMode||trainingMode;
-const trainingMusic=trainingMode?createHangarMusic():null;
+const trainingMusic=trainingMode?SALVAGE.createHangarMusic():null;
 let selectedMission=sortieMission(),campaign=null,sortie=null,baseUI=null,sortieWorld=null,sortieHUD=null,extractPrompt=null,baseBack=null;
 if(frameMode){let store;try{store=window.localStorage;}catch{}campaign=SALVAGE.createCampaign(store,{readOnly:trainingMode||window.lastSparkStorageLock===false,exclusive:window.lastSparkStorageLock===true});}
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.02;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
