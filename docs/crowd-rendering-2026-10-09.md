@@ -55,3 +55,9 @@ CROWD_COUNTS=80,120 CROWD_SECONDS=12 CROWD_LIVE_SECONDS=25 CROWD_MODES=recovery 
 배포용 체크아웃의 `npm test` **67/67**, 두 모드 실제 브라우저 통합 검사 **13개 그룹 / 오류 0**, production build 및 배포 자산 검사를 통과했습니다. 산출물은 **283개 파일 / 143.968MiB**입니다. 검사 로그는 `output-crowd-release-tests-final.log`, `output-crowd-release-modes.log`, `output-crowd-release-build.log`, `output-crowd-release-assets.log`에 보관했습니다.
 
 현재 작업 폴더에도 이 변경만 병합해 기존 무기/훈련 편집과 말벌 미리보기 작업을 보존했습니다. 병합 후 6종 모델의 화면별 자세 검사(288개)와 실제 게임 전투 검사도 통과했습니다. 기존 파일 사본은 배포 체크아웃의 `output/primary-before-crowd-optimization/`에 보관했습니다.
+
+## GitHub Pages 확인
+
+2026-10-09 코드 커밋 `10647fac6b539416fa065a20707041395bc34bd4`를 GitHub Pages에 배포했습니다. [배포 실행](https://github.com/bacbaqui-web/last-spark/actions/runs/37876899166)은 성공했고, 온라인 HTML이 로컬 배포 산출물과 같은 `assets/game-B_YSI_nT.js`를 참조함을 확인했습니다.
+
+[온라인 게임](https://bacbaqui-web.github.io/last-spark/)에서 격리된 브라우저로 모드 선택·모바일 배치·회수 지도/보상·훈련 웨이브 시작·재접속/정비실 복귀 **5개 그룹 / 오류 0**을 확인했습니다. 훈련 전후 캠페인 저장/백업 데이터도 동일했습니다. 공개 UI 검사 기록은 `output/published-modes/checks.json`, 배포 파일 일치 기록은 `output/crowd-performance/published-entry-10647fa.json`입니다.
