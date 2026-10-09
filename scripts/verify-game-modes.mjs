@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {gameMode,gameModeURL,recoveryRewards,trainingWaveSize} from '../game-modes.js';
+import {gameMode,gameModeURL,recoveryRewards,trainingWaveSize,trainingWaveRoster} from '../game-modes.js';
 import {acquireCampaignOwner} from '../campaign-owner.js';
 import {sortieMission} from '../sortie-mission.js';
 import {makeCoreWeapon} from '../salvage-campaign.js';
@@ -33,3 +33,17 @@ try{
  location.search='';assert.equal(await acquireCampaignOwner(),true);assert.equal(locks,1);release();
 }finally{for(const [key,descriptor]of originals){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key];}}
 console.log('PASS mode URL isolation, training bypasses campaign locks, all stage rewards match actual drops, bounded endless-wave population');
+
+const signatures=new Set(),types=new Set();
+for(let seed=1;seed<=100;seed++){
+ let state=seed;const random=()=>((state=Math.imul(state,1664525)+1013904223>>>0)/2**32);
+ for(let wave=1;wave<=12;wave++){
+  const roster=trainingWaveRoster(wave,random);
+  assert.equal(roster.length,trainingWaveSize(wave),'random composition preserves the stage population');
+  roster.forEach(type=>types.add(type));if(wave===1)signatures.add(roster.join(','));
+ }
+}
+assert.equal(types.size,7,'all ordinary enemy types can appear');assert(signatures.size>90,'fresh runs vary the composition');
+assert(trainingWaveRoster(1,()=>0).every(t=>t==='trooper'),'composition is sampled independently, not a fixed cycle');
+assert(trainingWaveRoster(1,()=>.99999).every(t=>t==='pillbug'));
+console.log('PASS 100 seeded training runs: random enemy compositions, all 7 types, exact growing stage counts');

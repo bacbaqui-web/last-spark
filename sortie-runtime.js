@@ -66,7 +66,7 @@ export {createDeathBudget} from './death-budget.js';
 export {createDropBudget} from './combat-budget.js';
 export {createCombatLightPool} from './combat-lights.js';
 
-export {gameMode,gameModeURL,trainingWaveSize} from './game-modes.js';
+export {gameMode,gameModeURL,trainingWaveSize,trainingWaveRoster} from './game-modes.js';
 export {createWeaponSlotHUD} from './weapon-slot-hud.js';
 
 export {withFrameWork,scheduleFrameWork} from './frame-work.js';

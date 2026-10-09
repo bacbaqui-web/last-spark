@@ -18,11 +18,12 @@ fx.clear();assert.equal(fx.snapshot().dataActors,0);assert.equal(scene.children.
 for(let i=0;i<100;i++){fx.spawn(a,.5);fx.death(a,.5);fx.release(a);}assert.equal(scene.children.length,5,'repeated spawns/deaths do not accumulate scene objects');
 fx.dispose();geometry.dispose();shared.dispose();console.log('PASS data assembly/deletion, shared material isolation, bounded visual effects, render batching restoration and reset cleanup');
 const {pickTrainingSpawn}=await import('../training-spawns.js');
+const {trainingWaveRoster}=await import('../game-modes.js');
 const {readFileSync}=await import('node:fs'),{default:vm}=await import('node:vm');
 const source=readFileSync(new URL('../main.js',import.meta.url),'utf8');
 const setup=source.slice(source.indexOf('function enterTrainingEnemy('),source.indexOf('function updateEnemyEntrance('));
 const wave=source.slice(source.indexOf('function beginWave(){'),source.indexOf('function updateWaves('));
-const queue=[];const context=vm.createContext({THREE,salvageMode:false,trainingMode:true,wave:0,wavePending:true,waveWait:3,bossCount:0,SALVAGE:{trainingWaveSize:()=>7,pickTrainingSpawn},enemies:queue,platforms:[],player:{pos:new THREE.Vector3(0,1.7,14)},Math,notify(){},tone(){},spawn(boss,type){queue.push({boss,type,group:new THREE.Group(),robot:{},bossAnchor:new THREE.Vector3()});},createWaveTransport(){throw Error('training must not create a transport');}});
+const queue=[];const context=vm.createContext({THREE,salvageMode:false,trainingMode:true,wave:0,wavePending:true,waveWait:3,bossCount:0,SALVAGE:{trainingWaveRoster,pickTrainingSpawn},enemies:queue,platforms:[],player:{pos:new THREE.Vector3(0,1.7,14)},Math,notify(){},tone(){},spawn(boss,type){queue.push({boss,type,group:new THREE.Group(),robot:{},bossAnchor:new THREE.Vector3()});},createWaveTransport(){throw Error('training must not create a transport');}});
 vm.runInContext(setup+wave+'beginWave();',context);
 assert.equal(queue.length,8);assert(queue.every(e=>e.dataEntry&&e.entryTarget&&!e.group.visible));assert.equal(queue[7].dataEntry.age,-7*.12,'assembly is staggered without changing the roster');
 console.log('PASS training wave has the same enemy roster and staggered data assembly without creating aircraft');

@@ -14,3 +14,8 @@ export function recoveryRewards(mission){
  return {coreLevel:level,weaponMinLevel:level+2,weaponMaxLevel:level+4,nextStage:mission.stage<12?mission.stage+1:null};
 }
 export const trainingWaveSize=wave=>Math.min(40,5+wave*2);
+
+const trainingEnemyTypes=['trooper','scoutDrone','assassin','spider','sniper','mortar','pillbug'];
+export function trainingWaveRoster(wave,random=Math.random){
+ return Array.from({length:trainingWaveSize(wave)},()=>trainingEnemyTypes[Math.floor(random()*trainingEnemyTypes.length)]);
+}
