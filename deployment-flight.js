@@ -36,8 +36,14 @@ export async function showDeploymentFlight({cargo,stage}){
    const offscreen=canvas.transferControlToOffscreen();worker.postMessage({type:'start',canvas:offscreen,cargo:cargoJSON,paintURL,...size()},[offscreen]);visibility();
   }
   await ready;clearTimeout(timeout);
-  // Present the first flight frame before synchronous city generation starts.
-  await new Promise(resolve=>setTimeout(resolve,0));
+  // A timer alone can resume before the browser paints the overlay. Allow a
+  // complete paint before city generation; hidden tabs must not wait for RAF.
+  await new Promise(resolve=>{
+   let first,second;
+   const done=()=>{clearTimeout(deadline);cancelAnimationFrame(first);cancelAnimationFrame(second);resolve();};
+   const deadline=setTimeout(done,100);
+   first=requestAnimationFrame(()=>{second=requestAnimationFrame(done);});
+  });
  }catch(error){fallback();clearTimeout(timeout);}
  return {
   progress(message,completed,total){status.textContent=message;const known=total>0;bar.classList.toggle('indeterminate',!known);if(known){const percent=Math.min(100,Math.max(0,completed/total*100));bar.setAttribute('aria-valuenow',String(Math.round(percent)));bar.querySelector('i').style.width=percent+'%';}else bar.removeAttribute('aria-valuenow');},
