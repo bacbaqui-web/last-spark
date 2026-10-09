@@ -27,7 +27,7 @@ export function batchStreetStatics(root){
   block.traverse(node=>{for(let parent=node;parent&&parent!==block;parent=parent.parent)if(parent===block.userData.recoveryDrone)return;node.matrixAutoUpdate=false;});
   const buckets=new Map(),inverse=block.matrixWorld.clone().invert(),matrix=new T.Matrix4(),materialKeys=new Map();
   block.traverse(mesh=>{
-   if(!mesh.isMesh||mesh.isInstancedMesh||mesh.isSkinnedMesh||!mesh.visible||Array.isArray(mesh.material)||mesh.children.length||mesh.geometry.morphAttributes.position||mesh.geometry.drawRange.start!==0||Number.isFinite(mesh.geometry.drawRange.count))return;
+   if(!mesh.isMesh||mesh.isInstancedMesh||mesh.isSkinnedMesh||!mesh.visible||mesh.userData.vegetation||Array.isArray(mesh.material)||mesh.children.length||mesh.geometry.morphAttributes.position||mesh.geometry.drawRange.start!==0||Number.isFinite(mesh.geometry.drawRange.count))return;
    for(let parent=mesh;parent&&parent!==block;parent=parent.parent)if(!parent.visible||parent.userData.lod||parent.userData.streetLOD||parent===block.userData.recoveryDrone||parent.userData.effect)return;
    const material=mesh.material,custom=material.onBeforeCompile!==T.Material.prototype.onBeforeCompile;
    if(material.transparent||custom&&!material.userData.staticWorldBatch)return;

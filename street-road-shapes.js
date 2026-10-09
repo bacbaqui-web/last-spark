@@ -6,6 +6,7 @@ import {createStreetTree,treeVariants} from './street-tree-variants.js';
 import {createFleetVehicle,fleet} from './vehicle-fleet-models.js';
 import {mossMaterial} from './street-moss-material.js';
 import {windMaterial} from './street-vegetation-runtime.js';
+import {addVegetationCells} from './vegetation-density.js';
 import {createFleetVehicle as createRide,fleet as rideFleet} from './ride-fleet-models.js';
 import {addStreetOvergrowth} from './street-overgrowth.js';
 import {addGroundDamage} from './street-ground-damage.js';
@@ -89,6 +90,6 @@ export function createRoadShapeBlock(seed=2207,index=0,options={}){
  for(const x of (bend||index===0?[]:[-1,1]))for(const z of [-1,1]){surface(root,5,5,x*6,z*6,.205,m.walk);if(index!==5&&shape.ports.includes(z>0?0:2))continue;const variant=Math.floor(r()*20),data=houseVariants[variant],h=createBrickHouse(variant),scale=8.86/data.width;h.scale.setScalar(scale);h.rotation.y=x>0?-Math.PI/2:Math.PI/2;h.position.set(x*(8.5+data.depth*scale/2),.205,z*(index===5?4:13.07));h.userData.collisionKind='building';root.add(h);houses.push({});}
  if(index===5){surface(root,7,27.5,0,-22.25,.025,m.road);for(const side of [-1,1]){surface(root,5,27.5,side*6,-22.25,.205,m.walk);for(let z=-35;z<0;z+=1.2)box(root,side*3.55,.115,z,.18,.18,1.16,m.walk);}for(let z=-34;z<0;z+=6)box(root,0,.031,z,.1,.006,2,m.paint);const collapsed=addCollapsedRoadBlockade(root,m.brick,originalSeed^0x389a);debrisCount+=collapsed.debris;houses.push({collapsed:true},...Array.from({length:5},()=>({behindBlockade:true})));}
  if(index===3){surface(root,17,5,0,-6,.205,m.walk);for(let x=-8;x<8.5;x+=1.2)box(root,x,.115,-3.55,1.16,.18,.18,m.walk);}
- const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(grassPositions,3));g.setAttribute('uv',new T.Float32BufferAttribute(grassUV,2));g.computeVertexNormals();m.grass.side=T.DoubleSide;windMaterial(m.grass,'grass');const grass=new T.Mesh(g,m.grass);grass.userData.ownedGeometry=true;root.add(grass);
+ m.grass.side=T.DoubleSide;windMaterial(m.grass,'grass');addVegetationCells(root,{positions:grassPositions,uv:grassUV,material:m.grass,kind:'grass',receiveShadow:false});
  root.userData={seed:originalSeed,shape:index,size:72,houses,trees,cars,smallRides:Array.from({length:shape.ports.length*2},()=>({})),debris:debrisCount,walkBounds:35,groundBase:.025,connections:shape.ports.map(p=>({x:-Math.sin(p*Math.PI/2)*36,z:Math.cos(p*Math.PI/2)*36,width:7}))};if(options.backdrop!==false)addCityBackdrop(root,m.brick);addStreetLife(root);return root;
 }

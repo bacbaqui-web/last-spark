@@ -2,6 +2,7 @@ import * as T from 'three';
 import {createBrickHouse,houseVariants} from './brick-house-variants.js';
 import {addStreetOvergrowth} from './street-overgrowth.js';
 import {mossMaterial} from './street-moss-material.js';
+import {addVegetationCells,vineStrandRank,vineLeafRank} from './vegetation-density.js';
 
 // A collapsed roadside apartment spans the former continuation of the road.
 export function addCollapsedRoadBlockade(root,brick,seed){
@@ -27,13 +28,17 @@ export function addCollapsedRoadBlockade(root,brick,seed){
  pieces.castShadow=pieces.receiveShadow=true;pieces.userData={ownedGeometry:true,ownedInstances:true,collisionKind:'rubble',ownedMaterials:[plaster]};group.add(pieces);
  for(const h of [body,fallen])h.traverse(part=>{if(!part.material)return;const mats=(Array.isArray(part.material)?part.material:[part.material]).map(m=>mossMaterial(m.clone(),.95));part.material=Array.isArray(part.material)?mats:mats[0];part.userData.ownedMaterials=mats;});
  // Tendrils and small leaves follow the exposed tilted surfaces and front walls.
- group.updateMatrixWorld(true);const leafPos=[],leafUV=[],stemPos=[],ray=new T.Raycaster(),normal=new T.Vector3(),previous=new T.Vector3(),targets=[fallen,body,mass,...group.children.filter(o=>o.isMesh&&!o.isInstancedMesh)],fb=new T.Box3().setFromObject(fallen);
- for(let strand=0;strand<28;strand++){let connected=false;const wall=strand%2===0,base=fb.min.x+random()*(fb.max.x-fb.min.x);for(let k=0;k<44;k++){const t=k/43,x=base+Math.sin(t*7+strand)*.3;
+ group.updateMatrixWorld(true);const leafPos=[],leafUV=[],stemPos=[],leafRanks=[],stemRanks=[],ray=new T.Raycaster(),normal=new T.Vector3(),previous=new T.Vector3(),targets=[fallen,body,mass,...group.children.filter(o=>o.isMesh&&!o.isInstancedMesh)],fb=new T.Box3().setFromObject(fallen);
+ for(let strand=0;strand<28;strand++){let connected=false,leafIndex=0;const wall=strand%2===0,base=fb.min.x+random()*(fb.max.x-fb.min.x);for(let k=0;k<44;k++){const t=k/43,x=base+Math.sin(t*7+strand)*.3;
   ray.set(wall?new T.Vector3(x,.4+t*(fb.max.y-.5),fb.max.z+2):new T.Vector3(x,fb.max.y+2,fb.min.z+t*(fb.max.z-fb.min.z)),wall?new T.Vector3(0,0,-1):new T.Vector3(0,-1,0));const hit=ray.intersectObjects(targets,true)[0];if(!hit){connected=false;continue;}normal.copy(hit.face.normal).transformDirection(hit.object.matrixWorld);const point=hit.point.clone().addScaledVector(normal,.026);
-  if(connected&&point.distanceTo(previous)<.7){const side=point.clone().sub(previous).cross(normal).normalize().multiplyScalar(.012);for(const v of [previous.clone().sub(side),previous.clone().add(side),point.clone().add(side),previous.clone().sub(side),point.clone().add(side),point.clone().sub(side)])stemPos.push(...v.toArray());}previous.copy(point);connected=true;
-  if(k%2)continue;const q=new T.Quaternion().setFromUnitVectors(new T.Vector3(0,0,1),normal),size=.09+random()*.08,tile=Math.floor(random()*4);for(const j of [0,1,2,0,2,3]){const [u,v]=[[0,0],[1,0],[1,1],[0,1]][j];const offset=new T.Vector3((u-.5)*size*2,(v-.5)*size*2,0).applyQuaternion(q).add(point);leafPos.push(...offset.toArray());leafUV.push(tile%2*.5+.012+u*.476,Math.floor(tile/2)*.5+.012+v*.476);}
+  if(connected&&point.distanceTo(previous)<.7){stemRanks.push(vineStrandRank(strand));const side=point.clone().sub(previous).cross(normal).normalize().multiplyScalar(.012);for(const v of [previous.clone().sub(side),previous.clone().add(side),point.clone().add(side),previous.clone().sub(side),point.clone().add(side),point.clone().sub(side)])stemPos.push(...v.toArray());}previous.copy(point);connected=true;
+  if(k%2)continue;leafRanks.push(vineLeafRank(strand,leafIndex++));const q=new T.Quaternion().setFromUnitVectors(new T.Vector3(0,0,1),normal),size=.09+random()*.08,tile=Math.floor(random()*4);for(const j of [0,1,2,0,2,3]){const [u,v]=[[0,0],[1,0],[1,1],[0,1]][j];const offset=new T.Vector3((u-.5)*size*2,(v-.5)*size*2,0).applyQuaternion(q).add(point);leafPos.push(...offset.toArray());leafUV.push(tile%2*.5+.012+u*.476,Math.floor(tile/2)*.5+.012+v*.476);}
  }}
  const leaves=new T.MeshStandardMaterial({color:0x819e58,side:T.DoubleSide,alphaTest:.48,roughness:1});if(typeof document!=='undefined'){leaves.map=new T.TextureLoader().load(new URL('./textures/trees/street-leaves.png',document.baseURI).href);leaves.map.colorSpace=T.SRGBColorSpace;}
- for(const [pos,mat,uv] of [[leafPos,leaves,leafUV],[stemPos,new T.MeshStandardMaterial({color:0x3d4925,side:T.DoubleSide,roughness:1}),null]]){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));if(uv)g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.computeVertexNormals();const vine=new T.Mesh(g,mat);vine.receiveShadow=true;vine.userData={ownedGeometry:true,ownedMaterial:true,ruinVines:true};group.add(vine);}
+ for(const [positions,material,uv,kind,ranks] of [[leafPos,leaves,leafUV,'leaves',leafRanks],[stemPos,new T.MeshStandardMaterial({color:0x3d4925,side:T.DoubleSide,roughness:1}),null,'stems',stemRanks]]){
+  const cells=addVegetationCells(group,{positions,material,uv,kind,ranks});cells.forEach(mesh=>mesh.userData.ruinVines=true);
+  if(cells.length)cells[0].userData.ownedMaterial=true;else material.dispose();
+ }
+
  return {debris:730,building:body};
 }
