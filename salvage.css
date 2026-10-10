@@ -231,3 +231,19 @@
 #baseCamp #buildModule{display:block;width:100%;margin:12px 0;padding:9px;background:#102c32;color:#d5f3ed;border:1px solid #599b99;font-size:12px}#baseCamp #buildAtSlot{width:100%;margin-top:14px;padding:13px;background:#b67a26;color:#fff0cf;border:1px solid #ffd38a;font-weight:700}#baseCamp .hangarIdentity p{font-size:12px;line-height:1.7}
 /* In-room briefing layout must never override completion of the launch transition. */
 #sortieBriefing.inHangar[hidden]{display:none}
+
+/* Physical workshop screens: DOM content follows the model's projected face. */
+#baseCamp .hangarSchematic{position:absolute;z-index:6;background:#063444e8;color:#b6f5fa;padding:18px;box-sizing:border-box;overflow:hidden;border:1px solid #3e9caa}
+.hangarSchematic svg{display:block;width:100%;height:265px}.schematicSlots{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.schematicSlots button{padding:9px;background:#125466;border:1px solid #54a7b5;color:#d3ffff}
+#baseCamp .hangarHoverCard.pointerLabel{width:auto;min-width:0;padding:7px 12px;pointer-events:none;font-size:14px;background:#10272eea;border:1px solid #90eafa}
+#baseCamp .hangarIdentity{padding:10px 16px;overflow:auto}#baseCamp .hangarIdentity h1{font-size:23px;margin:5px 0}#baseCamp .hangarIdentity .hangarVitals{gap:8px}#baseCamp .hangarIdentity .hangarEffects{font-size:10px}
+#baseCamp.browsingHeap .hangarModal{position:absolute;inset:auto;max-width:none;max-height:none;margin:0;padding:0;z-index:14;overflow:hidden;background:#073341;animation:none}
+#baseCamp.browsingHeap .equipmentWorkshop{width:100%;height:100%;max-height:none;box-sizing:border-box;overflow:auto;border:0;border-radius:0;animation:none;padding:26px;background:transparent}
+#baseCamp.browsingHeap .hangarSchematic{opacity:0;pointer-events:none}
+#baseCamp.equippingFrame .hangarSchematic{opacity:0;pointer-events:none}#baseCamp.equippingFrame .hangarModal{left:2%;right:auto;top:12%;bottom:8%;width:52%;background:#073341f5;border:8px solid #505956;box-shadow:0 0 0 3px #111}
+
+#baseCamp.equippingFrame .hangarModal{position:absolute;inset:auto;max-width:none;max-height:none;padding:0;margin:0;overflow:hidden;border:0;box-shadow:none;background:#073341;z-index:14}#baseCamp.equippingFrame .equipmentWorkshop{width:100%;height:100%;max-height:none;overflow:auto;box-sizing:border-box;padding:24px;background:transparent;border:0;animation:none}
+
+#baseCamp .hangarSchematic svg{height:200px}#baseCamp .schematicSlots{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px}#baseCamp .schematicSlots button{width:auto!important;min-height:34px;margin:0;padding:6px;font-size:15px}#baseCamp .hangarIdentity .hangarVitals{display:grid;grid-template-columns:repeat(3,1fr);font-size:13px}#baseCamp .hangarIdentity .hangarVitals b{font-size:17px}#baseCamp .hangarIdentity .hangarEffects{margin-top:8px}#baseCamp .hangarIdentity .hangarEffects div{max-height:45px;overflow:auto}
+
+#baseCamp .hangarIdentity .hangarVitals>span:last-child{grid-column:auto}#baseCamp .hangarIdentity .hangarVitals{margin:8px 0}#baseCamp.equippingFrame .moduleSockets{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#baseCamp.equippingFrame .gearSockets>div>button[data-gear-slot]{min-height:64px}#baseCamp.equippingFrame .socketChoices{grid-template-columns:repeat(2,minmax(0,1fr))}#baseCamp.equippingFrame .socketChoices button{min-height:90px}#baseCamp.equippingFrame .equipmentWorkshop h2{font-size:22px}#baseCamp.equippingFrame .equipmentWorkshop p{font-size:14px}
