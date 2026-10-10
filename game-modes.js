@@ -16,6 +16,17 @@ export function recoveryRewards(mission){
 export const trainingWaveSize=wave=>Math.min(40,5+wave*2);
 
 const trainingEnemyTypes=['trooper','scoutDrone','assassin','spider','sniper','mortar','pillbug'];
-export function trainingWaveRoster(wave,random=Math.random){
- return Array.from({length:trainingWaveSize(wave)},()=>trainingEnemyTypes[Math.floor(random()*trainingEnemyTypes.length)]);
+// Keep small random variation, while limiting new imbalances to two enemies.
+// Survivors count toward the next wave; only vacant population slots are returned.
+export function trainingWaveRoster(wave,random=Math.random,survivors=[]){
+ const counts=Object.fromEntries(trainingEnemyTypes.map(type=>[type,0]));
+ for(const type of survivors)if(type in counts)counts[type]++;
+ const roster=[],vacancies=Math.max(0,trainingWaveSize(wave)-survivors.length);
+ for(let i=0;i<vacancies;i++){
+  const minimum=Math.min(...Object.values(counts));
+  const candidates=trainingEnemyTypes.filter(type=>counts[type]<minimum+2);
+  const type=candidates[Math.min(candidates.length-1,Math.floor(random()*candidates.length))];
+  counts[type]++;roster.push(type);
+ }
+ return roster;
 }

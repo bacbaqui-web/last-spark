@@ -40,10 +40,12 @@ for(let seed=1;seed<=100;seed++){
  for(let wave=1;wave<=12;wave++){
   const roster=trainingWaveRoster(wave,random);
   assert.equal(roster.length,trainingWaveSize(wave),'random composition preserves the stage population');
+  const counts=['trooper','scoutDrone','assassin','spider','sniper','mortar','pillbug'].map(type=>roster.filter(t=>t===type).length);assert(Math.max(...counts)-Math.min(...counts)<=2,'composition stays balanced within two enemies');
   roster.forEach(type=>types.add(type));if(wave===1)signatures.add(roster.join(','));
  }
 }
 assert.equal(types.size,7,'all ordinary enemy types can appear');assert(signatures.size>90,'fresh runs vary the composition');
-assert(trainingWaveRoster(1,()=>0).every(t=>t==='trooper'),'composition is sampled independently, not a fixed cycle');
-assert(trainingWaveRoster(1,()=>.99999).every(t=>t==='pillbug'));
+for(const random of [()=>0,()=>.99999])assert(new Set(trainingWaveRoster(1,random)).size>=4,'even extreme random draws cannot fill the stage with one type');
+const survivors=Array(8).fill('sniper'),fill=trainingWaveRoster(5,()=>0,survivors);assert.equal(fill.length,trainingWaveSize(5)-8);assert(!fill.includes('sniper'),'overrepresented survivors are not replenished');
+assert.equal(trainingWaveRoster(1,Math.random,Array(8).fill('trooper')).length,0,'never remove survivors or overfill the cap');
 console.log('PASS 100 seeded training runs: random enemy compositions, all 7 types, exact growing stage counts');
