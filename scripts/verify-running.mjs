@@ -27,14 +27,14 @@ const {createStepLocomotion,directionalCadence}=await import('../step-locomotion
 const controller=createStepLocomotion(),axis=new THREE.Vector3(0,1,0);
 for(const yaw of [0,.7,Math.PI]){
  const forward=new THREE.Vector3(0,0,-1).applyAxisAngle(axis,yaw);
- assert.equal(controller.speedFor(forward,yaw),2.8,'forward walks by default regardless of world heading');
+ assert.equal(controller.speedFor(forward,yaw),7.2,'forward runs by default regardless of world heading');
  for(const local of [new THREE.Vector3(1,0,0),new THREE.Vector3(-1,0,0),new THREE.Vector3(0,0,1),new THREE.Vector3(1,0,-1).normalize()]){
   const direction=local.applyAxisAngle(axis,yaw);
-  assert.equal(controller.speedFor(direction,yaw),2.8,'all directions walk by default');
+  assert.equal(controller.speedFor(direction,yaw),7.2,'all directions run by default');
   assert.equal(directionalCadence(10.8,direction,yaw),directionalCadence(10.8,forward,yaw),'all directions share cadence');
-  assert.equal(controller.speedFor(direction,yaw,false,true),5,'held sprint uses the increased running speed');
-  assert.equal(controller.speedFor(direction,yaw,true,true),2,'aim overrides held sprint');
-  assert.equal(controller.speedFor(direction,yaw,true),2,'aim speed preserved');
+  assert.equal(controller.speedFor(direction,yaw,false,true),7.2,'running uses the increased speed');
+  assert.equal(controller.speedFor(direction,yaw,true,true),2.4,'aim overrides running');
+  assert.equal(controller.speedFor(direction,yaw,true),2.4,'aim speed preserved');
   const robot=createRobot(),view=createThirdPersonView(robot,['pistol']);
   for(let frame=0;frame<90;frame++)view.pose({position:new THREE.Vector3(0,1.7,0),yaw,weapon:'pistol',speed:2.8,sprinting:false,velocity:direction.clone().multiplyScalar(2.8),grounded:true,dt:1/60});
   assert(!robot.root.userData.sourceSprint&&robot.root.userData.motion.includes('TPSWalk'),'default movement uses a walking pose');
@@ -42,4 +42,4 @@ for(const yaw of [0,.7,Math.PI]){
   assert(robot.root.userData.sourceSprint,'every direction selects the preferred sprint');
  }
 }
-console.log('PASS: default walk, held slower sprint, walking pose and aim override at rotated headings');
+assert.equal(controller.speedFor(new THREE.Vector3(0,0,-1),0,false,false),3.2,'explicit walking speed');console.log('PASS default running, Ctrl walking gait and aim override at rotated headings');

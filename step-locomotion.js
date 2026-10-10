@@ -16,5 +16,5 @@ export function createStepLocomotion(){
   wasMoving=moving;
   return {direction,action:action?{...action,phase:Math.min(1,action.age/action.duration)}:null,pending:null,support:foot};
  }
- return {update,reset,speedFor:(_direction,_yaw,precision=false,sprinting=false)=>precision?2.4:sprinting?7.2:3.2};
+ return {update,reset,speedFor:(_direction,_yaw,precision=false,sprinting=true)=>precision?2.4:sprinting?7.2:3.2};
 }
