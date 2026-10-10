@@ -14,3 +14,11 @@ console.log('PASS: stop foot selection, immediate direction changes, authored cl
 for(const name of ['StopLeft','StopRight']){const a=createRobot(),v=createThirdPersonView(a,['pistol']);for(let i=0;i<30;i++){v.pose({position:new THREE.Vector3(0,1.7,0),yaw:0,pitch:0,weapon:'pistol',speed:0,velocity:idle,grounded:true,dt:1/60,locomotion:{action:{name,phase:i/29}}});const feet=['l','r'].map(side=>a.root.worldToLocal(a.bones.find(b=>b.name==='foot_'+side).getWorldPosition(new THREE.Vector3())));assert(feet[0].x>feet[1].x,'authored step variants do not swap leg sides');}}console.log('PASS: mirrored stop variants retain leg order');
 
 for(const direction of [left,right,new THREE.Vector3(-.707,0,-.707),new THREE.Vector3(.707,0,-.707)]){const a=createRobot(),v=createThirdPersonView(a,['pistol']);for(let i=0;i<180;i++){v.pose({position:new THREE.Vector3(0,1.7,0),yaw:0,pitch:0,weapon:'pistol',speed:10.8,velocity:direction.clone().multiplyScalar(10.8),grounded:true,dt:1/60});const feet=['l','r'].map(side=>a.root.worldToLocal(a.bones.find(b=>b.name==='foot_'+side).getWorldPosition(new THREE.Vector3())));assert(feet[0].x-feet[1].x>.08,'lateral and diagonal loop feet stay separated');}}console.log('PASS: unified sprint retains leg separation in lateral travel');
+
+const stanceRobot=createRobot(),stanceView=createThirdPersonView(stanceRobot,['pistol']);
+const stance={position:new THREE.Vector3(0,1.7,0),yaw:0,pitch:0,weapon:'pistol',speed:0,velocity:idle,grounded:true,dt:1/60};
+stanceView.pose({...stance,crouch:0});const standingY=stanceRobot.head.getWorldPosition(new THREE.Vector3()).y;
+stanceView.pose({...stance,crouch:1});assert(stanceRobot.head.getWorldPosition(new THREE.Vector3()).y<standingY-.2,'crouching lowers the visible frame');
+for(let i=0;i<5;i++)stanceView.pose({...stance,crouch:0});assert(Math.abs(stanceRobot.head.getWorldPosition(new THREE.Vector3()).y-standingY)<.05,'standing restores the skeleton without accumulated crouch offsets');
+assert(c.speedFor(forward,0,false,true)>5,'new default running is faster than former sprint');assert(c.speedFor(forward,0,false,false)<c.speedFor(forward,0,false,true),'walking remains slower than running');
+console.log('PASS crouch/stand pose restoration and faster run/walk speeds');

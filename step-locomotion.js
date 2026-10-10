@@ -2,7 +2,7 @@ import * as THREE from 'three';
 export function directionalRunWeight(){return 1;}
 export function directionalCadence(speed){return THREE.MathUtils.clamp(speed/9.8*(speed>=3?1.25:1),.35,1.6);}
 export function supportFoot(phase){return ((phase%1)+1)%1<.5?'left':'right';}
-// Walking is the default. Sprint is an explicit held input in every direction.
+// Running is the default; Ctrl requests the walking gait.
 export function createStepLocomotion(){
  let action=null,wasMoving=false,gaitPhase=0;
  function reset(){action=null;wasMoving=false;gaitPhase=0;}
@@ -16,5 +16,5 @@ export function createStepLocomotion(){
   wasMoving=moving;
   return {direction,action:action?{...action,phase:Math.min(1,action.age/action.duration)}:null,pending:null,support:foot};
  }
- return {update,reset,speedFor:(_direction,_yaw,precision=false,sprinting=false)=>precision?2:sprinting?5:2.8};
+ return {update,reset,speedFor:(_direction,_yaw,precision=false,sprinting=false)=>precision?2.4:sprinting?7.2:3.2};
 }
