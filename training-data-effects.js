@@ -58,7 +58,7 @@ export function createTrainingDataEffects(scene,{maxEffects=8}={}){
     part.mesh.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(part.spin,dt*part.spinSpeed));
    }
   }
-  if(t>=1.65){if(!state.deleteBounds)state.deleteBounds=new THREE.Box3().setFromObject(state.visual);const b=state.deleteBounds,u=THREE.MathUtils.smoothstep(t,1.65,2.8);state.dissolve.level.value=THREE.MathUtils.lerp(b.max.y+.08,b.min.y-.08,u);}
+  const b=new THREE.Box3().setFromObject(state.visual),u=THREE.MathUtils.smoothstep(t,0,1.7);state.dissolve.level.value=THREE.MathUtils.lerp(b.max.y+.08,b.min.y-.08,u);
 
  }
  function pose(robot,kind,t){
