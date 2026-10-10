@@ -19,5 +19,5 @@ canvas.requestPointerLock=async()=>{};ctx.document.pointerLockElement=null;
 await ctx.resumeRecoveryControls();assert.equal(ctx.active,false,'resolved request without actual lock cannot start combat');
 let calls=0;canvas.requestPointerLock=async()=>{calls++;};ctx.document.hidden=true;await ctx.resumeRecoveryControls();assert.equal(calls,0);
 assert(source.includes('if(frameMode&&sortie&&!sortie.finished&&!dead&&(salvageMode||time>0||countdownTime>0))return resumeRecoveryControls();'),'resume uses a direct click without regenerating the mission or restarting arrival');
-assert(source.includes('if(frameMode){showRecoveryControlPrompt();return;}fallback=true;'),'initial loading cannot silently enter unlocked recovery');
+assert(source.includes('if(frameMode&&!trainingMode){showRecoveryControlPrompt();return;}fallback=true;'),'initial loading cannot silently enter unlocked recovery');
 console.log('PASS recovery lock denial pauses inputs, direct-click capture resumes, missing lock stays paused, hidden tab cannot capture, resume preserves mission');
