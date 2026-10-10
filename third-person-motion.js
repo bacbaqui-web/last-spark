@@ -11,6 +11,7 @@ const clips=Object.fromEntries(Object.entries({...data,...sideData}).map(([name,
 export function createThirdPersonMotion(avatar){
  const sprintClip=avatar.actions.Sprint_Loop.getClip();
  const motionClips={...clips,Sprint_Loop:{positionAligned:true,duration:sprintClip.duration,tracks:sprintClip.tracks.map(t=>({bone:t.name.split('.')[0],property:t.name.split('.')[1],sample:t.createInterpolant()}))}};
+ for(const name of ['Crouch_Idle_Loop','Crouch_Fwd_Loop']){const clip=avatar.actions[name]?.getClip();if(clip)motionClips[name]={positionAligned:true,duration:clip.duration,tracks:clip.tracks.map(t=>({bone:t.name.split('.')[0],property:t.name.split('.')[1],sample:t.createInterpolant()}))};}
  const bones=Object.fromEntries(avatar.bones.map(b=>[b.name,b])),previous=new Map();let clock=0,strideClock=0,strideRate=.35,wasGrounded=true,airAge=0,landAge=1,lastWeapon='',shotKick=0,lastFlash=false,wasMoving=false,transitionKind='',transitionAge=1,walkBlend=0;const momentum=new THREE.Vector3();let runLift=0,runTwist=0,runPoseBlend=0;
  function alignPosition(name,position,aligned=false){const offset=avatar.bindPositionOffsets?.get(name);if(offset&&!aligned)position.add(offset);return position;}
  function apply(name,phase,mask=()=>true,weight=1){const clip=motionClips[name];if(!clip)return;for(const t of clip.tracks){const b=bones[t.bone];if(!b||!mask(t.bone))continue;const a=t.sample.evaluate(THREE.MathUtils.clamp(phase,0,1)*clip.duration);if(t.property==='quaternion')b.quaternion.slerp(new THREE.Quaternion().fromArray(a),weight);else b.position.lerp(alignPosition(t.bone,new THREE.Vector3().fromArray(a),clip.positionAligned),weight);}}
@@ -120,5 +121,6 @@ export function createThirdPersonMotion(avatar){
   }
   avatar.lookForward?.(pitch);return {bodyClip,attack,rolling:rollPhase>=0};
  }
- return {update,bones,apply};
+ function applyCrouch(state){const weight=state.crouch||0;if(weight<=0)return;const moving=state.speed>.15,name=moving?'Crouch_Fwd_Loop':'Crouch_Idle_Loop';apply(name,(clock/motionClips[name].duration)%1,n=>lower.test(n),weight);avatar.root.userData.sourceMotion=name;avatar.root.updateMatrixWorld(true);}
+ return {update,bones,apply,applyCrouch};
 }

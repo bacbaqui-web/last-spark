@@ -18,7 +18,7 @@ for(const direction of [left,right,new THREE.Vector3(-.707,0,-.707),new THREE.Ve
 const stanceRobot=createRobot(),stanceView=createThirdPersonView(stanceRobot,['pistol']);
 const stance={position:new THREE.Vector3(0,1.7,0),yaw:0,pitch:0,weapon:'pistol',speed:0,velocity:idle,grounded:true,dt:1/60};
 stanceView.pose({...stance,crouch:0});const standingY=stanceRobot.head.getWorldPosition(new THREE.Vector3()).y;
-stanceView.pose({...stance,crouch:1});assert(stanceRobot.head.getWorldPosition(new THREE.Vector3()).y<standingY-.2,'crouching lowers the visible frame');
-for(let i=0;i<5;i++)stanceView.pose({...stance,crouch:0});assert(Math.abs(stanceRobot.head.getWorldPosition(new THREE.Vector3()).y-standingY)<.05,'standing restores the skeleton without accumulated crouch offsets');
+stanceView.pose({...stance,crouch:1});assert.equal(stanceRobot.root.userData.sourceMotion,'Crouch_Idle_Loop');assert(stanceRobot.head.getWorldPosition(new THREE.Vector3()).y<standingY-.2,'crouching lowers the visible frame');
+stanceView.pose({...stance,crouch:1,speed:1.7,velocity:forward.clone().multiplyScalar(1.7)});assert.equal(stanceRobot.root.userData.sourceMotion,'Crouch_Fwd_Loop');for(let i=0;i<20;i++)stanceView.pose({...stance,crouch:0});assert(Math.abs(stanceRobot.head.getWorldPosition(new THREE.Vector3()).y-standingY)<.05,'standing restores the skeleton without accumulated crouch offsets');
 assert(c.speedFor(forward,0,false,true)>5,'new default running is faster than former sprint');assert(c.speedFor(forward,0,false,false)<c.speedFor(forward,0,false,true),'walking remains slower than running');
 console.log('PASS crouch/stand pose restoration and faster run/walk speeds');
