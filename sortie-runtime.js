@@ -1,5 +1,5 @@
 export {prepareCombatAssets} from './asset-loading.js';
-export {frameSteps,createPerformanceWindow,installQualityControls,installFPSMeter} from './runtime-performance.js';
+export {createPauseTransition,frameSteps,createPerformanceWindow,installQualityControls,installFPSMeter} from './runtime-performance.js';
 export {navigationColliders,enemyBlocked} from './collision-broadphase.js';
 export {assistedDirection} from './aim-assist.js';
 export {createBackEquipmentRuntime} from './back-equipment-runtime.js';

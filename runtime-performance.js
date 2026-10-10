@@ -49,3 +49,9 @@ export function installQualityControls(renderers){
  const apply=()=>{const profile=profiles[preset];ratio=Math.min(devicePixelRatio,profile.ratio);for(const [index,renderer] of renderers.entries()){renderer.setPixelRatio(Math.min(ratio,index===0?Infinity:1));renderer.shadowMap.enabled=index===0&&profile.shadows;renderer.shadowMap.needsUpdate=renderer.shadowMap.enabled;renderer.setSize(innerWidth,innerHeight);}samples=[];lastChange=0;};apply();select.onchange=()=>{preset=select.value;try{localStorage.setItem('last-spark-quality',preset);}catch{}apply();};
  return {get preset(){return preset;},sample(elapsed,now){if(preset!=='auto'||!Number.isFinite(elapsed)||elapsed<=0||elapsed>250)return;samples.push(elapsed);if(samples.length<90)return;const ordered=samples.sort((a,b)=>a-b),p95=ordered[Math.floor(ordered.length*.95)];samples=[];if(now-lastChange<(p95>23?3000:10000))return;const next=Math.max(.65,Math.min(Math.min(devicePixelRatio,1),ratio+(p95>23?-.15:p95<17?.05:0)));if(Math.abs(next-ratio)<.01)return;ratio=next;lastChange=now;for(const [index,renderer] of renderers.entries()){renderer.setPixelRatio(Math.min(ratio,index===0?Infinity:1));renderer.setSize(innerWidth,innerHeight);}}};
 }
+
+// Integrate the linear turntable ramp so motion is consistent across frame rates.
+export function createPauseTransition(duration=1.2){
+ let rate=1,target=1,coasting=false;
+ return {get rate(){return rate;},get target(){return target;},get coasting(){return coasting;},pause(soft=true){target=0;coasting=soft;if(!soft)rate=0;},resume(){target=1;coasting=false;},reset(){rate=target=1;coasting=false;},advance(dt){const old=rate,sign=Math.sign(target-rate),travel=Math.min(dt,Math.abs(target-rate)*duration);rate+=sign*travel/duration;if(Math.abs(rate-target)<1e-9)rate=target;return (old+rate)*.5*travel+rate*(dt-travel);}};
+}
